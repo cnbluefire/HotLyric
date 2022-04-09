@@ -633,9 +633,9 @@ namespace HotLyric.Win32.Controls
 
                 flag = newLrcLine != lrcLine;
 
-                FirstRowAnimationPlaceholderText.Text = lrcLine?.Content ?? "";
-                ContentTextBlock.Text = newLrcLine?.Content ?? "";
-                NextLineContentTextBlock.Text = lrcFileWrapper?.NextLine?.Content ?? "";
+                FirstRowAnimationPlaceholderText.Text = lrcLine?.Content?.Trim() ?? "";
+                ContentTextBlock.Text = newLrcLine?.Content?.Trim() ?? "";
+                NextLineContentTextBlock.Text = lrcFileWrapper?.NextLine?.Content?.Trim() ?? "";
 
                 IsEmpty = string.IsNullOrWhiteSpace(newLrcLine?.Content);
             }
@@ -645,17 +645,17 @@ namespace HotLyric.Win32.Controls
 
                 if (SecondRowType == SecondRowType.TranslationOrNextLyric)
                 {
-                    ContentTextBlock.Text = PlaceholderText1 ?? "";
-                    NextLineContentTextBlock.Text = PlaceholderText2 ?? "";
+                    ContentTextBlock.Text = PlaceholderText1?.Trim() ?? "";
+                    NextLineContentTextBlock.Text = PlaceholderText2?.Trim() ?? "";
                 }
                 else
                 {
-                    var str = PlaceholderText1;
+                    var str = PlaceholderText1?.Trim();
                     if (!string.IsNullOrEmpty(PlaceholderText1) && !string.IsNullOrEmpty(PlaceholderText2))
                     {
-                        str = $"{PlaceholderText1} - {PlaceholderText2}";
+                        str = $"{PlaceholderText1.Trim()} - {PlaceholderText2.Trim()}";
                     }
-                    ContentTextBlock.Text = str;
+                    ContentTextBlock.Text = str ?? "";
                 }
                 FirstRowAnimationPlaceholderText.Text = "";
             }

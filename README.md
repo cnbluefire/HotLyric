@@ -9,6 +9,12 @@
 ## 软件截图
 ![app](https://github.com/cnbluefire/HotLyric/blob/main/assets/app.png)
 
+## 对部分软件提供有限支持
+
+由于网易云音乐UWP未提供进度信息，热词使用定时器更新进度，当手动修改播放进度后热词将无法匹配到正确的歌词。
+
+由于热词对网易云音乐UWP和Spotify的歌词匹配基于歌名歌手搜索，所以匹配可能不精准或匹配不到，还请谅解。
+
 ## 如何打开
 
 ### HyPlayer
@@ -37,12 +43,6 @@
 
 如果不喜欢预设的歌词样式，可以在右侧切换到自定义模式，调整界面上的每种颜色。
 ![custom-theme](https://github.com/cnbluefire/HotLyric/blob/main/assets/custom-theme.png)
-
-## 对部分软件提供有限支持
-
-由于网易云音乐UWP未提供进度信息，热词使用定时器更新进度，当手动修改播放进度后热词将无法匹配到正确的歌词。
-
-由于热词对网易云音乐UWP和Spotify的歌词匹配基于歌名歌手搜索，所以匹配可能不精准或匹配不到，还请谅解。
 
 ## 第三方通知
 [第三方通知](https://github.com/cnbluefire/HotLyric/blob/main/HotLyric/HotLyric.Package/ThirdPartyNotices.txt)

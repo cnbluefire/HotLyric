@@ -278,12 +278,6 @@ namespace HotLyric.Win32.ViewModels
             }
         }
 
-        //public SecondRowType SecondRowType
-        //{
-        //    get => secondRowType;
-        //    private set => SetProperty(ref secondRowType, value);
-        //}
-
         public ICommand OpenCurrentSessionAppCmd => openCurrentSessionAppCmd ?? (openCurrentSessionAppCmd = new AsyncRelayCommand(async () =>
         {
             var curSessionAUMID = SelectedSession?.Session?.AppUserModelId;
@@ -421,19 +415,20 @@ namespace HotLyric.Win32.ViewModels
 
                 var models = await Task.WhenAll(sessions.Select(async c => await SMTCSessionModel.CreateAsync(c)));
 
-                if (models != null)
-                {
-                    SessionModels = new ObservableCollection<SMTCSessionModel>(models!);
-                }
-                else
-                {
-                    SessionModels = null;
-                }
 
                 DispatcherHelper.UIDispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
                 {
-                    SelectedSession = SessionModels?.FirstOrDefault(c => c.Session.AppUserModelId == lastSelectedAppId)
+                    SelectedSession = models?.FirstOrDefault(c => c.Session.AppUserModelId == lastSelectedAppId)
                         ?? SessionModels?.FirstOrDefault();
+
+                    if (models != null)
+                    {
+                        SessionModels = new ObservableCollection<SMTCSessionModel>(models!);
+                    }
+                    else
+                    {
+                        SessionModels = null;
+                    }
 
                     if (!sessionInited)
                     {

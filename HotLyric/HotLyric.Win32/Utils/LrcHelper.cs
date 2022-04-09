@@ -235,7 +235,7 @@ namespace HotLyric.Win32.Utils
                         }
                     }
 
-                    return minLen <= 10 ? id : null;
+                    return minLen <= (int)Math.Ceiling(searchKeyword.Length / 3.2) ? id : null;
                 }
             }
             catch (Exception ex) when (!(ex is OperationCanceledException)) { }

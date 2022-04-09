@@ -280,15 +280,18 @@ namespace HotLyric.Win32.ViewModels
 
         public ICommand OpenCurrentSessionAppCmd => openCurrentSessionAppCmd ?? (openCurrentSessionAppCmd = new AsyncRelayCommand(async () =>
         {
-            var curSessionAUMID = SelectedSession?.Session?.AppUserModelId;
-            if (string.IsNullOrEmpty(curSessionAUMID)) return;
-
-            var package = await ApplicationHelper.TryGetPackageFromAppUserModelIdAsync(curSessionAUMID);
-            var pfn = package?.Id?.FamilyName;
-
-            if (!string.IsNullOrEmpty(pfn))
+            if (SelectedSession?.Session?.SupportLaunch == true)
             {
-                await ApplicationHelper.TryLaunchAppAsync(pfn);
+                var curSessionAUMID = SelectedSession?.Session?.AppUserModelId;
+                if (string.IsNullOrEmpty(curSessionAUMID)) return;
+
+                var package = await ApplicationHelper.TryGetPackageFromAppUserModelIdAsync(curSessionAUMID);
+                var pfn = package?.Id?.FamilyName;
+
+                if (!string.IsNullOrEmpty(pfn))
+                {
+                    await ApplicationHelper.TryLaunchAppAsync(pfn);
+                }
             }
         }));
 

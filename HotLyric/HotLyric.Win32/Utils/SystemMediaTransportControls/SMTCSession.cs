@@ -6,6 +6,8 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows.Input;
+using System.Windows.Media;
+using System.Windows.Threading;
 using Windows.ApplicationModel;
 using Windows.Media.Control;
 
@@ -26,10 +28,16 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         private InternalCommand skipPreviousCommand;
         private InternalCommand skipNextCommand;
 
-        public SMTCSession(GlobalSystemMediaTransportControlsSession session)
+        private TimeSpan lastPosition = TimeSpan.Zero;
+        private DateTime lastUpdatePositionTime = default;
+        private DispatcherTimer? internalPositionTimer;
+
+        public SMTCSession(GlobalSystemMediaTransportControlsSession session, bool useTimer, string? customName, ImageSource? customAppIcon, bool supportLaunch)
         {
             this.session = session ?? throw new ArgumentNullException(nameof(session));
-
+            CustomName = customName;
+            CustomAppIcon = customAppIcon;
+            SupportLaunch = supportLaunch;
             appUserModelId = session.SourceAppUserModelId;
 
             session.MediaPropertiesChanged += Session_MediaPropertiesChanged;
@@ -46,11 +54,45 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
             UpdateTimelineProperties();
             UpdatePlaybackInfo();
+
+            if (useTimer)
+            {
+                internalPositionTimer = new DispatcherTimer()
+                {
+                    Interval = TimeSpan.FromMilliseconds(300)
+                };
+                internalPositionTimer.Tick += InternalPositionTimer_Tick;
+            }
+        }
+
+        private void InternalPositionTimer_Tick(object? sender, EventArgs e)
+        {
+            UpdateInternalTimerState();
+
+            var pos = (DateTime.Now - lastUpdatePositionTime) * PlaybackRate + lastPosition;
+            if (pos >= StartTime && pos <= EndTime)
+            {
+                Position = pos;
+            }
+            PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
+        }
+
+        private void UpdateInternalTimerState()
+        {
+            if (timelineProperties == null || PlaybackStatus != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+            {
+                internalPositionTimer?.Stop();
+            }
+            else
+            {
+                internalPositionTimer?.Start();
+            }
         }
 
         private void Session_TimelinePropertiesChanged(GlobalSystemMediaTransportControlsSession sender, TimelinePropertiesChangedEventArgs args)
         {
             timelineProperties = session.GetTimelineProperties();
+            UpdateInternalTimerState();
             UpdateTimelineProperties();
             PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -75,12 +117,19 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 StartTime = timelineProperties.StartTime;
                 EndTime = timelineProperties.EndTime;
                 Position = timelineProperties.Position;
+
+                lastUpdatePositionTime = DateTime.Now;
+                lastPosition = Position;
             }
             else
             {
                 StartTime = TimeSpan.Zero;
                 EndTime = TimeSpan.Zero;
                 Position = TimeSpan.Zero;
+
+                lastUpdatePositionTime = default;
+                lastPosition = TimeSpan.Zero;
+                internalPositionTimer?.Stop();
             }
         }
 
@@ -98,6 +147,8 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 PlaybackRate = 1;
                 PlaybackStatus = GlobalSystemMediaTransportControlsSessionPlaybackStatus.Stopped;
             }
+
+            UpdateInternalTimerState();
 
             UpdateControls();
         }
@@ -137,6 +188,12 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         public ICommand PauseCommand => pauseCommand;
         public ICommand SkipPreviousCommand => skipPreviousCommand;
         public ICommand SkipNextCommand => skipNextCommand;
+
+        public string? CustomName { get; }
+
+        public ImageSource? CustomAppIcon { get; }
+
+        public bool SupportLaunch { get; }
 
         public async Task<GlobalSystemMediaTransportControlsSessionMediaProperties?> GetMediaPropertiesAsync()
         {
@@ -248,6 +305,13 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
+
+                    if (internalPositionTimer != null)
+                    {
+                        internalPositionTimer.Tick -= InternalPositionTimer_Tick;
+                        internalPositionTimer.Stop();
+                        internalPositionTimer = null;
+                    }
 
                     playCommand.CanExecute = false;
                     pauseCommand.CanExecute = false;

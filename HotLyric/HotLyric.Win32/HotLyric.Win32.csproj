@@ -36,6 +36,7 @@
 		<None Remove="Assets\HyPlayerIcon.png" />
 		<None Remove="Assets\LyricEaseIcon.png" />
 		<None Remove="Assets\NoiseAsset_256x256_PNG.png" />
+		<None Remove="Assets\SpotifyIcon.png" />
 		<Page Include="App.xaml" Generator="MSBuild:Compile" />
 	</ItemGroup>
 
@@ -63,6 +64,7 @@
 		<Resource Include="Assets\HyPlayerIcon.png" />
 		<Resource Include="Assets\LyricEaseIcon.png" />
 		<Resource Include="Assets\NoiseAsset_256x256_PNG.png" />
+		<Resource Include="Assets\SpotifyIcon.png" />
 	</ItemGroup>
 
 	<ItemGroup>

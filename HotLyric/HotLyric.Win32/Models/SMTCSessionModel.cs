@@ -9,6 +9,7 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
+using System.Windows.Media;
 using System.Windows.Media.Imaging;
 using Windows.Media.Control;
 
@@ -45,7 +46,7 @@ namespace HotLyric.Win32.Models
 
         private string? appTitle;
 
-        private BitmapImage? appIcon;
+        private ImageSource? appIcon;
 
         public string? AppTitle
         {
@@ -53,7 +54,7 @@ namespace HotLyric.Win32.Models
             private set => SetProperty(ref appTitle, value);
         }
 
-        public BitmapImage? AppIcon
+        public ImageSource? AppIcon
         {
             get => appIcon;
             private set => SetProperty(ref appIcon, value);
@@ -197,15 +198,24 @@ namespace HotLyric.Win32.Models
         {
             if (session == null) return null;
 
-            var package = await session.GetAppPackageAsync();
+            ImageSource? image = session.CustomAppIcon;
+            string? title = session.CustomName;
 
-            string title = string.Empty;
-            BitmapImage? image = null;
-
-            if (package != null)
+            if (image == null && string.IsNullOrEmpty(title))
             {
-                title = package.DisplayName ?? string.Empty;
-                image = await ApplicationHelper.GetPackageIconAsync(package);
+                var package = await session.GetAppPackageAsync();
+                if (package != null)
+                {
+                    if (string.IsNullOrEmpty(title))
+                    {
+                        title = package.DisplayName ?? string.Empty;
+                    }
+
+                    if (image == null)
+                    {
+                        image = await ApplicationHelper.GetPackageIconAsync(package);
+                    }
+                }
             }
 
             var mediaProperties = await session.GetMediaPropertiesAsync();

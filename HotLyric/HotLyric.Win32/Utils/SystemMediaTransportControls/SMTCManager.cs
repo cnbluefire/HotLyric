@@ -13,15 +13,15 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         private bool disposedValue;
 
         private GlobalSystemMediaTransportControlsSessionManager manager;
-        private readonly IReadOnlyList<string> sessionsPrefix;
+        private readonly IReadOnlyList<SMTCApp> supportedApps;
         private SMTCSession[]? sessions;
         private SMTCSession? curSession;
 
 
-        private SMTCManager(GlobalSystemMediaTransportControlsSessionManager manager, IReadOnlyList<string> sessionsPrefix)
+        private SMTCManager(GlobalSystemMediaTransportControlsSessionManager manager, IReadOnlyList<SMTCApp> supportedApps)
         {
             this.manager = manager ?? throw new ArgumentNullException(nameof(manager));
-            this.sessionsPrefix = sessionsPrefix;
+            this.supportedApps = supportedApps;
 
             manager.SessionsChanged += Manager_SessionsChanged;
             UpdateSessions();
@@ -41,9 +41,11 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             var tmp = manager.GetSessions();
             var curSession = manager.GetCurrentSession();
 
-            if (IsValidSession(curSession))
+            var app = GetApp(curSession);
+
+            if (app != null)
             {
-                var s = new SMTCSession(curSession);
+                var s = new SMTCSession(curSession, app.UseTimer, app.CustomName, app.CustomAppIcon, app.SupportLaunch);
                 list.Add(s);
                 appIdHash.Add(curSession.SourceAppUserModelId);
                 this.curSession = s;
@@ -55,9 +57,10 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
             foreach (var session in tmp)
             {
-                if (IsValidSession(session) && appIdHash.Add(session.SourceAppUserModelId))
+                var app2 = GetApp(session);
+                if (app2 != null && appIdHash.Add(session.SourceAppUserModelId))
                 {
-                    var s = new SMTCSession(session);
+                    var s = new SMTCSession(session, app2.UseTimer, app2.CustomName, app2.CustomAppIcon, app2.SupportLaunch);
                     list.Add(s);
                 }
             }
@@ -65,9 +68,9 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             sessions = list.ToArray();
         }
 
-        private bool IsValidSession(GlobalSystemMediaTransportControlsSession session)
+        private SMTCApp? GetApp(GlobalSystemMediaTransportControlsSession session)
         {
-            if (session == null) return false;
+            if (session == null) return null;
 
             string appid = "";
             try
@@ -76,18 +79,18 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             }
             catch
             {
-                return false;
+                return null;
             }
 
-            foreach (var item in sessionsPrefix)
+            foreach (var item in supportedApps)
             {
-                if (appid.StartsWith(item, StringComparison.OrdinalIgnoreCase))
+                if (appid.StartsWith(item.PackageFamilyNamePrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    return true;
+                    return item;
                 }
             }
 
-            return false;
+            return null;
         }
 
         public SMTCSession? CurrentSession => curSession;
@@ -133,11 +136,16 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             GC.SuppressFinalize(this);
         }
 
-        public static async Task<SMTCManager> CreateAsync(IReadOnlyList<string> sessionsPrefix, CancellationToken cancellationToken = default)
+        public static async Task<SMTCManager> CreateAsync(IReadOnlyList<SMTCApp> supportedApps, CancellationToken cancellationToken = default)
         {
+            if (supportedApps is null || supportedApps.Count == 0)
+            {
+                throw new ArgumentNullException(nameof(supportedApps));
+            }
+
             var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync().AsTask(cancellationToken);
 
-            return new SMTCManager(manager, sessionsPrefix);
+            return new SMTCManager(manager, supportedApps);
         }
     }
 }

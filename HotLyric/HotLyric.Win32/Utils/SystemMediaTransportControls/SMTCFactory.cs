@@ -15,31 +15,23 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
         private bool? isSupported;
 
-        private static ConcurrentDictionary<IReadOnlyList<string>, SMTCManager> cache =
-            new ConcurrentDictionary<IReadOnlyList<string>, SMTCManager>(new ListEqualityComparer());
-
         public async Task<SMTCManager?> GetManagerAsync(CancellationToken cancellationToken = default)
         {
-            return await GetManagerAsync(DefaultSessionsPrefix, cancellationToken).ConfigureAwait(false);
+            return await GetManagerAsync(SMTCApps.AllApps.Values.ToArray(), cancellationToken).ConfigureAwait(false);
         }
 
-        public async Task<SMTCManager?> GetManagerAsync(IReadOnlyList<string>? sessionsPrefix, CancellationToken cancellationToken = default)
+        public async Task<SMTCManager?> GetManagerAsync(IReadOnlyList<SMTCApp>? supportedApps, CancellationToken cancellationToken = default)
         {
-            sessionsPrefix ??= DefaultSessionsPrefix;
+            supportedApps ??= SMTCApps.AllApps.Values.ToArray();
 
-            if (isSupported == true)
-            {
-                var manager = GetCachedManager(sessionsPrefix);
-                if (manager != null) return manager;
-            }
-            else if (isSupported == false)
+            if (isSupported == false)
             {
                 return null;
             }
 
             try
             {
-                var manager = await SMTCManager.CreateAsync(sessionsPrefix, cancellationToken).ConfigureAwait(false);
+                var manager = await SMTCManager.CreateAsync(supportedApps, cancellationToken).ConfigureAwait(false);
                 isSupported = true;
                 return manager;
             }
@@ -47,22 +39,6 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             {
                 if (!isSupported.HasValue) isSupported = false;
             }
-            return null;
-        }
-
-        private SMTCManager? GetCachedManager(IReadOnlyList<string>? sessionsPrefix)
-        {
-            sessionsPrefix = sessionsPrefix ?? DefaultSessionsPrefix;
-
-            lock (cache)
-            {
-                var key = sessionsPrefix.OrderBy(c => c).ToArray();
-                if (cache.TryGetValue(key, out var value))
-                {
-                    return value;
-                }
-            }
-
             return null;
         }
 

@@ -45,6 +45,8 @@ namespace HotLyric.Win32.Utils
         {
             if (LrcFile == null) return;
 
+            Debug.WriteLine($"position: {position}");
+
             if (startTick == 0)
             {
                 startTick = Stopwatch.GetTimestamp();

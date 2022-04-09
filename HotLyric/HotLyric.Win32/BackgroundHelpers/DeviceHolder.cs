@@ -43,7 +43,6 @@ namespace HotLyric.Win32.BackgroundHelpers
                         if (graphicsDevice == null)
                         {
                             graphicsDevice = CanvasComposition.CreateCompositionGraphicsDevice(CompositionThread.Instance.Compositor, CanvasDevice);
-                            //graphicsDevice.RenderingDeviceReplaced += GraphicsDevice_RenderingDeviceReplaced;
                         }
                     }
                 }
@@ -56,13 +55,11 @@ namespace HotLyric.Win32.BackgroundHelpers
         {
             sender.DeviceLost -= CanvasDevice_DeviceLost;
             canvasDevice = CanvasDevice.GetSharedDevice();
+            if (graphicsDevice != null)
+            {
+                CanvasComposition.SetCanvasDevice(graphicsDevice, canvasDevice);
+            }
             canvasDevice.DeviceLost += CanvasDevice_DeviceLost;
         }
-
-        //private static void GraphicsDevice_RenderingDeviceReplaced(CompositionGraphicsDevice sender, RenderingDeviceReplacedEventArgs args)
-        //{
-
-        //}
-
     }
 }

@@ -1,0 +1,56 @@
+﻿[
+  {
+    "name": "默认",
+    "borderBrush": "#548F8F8F",
+    "backgroundBrush": "#FF2C2C2C",
+    "lyricBrush": "#FFFFFFFF",
+    "karaokeBrush": "#FFFFA04D",
+    "lyricStrokeBrush": "#FF000000",
+    "karaokeStrokeBrush": "#FF000000"
+  },
+  {
+    "name": "黑红",
+    "borderBrush": "#548F8F8F",
+    "backgroundBrush": "#FF2C2C2C",
+    "lyricBrush": "#FFFFFFFF",
+    "karaokeBrush": "#FFFFD5D7",
+    "lyricStrokeBrush": "#FF000000",
+    "karaokeStrokeBrush": "#FFEF0B08"
+  },
+  {
+    "name": "粉紫",
+    "borderBrush": "#548F8F8F",
+    "backgroundBrush": "#FF2C2C2C",
+    "lyricBrush": "#FFFFFFFF",
+    "karaokeBrush": "#FFFFD2E9",
+    "lyricStrokeBrush": "#FFFB71D1",
+    "karaokeStrokeBrush": "#FFE03AAE"
+  },
+  {
+    "name": "绿色",
+    "borderBrush": "#548F8F8F",
+    "backgroundBrush": "#FF2C2C2C",
+    "lyricBrush": "#FFFFFFFF",
+    "karaokeBrush": "#FFE5FFBF",
+    "lyricStrokeBrush": "#FF2F4321",
+    "karaokeStrokeBrush": "#FF429F25"
+  },
+  {
+    "name": "橘蓝",
+    "borderBrush": "#548F8F8F",
+    "backgroundBrush": "#FF2C2C2C",
+    "lyricBrush": "#FF14A0FE",
+    "karaokeBrush": "#FFEF8044",
+    "lyricStrokeBrush": "#FF000000",
+    "karaokeStrokeBrush": "#FF000000"
+  },
+  {
+    "name": "黄色",
+    "borderBrush": "#548F8F8F",
+    "backgroundBrush": "#FF2C2C2C",
+    "lyricBrush": "#FFFFFFFF",
+    "karaokeBrush": "#FFF1E8A9",
+    "lyricStrokeBrush": "#FF323232",
+    "karaokeStrokeBrush": "#FFDBA714"
+  }
+]

@@ -1,0 +1,11 @@
+<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="clr-namespace:HotLyric.Win32">
+
+    <ResourceDictionary.MergedDictionaries>
+        <ResourceDictionary Source="/Controls/AnimationContentControl.xaml" />
+        <ResourceDictionary Source="/Controls/ResizeControl.xaml" />
+        <ResourceDictionary Source="/Controls/ExpanderEx.xaml" />
+    </ResourceDictionary.MergedDictionaries>
+</ResourceDictionary>

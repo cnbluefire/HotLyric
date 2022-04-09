@@ -1,0 +1,48 @@
+﻿<UserControl x:Class="HotLyric.Win32.Controls.ColorPickerButton"
+             xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+             xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+             xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
+             xmlns:d="http://schemas.microsoft.com/expression/blend/2008" 
+             xmlns:local="clr-namespace:HotLyric.Win32.Controls" 
+             xmlns:ui="http://schemas.modernwpf.com/2019" 
+             xmlns:hc="https://handyorg.github.io/handycontrol"
+             mc:Ignorable="d" 
+             d:DesignHeight="450" d:DesignWidth="800">
+    <Grid>
+        <Grid.Resources>
+            <ResourceDictionary>
+                <ResourceDictionary.MergedDictionaries>
+                    <ResourceDictionary Source="/Themes/CommonStyle.xaml" />
+                </ResourceDictionary.MergedDictionaries>
+            </ResourceDictionary>
+        </Grid.Resources>
+        <ui:DropDownButton Padding="0,0,6,0">
+            <ui:DropDownButton.Flyout>
+                <ui:Flyout x:Name="Flyout" 
+                           Placement="BottomEdgeAlignedLeft"
+                           Opening="Flyout_Opening" Opened="Flyout_Opened" Closed="Flyout_Closed">
+                    <ui:Flyout.FlyoutPresenterStyle>
+                        <Style TargetType="ui:FlyoutPresenter">
+                            <Setter Property="Padding" Value="0" />
+                            <Setter Property="BorderBrush" Value="Transparent" />
+                            <Setter Property="BorderThickness" Value="0" />
+                            <Setter Property="Background" Value="#01000000" />
+                        </Style>
+                    </ui:Flyout.FlyoutPresenterStyle>
+                    <Border>
+                        <Border.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.MergedDictionaries>
+                                    <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/SkinDefault.xaml"/>
+                                    <ResourceDictionary Source="pack://application:,,,/HandyControl;component/Themes/Theme.xaml"/>
+                                </ResourceDictionary.MergedDictionaries>
+                            </ResourceDictionary>
+                        </Border.Resources>
+                        <hc:ColorPicker x:Name="InnterColorPicker" hc:Theme.Skin="Dark" />
+                    </Border>
+                </ui:Flyout>
+            </ui:DropDownButton.Flyout>
+            <Border x:Name="FillColorBorder" Background="Black" Width="25" Height="25" CornerRadius="2,0,0,2" />
+        </ui:DropDownButton>
+    </Grid>
+</UserControl>

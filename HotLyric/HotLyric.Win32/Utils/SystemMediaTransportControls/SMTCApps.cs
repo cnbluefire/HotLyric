@@ -10,15 +10,19 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
     {
         private static readonly IReadOnlyDictionary<string, SMTCApp> allApps = new Dictionary<string, SMTCApp>()
         {
-            ["HyPlayer"] = new SMTCApp("48848aaaaaaccd.HyPlayer_", "9n5td916686k"),
-            ["LyricEase"] = new SMTCApp("17588BrandonWong.LyricEase_", "9n1mkdf0f4gt"),
+            ["HyPlayer"] = new SMTCApp("48848aaaaaaccd.HyPlayer_", "9n5td916686k", SMTCAppPositionMode.FromApp),
+            ["LyricEase"] = new SMTCApp("17588BrandonWong.LyricEase_", "9n1mkdf0f4gt", SMTCAppPositionMode.FromApp),
             ["Spotify"] = new SMTCApp(
                 "Spotify.exe",
                 "9ncbcszsjrsb",
-                true,
+                SMTCAppPositionMode.FromAppAndUseTimer,
                 "Spotify",
                 new BitmapImage(new Uri("/Assets/SpotifyIcon.png", UriKind.RelativeOrAbsolute)),
-                false)
+                false),
+            ["NeteaseMusic"] = new SMTCApp(
+                "1F8B0F94.122165AE053F_", 
+                "9nblggh6g0jf",
+                SMTCAppPositionMode.OnlyUseTimer)
         };
 
         public static IReadOnlyDictionary<string, SMTCApp> AllApps => allApps;
@@ -33,7 +37,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         public SMTCApp(
             string packageFamilyNamePrefix,
             string productId,
-            bool useTimer = false,
+            SMTCAppPositionMode positionMode,
             string? customName = null,
             ImageSource? customAppIcon = null,
             bool supportLaunch = true)
@@ -41,7 +45,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             PackageFamilyNamePrefix = packageFamilyNamePrefix;
             ProductId = productId;
             StoreUri = new Uri($"ms-windows-store://pdp/?productid={ProductId}&mode=mini");
-            UseTimer = useTimer;
+            PositionMode = positionMode;
             CustomName = customName;
             CustomAppIcon = customAppIcon;
             SupportLaunch = supportLaunch;
@@ -53,12 +57,19 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
         public string ProductId { get; }
 
-        public bool UseTimer { get; }
+        public SMTCAppPositionMode PositionMode { get; }
 
         public string? CustomName { get; }
 
         public ImageSource? CustomAppIcon { get; }
 
         public bool SupportLaunch { get; }
+    }
+
+    public enum SMTCAppPositionMode
+    {
+        FromApp,
+        FromAppAndUseTimer,
+        OnlyUseTimer
     }
 }

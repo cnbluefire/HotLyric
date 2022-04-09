@@ -32,9 +32,10 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         private DateTime lastUpdatePositionTime = default;
         private DispatcherTimer? internalPositionTimer;
 
-        public SMTCSession(GlobalSystemMediaTransportControlsSession session, bool useTimer, string? customName, ImageSource? customAppIcon, bool supportLaunch)
+        public SMTCSession(GlobalSystemMediaTransportControlsSession session, SMTCAppPositionMode positionMode, string? customName, ImageSource? customAppIcon, bool supportLaunch)
         {
             this.session = session ?? throw new ArgumentNullException(nameof(session));
+            PositionMode = positionMode;
             CustomName = customName;
             CustomAppIcon = customAppIcon;
             SupportLaunch = supportLaunch;
@@ -55,25 +56,33 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             UpdateTimelineProperties();
             UpdatePlaybackInfo();
 
-            if (useTimer)
+            if (positionMode == SMTCAppPositionMode.FromAppAndUseTimer || positionMode == SMTCAppPositionMode.OnlyUseTimer)
             {
                 internalPositionTimer = new DispatcherTimer()
                 {
                     Interval = TimeSpan.FromMilliseconds(300)
                 };
                 internalPositionTimer.Tick += InternalPositionTimer_Tick;
+
+                if (positionMode == SMTCAppPositionMode.OnlyUseTimer)
+                {
+                    lastUpdatePositionTime = DateTime.Now;
+                    UpdateInternalTimerState();
+                }
             }
         }
 
         private void InternalPositionTimer_Tick(object? sender, EventArgs e)
         {
-            UpdateInternalTimerState();
-
             var pos = (DateTime.Now - lastUpdatePositionTime) * PlaybackRate + lastPosition;
-            if (pos >= StartTime && pos <= EndTime)
+            if (PositionMode == SMTCAppPositionMode.OnlyUseTimer
+                || (pos >= StartTime && pos <= EndTime))
             {
                 Position = pos;
             }
+
+            UpdateInternalTimerState();
+
             PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
         }
 
@@ -85,6 +94,8 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             }
             else
             {
+                lastPosition = Position;
+                lastUpdatePositionTime = DateTime.Now;
                 internalPositionTimer?.Start();
             }
         }
@@ -93,8 +104,12 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         {
             timelineProperties = session.GetTimelineProperties();
             UpdateInternalTimerState();
-            UpdateTimelineProperties();
-            PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
+
+            if (PositionMode != SMTCAppPositionMode.OnlyUseTimer)
+            {
+                UpdateTimelineProperties();
+                PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         private void Session_PlaybackInfoChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
@@ -106,6 +121,14 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
         private void Session_MediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
         {
+            if (PositionMode == SMTCAppPositionMode.OnlyUseTimer)
+            {
+                lastPosition = TimeSpan.Zero;
+                lastUpdatePositionTime = DateTime.Now;
+                Position = TimeSpan.Zero;
+                PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
+            }
+
             mediaPropertiesSource = null;
             MediaPropertiesChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -118,8 +141,11 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 EndTime = timelineProperties.EndTime;
                 Position = timelineProperties.Position;
 
-                lastUpdatePositionTime = DateTime.Now;
-                lastPosition = Position;
+                if (PositionMode != SMTCAppPositionMode.OnlyUseTimer)
+                {
+                    lastUpdatePositionTime = DateTime.Now;
+                    lastPosition = Position;
+                }
             }
             else
             {
@@ -127,9 +153,12 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 EndTime = TimeSpan.Zero;
                 Position = TimeSpan.Zero;
 
-                lastUpdatePositionTime = default;
-                lastPosition = TimeSpan.Zero;
-                internalPositionTimer?.Stop();
+                if (PositionMode != SMTCAppPositionMode.OnlyUseTimer)
+                {
+                    lastUpdatePositionTime = default;
+                    lastPosition = TimeSpan.Zero;
+                    internalPositionTimer?.Stop();
+                }
             }
         }
 
@@ -189,6 +218,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         public ICommand SkipPreviousCommand => skipPreviousCommand;
         public ICommand SkipNextCommand => skipNextCommand;
 
+        public SMTCAppPositionMode PositionMode { get; }
         public string? CustomName { get; }
 
         public ImageSource? CustomAppIcon { get; }

@@ -17,6 +17,7 @@ using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
+using Windows.System;
 
 namespace HotLyric.Win32.ViewModels
 {
@@ -63,6 +64,8 @@ namespace HotLyric.Win32.ViewModels
 
         private string lyricPlaceholderText = "";
         private string lyricNextLinePlaceholderText = "";
+
+        private AsyncRelayCommand onlyUseTimerHelpCmd;
 
         public SettingsWindowViewModel SettingViewModel => settingVm;
 
@@ -274,6 +277,8 @@ namespace HotLyric.Win32.ViewModels
                 OnPropertyChanged(nameof(ActualMinimized));
                 OnPropertyChanged(nameof(IsBackgroundVisible));
                 OnPropertyChanged(nameof(LyricOpacity));
+                OnlyUseTimerHelpCmd.NotifyCanExecuteChanged();
+                OnPropertyChanged(nameof(OnlyUseTimerHelpButtonVisible));
                 App.Current.NotifyIcon?.UpdateToolTipText();
             }
         }
@@ -477,6 +482,14 @@ namespace HotLyric.Win32.ViewModels
             LyricPlaceholderText = MediaModel?.Name ?? "";
             LyricNextLinePlaceholderText = MediaModel?.Artist ?? "";
         }
+
+        public AsyncRelayCommand OnlyUseTimerHelpCmd => onlyUseTimerHelpCmd ?? (onlyUseTimerHelpCmd = new AsyncRelayCommand(async () =>
+        {
+            var uri = new Uri("https://github.com/cnbluefire/HotLyric#%E5%AF%B9%E9%83%A8%E5%88%86%E8%BD%AF%E4%BB%B6%E6%8F%90%E4%BE%9B%E6%9C%89%E9%99%90%E6%94%AF%E6%8C%81");
+            await Launcher.LaunchUriAsync(uri);
+        }, () => SelectedSession?.Session?.PositionMode == SMTCAppPositionMode.OnlyUseTimer && !OnlyUseTimerHelpCmd.IsRunning));
+
+        public bool OnlyUseTimerHelpButtonVisible => OnlyUseTimerHelpCmd.CanExecute(null);
 
         private void UpdateSettings()
         {

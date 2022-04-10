@@ -45,7 +45,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
             if (app != null)
             {
-                var s = new SMTCSession(curSession, app.PositionMode, app.CustomName, app.CustomAppIcon, app.SupportLaunch);
+                var s = new SMTCSession(curSession, app.PositionMode, app);
                 list.Add(s);
                 appIdHash.Add(curSession.SourceAppUserModelId);
                 this.curSession = s;
@@ -60,7 +60,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 var app2 = GetApp(session);
                 if (app2 != null && appIdHash.Add(session.SourceAppUserModelId))
                 {
-                    var s = new SMTCSession(session, app2.PositionMode, app2.CustomName, app2.CustomAppIcon, app2.SupportLaunch);
+                    var s = new SMTCSession(session, app2.PositionMode, app2);
                     list.Add(s);
                 }
             }

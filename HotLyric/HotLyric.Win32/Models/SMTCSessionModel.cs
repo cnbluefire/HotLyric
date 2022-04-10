@@ -118,7 +118,7 @@ namespace HotLyric.Win32.Models
 
         public MediaModel CreateMediaModel()
         {
-            return new MediaModel(MediaTitle, MediaArtist, NeteaseMusicId, LocalLrcPath, Session.EndTime);
+            return new MediaModel(MediaTitle, MediaArtist, NeteaseMusicId, LocalLrcPath, Session.EndTime, Session.App.DefaultLrcProvider, Session.App.ConvertToSimpleChinese);
         }
 
         private async void Session_MediaPropertiesChanged(object? sender, EventArgs e)
@@ -198,8 +198,8 @@ namespace HotLyric.Win32.Models
         {
             if (session == null) return null;
 
-            ImageSource? image = session.CustomAppIcon;
-            string? title = session.CustomName;
+            ImageSource? image = session.App.CustomAppIcon;
+            string? title = session.App.CustomName;
 
             if (image == null && string.IsNullOrEmpty(title))
             {

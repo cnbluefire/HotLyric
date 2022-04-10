@@ -65,7 +65,7 @@ namespace HotLyric.Win32.ViewModels
         private string lyricPlaceholderText = "";
         private string lyricNextLinePlaceholderText = "";
 
-        private AsyncRelayCommand onlyUseTimerHelpCmd;
+        private AsyncRelayCommand? onlyUseTimerHelpCmd;
 
         public SettingsWindowViewModel SettingViewModel => settingVm;
 
@@ -285,7 +285,7 @@ namespace HotLyric.Win32.ViewModels
 
         public ICommand OpenCurrentSessionAppCmd => openCurrentSessionAppCmd ?? (openCurrentSessionAppCmd = new AsyncRelayCommand(async () =>
         {
-            if (SelectedSession?.Session?.SupportLaunch == true)
+            if (SelectedSession?.Session?.App?.SupportLaunch == true)
             {
                 var curSessionAUMID = SelectedSession?.Session?.AppUserModelId;
                 if (string.IsNullOrEmpty(curSessionAUMID)) return;

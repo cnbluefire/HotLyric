@@ -32,13 +32,11 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         private DateTime lastUpdatePositionTime = default;
         private DispatcherTimer? internalPositionTimer;
 
-        public SMTCSession(GlobalSystemMediaTransportControlsSession session, SMTCAppPositionMode positionMode, string? customName, ImageSource? customAppIcon, bool supportLaunch)
+        public SMTCSession(GlobalSystemMediaTransportControlsSession session, SMTCAppPositionMode positionMode, SMTCApp app)
         {
             this.session = session ?? throw new ArgumentNullException(nameof(session));
             PositionMode = positionMode;
-            CustomName = customName;
-            CustomAppIcon = customAppIcon;
-            SupportLaunch = supportLaunch;
+            App = app;
             appUserModelId = session.SourceAppUserModelId;
 
             session.MediaPropertiesChanged += Session_MediaPropertiesChanged;
@@ -219,11 +217,8 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         public ICommand SkipNextCommand => skipNextCommand;
 
         public SMTCAppPositionMode PositionMode { get; }
-        public string? CustomName { get; }
 
-        public ImageSource? CustomAppIcon { get; }
-
-        public bool SupportLaunch { get; }
+        public SMTCApp App { get; }
 
         public async Task<GlobalSystemMediaTransportControlsSessionMediaProperties?> GetMediaPropertiesAsync()
         {

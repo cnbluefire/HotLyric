@@ -10,19 +10,41 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
     {
         private static readonly IReadOnlyDictionary<string, SMTCApp> allApps = new Dictionary<string, SMTCApp>()
         {
-            ["HyPlayer"] = new SMTCApp("48848aaaaaaccd.HyPlayer_", "9n5td916686k", SMTCAppPositionMode.FromApp),
-            ["LyricEase"] = new SMTCApp("17588BrandonWong.LyricEase_", "9n1mkdf0f4gt", SMTCAppPositionMode.FromApp),
+            ["HyPlayer"] = new SMTCApp(
+                "48848aaaaaaccd.HyPlayer_",
+                "9n5td916686k",
+                SMTCAppPositionMode.FromApp,
+                defaultLrcProvider: "NetEase"),
+
+            ["LyricEase"] = new SMTCApp(
+                "17588BrandonWong.LyricEase_",
+                "9n1mkdf0f4gt",
+                SMTCAppPositionMode.FromApp,
+                defaultLrcProvider: "NetEase"),
+
             ["Spotify"] = new SMTCApp(
                 "Spotify.exe",
                 "9ncbcszsjrsb",
                 SMTCAppPositionMode.FromAppAndUseTimer,
                 "Spotify",
                 new BitmapImage(new Uri("/Assets/SpotifyIcon.png", UriKind.RelativeOrAbsolute)),
-                false),
+                false,
+                "QQMusic",
+                true),
+
             ["NeteaseMusic"] = new SMTCApp(
-                "1F8B0F94.122165AE053F_", 
+                "1F8B0F94.122165AE053F_",
                 "9nblggh6g0jf",
-                SMTCAppPositionMode.OnlyUseTimer)
+                SMTCAppPositionMode.OnlyUseTimer,
+                defaultLrcProvider: "NetEase",
+                convertToSimpleChinese: false),
+
+            ["QQMusic"] = new SMTCApp(
+                "903DB504.QQWP_",
+                "9wzdncrfj1q1",
+                SMTCAppPositionMode.OnlyUseTimer,
+                defaultLrcProvider: "QQMusic",
+                convertToSimpleChinese: false),
         };
 
         public static IReadOnlyDictionary<string, SMTCApp> AllApps => allApps;
@@ -40,7 +62,9 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             SMTCAppPositionMode positionMode,
             string? customName = null,
             ImageSource? customAppIcon = null,
-            bool supportLaunch = true)
+            bool supportLaunch = true,
+            string? defaultLrcProvider = null,
+            bool convertToSimpleChinese = false)
         {
             PackageFamilyNamePrefix = packageFamilyNamePrefix;
             ProductId = productId;
@@ -49,6 +73,8 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             CustomName = customName;
             CustomAppIcon = customAppIcon;
             SupportLaunch = supportLaunch;
+            DefaultLrcProvider = defaultLrcProvider;
+            ConvertToSimpleChinese = convertToSimpleChinese;
         }
 
         public Uri StoreUri { get; }
@@ -64,6 +90,10 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         public ImageSource? CustomAppIcon { get; }
 
         public bool SupportLaunch { get; }
+
+        public string? DefaultLrcProvider { get; }
+
+        public bool ConvertToSimpleChinese { get; }
     }
 
     public enum SMTCAppPositionMode

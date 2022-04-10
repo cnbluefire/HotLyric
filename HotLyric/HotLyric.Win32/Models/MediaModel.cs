@@ -20,13 +20,22 @@ namespace HotLyric.Win32.Models
         private bool disposedValue;
         private bool hasLyric;
 
-        public MediaModel(string? name, string? artist, string? neteaseMusicId, string localLrcPath, TimeSpan mediaDuration)
+        public MediaModel(
+            string? name,
+            string? artist,
+            string? neteaseMusicId,
+            string localLrcPath,
+            TimeSpan mediaDuration,
+            string? defaultProvider,
+            bool convertToSimpleChinese)
         {
             Name = name;
             Artist = artist;
             NeteaseMusicId = neteaseMusicId;
             LocalLrcPath = localLrcPath;
             MediaDuration = mediaDuration;
+            DefaultProvider = defaultProvider;
+            ConvertToSimpleChinese = convertToSimpleChinese;
         }
 
         public string? Name { get; }
@@ -38,6 +47,10 @@ namespace HotLyric.Win32.Models
         public string LocalLrcPath { get; }
 
         public TimeSpan MediaDuration { get; }
+
+        public string? DefaultProvider { get; }
+
+        public bool ConvertToSimpleChinese { get; }
 
         public ILrcFile? LrcFile
         {
@@ -106,8 +119,10 @@ namespace HotLyric.Win32.Models
                 {
                     file = await LrcHelper.GetLrcFileAsync(
                         Name,
-                        Artist,
+                        !string.IsNullOrEmpty(Artist) ? new[] { Artist } : Array.Empty<string>(),
                         !string.IsNullOrWhiteSpace(NeteaseMusicId) ? NeteaseMusicId : "",
+                        DefaultProvider,
+                        ConvertToSimpleChinese,
                         tmpCts.Token);
                 }
 
@@ -198,7 +213,7 @@ namespace HotLyric.Win32.Models
 
         public static MediaModel CreateEmptyMedia()
         {
-            return new MediaModel("", "", "", "", TimeSpan.Zero)
+            return new MediaModel("", "", "", "", TimeSpan.Zero, "", false)
             {
                 LrcFile = LrcHelper.EmptyLyric,
                 isEmptyLyric = true

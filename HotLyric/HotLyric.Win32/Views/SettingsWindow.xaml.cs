@@ -31,11 +31,18 @@ namespace HotLyric.Win32.Views
             ResetSecondRow();
             ResetLyricOpacity();
             this.Icon = WindowHelper.GetDefaultAppIconImage();
+
+            this.IsVisibleChanged += SettingsWindow_IsVisibleChanged;
         }
 
         HwndSource? hwndSource;
 
         public SettingsWindowViewModel VM => (DataContext as SettingsWindowViewModel)!;
+
+        private async void SettingsWindow_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            await VM.StartupTaskHelper.RefreshAsync();
+        }
 
         protected override void OnSourceInitialized(EventArgs e)
         {

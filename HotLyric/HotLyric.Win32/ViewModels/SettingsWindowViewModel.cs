@@ -40,6 +40,7 @@ namespace HotLyric.Win32.ViewModels
         private const string LowFrameRateModeSettingKey = "Settings_LowFrameRateMode";
         private const string RenderSoftwareOnlySettingKey = "Settings_RenderSoftwareOnly";
         private const string LyricOpacitySettingKey = "Settings_LyricOpacity";
+        private const string ShowLauncherWindowOnStartupSettingKey = "Settings_ShowLauncherWindowOnStartup";
 
         public SettingsWindowViewModel()
         {
@@ -91,6 +92,11 @@ namespace HotLyric.Win32.ViewModels
             }
 
             lyricOpacity = Math.Clamp(LoadSetting(LyricOpacitySettingKey, 1d), 0.1d, 1d);
+
+            showLauncherWindowOnStartup = LoadSetting(ShowLauncherWindowOnStartupSettingKey, true);
+
+            StartupTaskHelper = new StartupTaskHelper("HotLyricStartupTask");
+            StartupTaskHelper.PropertyChanged += StartupTaskHelper_PropertyChanged;
         }
 
         private bool windowTransparent;
@@ -120,8 +126,10 @@ namespace HotLyric.Win32.ViewModels
         private bool lowFrameRateMode;
         private bool renderSoftwareOnly;
         private double lyricOpacity;
+        private bool showLauncherWindowOnStartup;
 
         private StoreContext? context;
+        public StartupTaskHelper StartupTaskHelper { get; }
 
         public bool WindowTransparent
         {
@@ -294,6 +302,23 @@ namespace HotLyric.Win32.ViewModels
         {
             get => lyricOpacity;
             set => ChangeSettings(ref lyricOpacity, value, LyricOpacitySettingKey);
+        }
+
+        public bool ShowLauncherWindowOnStartup
+        {
+            get => showLauncherWindowOnStartup;
+            set => ChangeSettings(ref showLauncherWindowOnStartup, value, ShowLauncherWindowOnStartupSettingKey);
+        }
+
+        public bool ShowLauncherWindowOnStartupEnabled => !StartupTaskHelper.IsStartupTaskEnabled;
+
+        private void StartupTaskHelper_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        {
+            if (!ShowLauncherWindowOnStartupEnabled)
+            {
+                ShowLauncherWindowOnStartup = false;
+            }
+            OnPropertyChanged(nameof(ShowLauncherWindowOnStartupEnabled));
         }
 
         public string AppName => Package.Current.DisplayName;
@@ -549,7 +574,8 @@ namespace HotLyric.Win32.ViewModels
         public void ActivateInstance()
         {
             if (ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession == null
-                && !CommandLineArgsHelper.HasLaunchParameters)
+                && !CommandLineArgsHelper.HasLaunchParameters
+                && ShowLauncherWindowOnStartupEnabled)
             {
                 ViewModelLocator.Instance.SettingsWindowViewModel.ShowLauncherWindow();
             }

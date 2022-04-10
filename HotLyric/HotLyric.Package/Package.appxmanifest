@@ -3,11 +3,12 @@
 <Package
   xmlns="http://schemas.microsoft.com/appx/manifest/foundation/windows10"
   xmlns:uap="http://schemas.microsoft.com/appx/manifest/uap/windows10"
+  xmlns:uap5="http://schemas.microsoft.com/appx/manifest/uap/windows10/5"
   xmlns:uap7="http://schemas.microsoft.com/appx/manifest/uap/windows10/7"
   xmlns:rescap="http://schemas.microsoft.com/appx/manifest/foundation/windows10/restrictedcapabilities"
   xmlns:com="http://schemas.microsoft.com/appx/manifest/com/windows10"
   xmlns:desktop="http://schemas.microsoft.com/appx/manifest/desktop/windows10"
-  IgnorableNamespaces="uap uap7 rescap com desktop">
+  IgnorableNamespaces="uap uap5 uap7 rescap com desktop">
 
 	<Identity
 	  Name="306200B4771A6.217957860C1A5"
@@ -44,16 +45,18 @@
 			</uap:VisualElements>
 
 			<Extensions>
-				<!--<uap:Extension Category="windows.appService" EntryPoint="HotLyric.AppService.MainAppService">
-					<uap:AppService Name="com.bluefire.hotlyric" />
-				</uap:Extension>-->
 				<uap:Extension Category="windows.protocol" Executable="HotLyric.Win32\HotLyric.Win32.exe" EntryPoint="Windows.FullTrustApplication">
 					<uap:Protocol Name="hot-lyric" />
 				</uap:Extension>
-				<!--<uap:Extension Category="windows.protocol" Executable="HotLyric.Downloader\HotLyric.Downloader.exe" EntryPoint="Windows.FullTrustApplication">
-					<uap:Protocol Name="hot-lyric-down" />
-				</uap:Extension>-->
-
+				<uap5:Extension
+				  Category="windows.startupTask"
+				  Executable="HotLyric.Win32\HotLyric.Win32.exe"
+				  EntryPoint="Windows.FullTrustApplication">
+					<uap5:StartupTask
+					  TaskId="HotLyricStartupTask"
+					  Enabled="false"
+					  DisplayName="热词" />
+				</uap5:Extension>
 			</Extensions>
 
 		</Application>

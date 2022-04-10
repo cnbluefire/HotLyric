@@ -100,28 +100,15 @@ namespace HotLyric.Win32.Models
             {
                 LrcFile = LrcHelper.DownloadingLyric;
 
-                var searchKey = string.Empty;
-                var id = string.Empty;
-
-                if (!string.IsNullOrEmpty(NeteaseMusicId))
-                {
-                    id = NeteaseMusicId;
-                }
-
-                if (string.IsNullOrEmpty(Artist))
-                {
-                    searchKey = Name ?? string.Empty;
-                }
-                else
-                {
-                    searchKey = $"{Name} {Artist}";
-                }
-
                 var file = await LrcHelper.GetLrcFileAsync(LocalLrcPath, tmpCts.Token);
 
                 if (file == null)
                 {
-                    file = await LrcHelper.GetLrcFileAsync(searchKey, id, tmpCts.Token);
+                    file = await LrcHelper.GetLrcFileAsync(
+                        Name,
+                        Artist,
+                        !string.IsNullOrWhiteSpace(NeteaseMusicId) ? NeteaseMusicId : "",
+                        tmpCts.Token);
                 }
 
                 if (file != null)

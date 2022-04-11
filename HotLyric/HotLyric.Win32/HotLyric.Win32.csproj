@@ -52,6 +52,7 @@
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.0" />
 		<PackageReference Include="Vanara.PInvoke.Security" Version="3.4.0" />
+		<PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.0" />
 		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.0" />
 		<PackageReference Include="Win2D.uwp" Version="1.26.0" />
 	</ItemGroup>

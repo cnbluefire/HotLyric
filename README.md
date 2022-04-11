@@ -1,19 +1,24 @@
 # 热词
 
-为 [HyPlayer](https://github.com/HyPlayer/HyPlayer) 和 [LyricEase](https://github.com/brandonw3612/LyricEase) 提供桌面歌词支持。
+为其他播放器提供桌面歌词。
 
 下载地址: [https://www.microsoft.com/store/productId/9MXFFHVQVBV9](https://www.microsoft.com/store/productId/9MXFFHVQVBV9)
-
----
 
 ## 软件截图
 ![app](https://github.com/cnbluefire/HotLyric/blob/main/assets/app.png)
 
-## 对部分软件提供有限支持
+## 支持的播放器   
+|播放器|支持程度|
+|---|---|
+|[HyPlayer](https://github.com/HyPlayer/HyPlayer)|完全支持
+|[LyricEase](https://github.com/brandonw3612/LyricEase)|完全支持
+|[Spotify](https://www.spotify.com/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup>
+|[网易云音乐UWP不更新版](https://github.com/JasonWei512/NetEase-Cloud-Music-UWP-Repack)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup>
+|[QQ音乐UWP](https://www.microsoft.com/store/productId/9WZDNCRFJ1Q1)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup>
+---
+1. <span id="ref1">由于QQ音乐UWP和网易云音乐UWP未提供进度信息，热词使用内置定时器更新歌词进度，所以当手动修改播放进度后热词将无法匹配到正确的歌词。</span>
 
-由于网易云音乐UWP未提供进度信息，热词使用定时器更新进度，当手动修改播放进度后热词将无法匹配到正确的歌词。
-
-由于热词对网易云音乐UWP和Spotify的歌词匹配基于歌名歌手搜索，所以匹配可能不精准或匹配不到，还请谅解。
+2. <span id="ref2">由于热词对网易云音乐UWP、QQ音乐UWP和Spotify的歌词匹配基于歌名歌手搜索，所以匹配可能不精准或匹配不到。</span>
 
 ## 如何打开
 
@@ -26,6 +31,10 @@
 安装热词后，在设置中启用桌面歌词选项。  
 
 ![lyricease](https://github.com/cnbluefire/HotLyric/blob/main/assets/lyricease.png)
+
+### Spotify
+Spotify需要在设置中开启 **在使用媒体键时显示桌面重叠**
+![spotify](https://github.com/cnbluefire/HotLyric/blob/main/assets/spotify.png)
 
 ## 使用说明
 
@@ -43,6 +52,13 @@
 
 如果不喜欢预设的歌词样式，可以在右侧切换到自定义模式，调整界面上的每种颜色。
 ![custom-theme](https://github.com/cnbluefire/HotLyric/blob/main/assets/custom-theme.png)
+
+### 开机启动
+当在任务管理器中 **启用** 了热词的开机启动项时，应用内的开机启动选项才能设置。
+
+### 重置窗口位置
+如果窗口被拖动到显示器区域外，可以使用此选项恢复窗口的默认位置。
+![reset-window-location](https://github.com/cnbluefire/HotLyric/blob/main/assets/reset-window-location.png)
 
 ## 第三方通知
 [第三方通知](https://github.com/cnbluefire/HotLyric/blob/main/HotLyric/HotLyric.Package/ThirdPartyNotices.txt)

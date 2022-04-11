@@ -1,6 +1,7 @@
 ﻿using HotLyric.Win32.BackgroundHelpers;
 using HotLyric.Win32.Utils;
 using HotLyric.Win32.ViewModels;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.ComponentModel;
@@ -40,16 +41,24 @@ namespace HotLyric.Win32.Views
                 this.Left = x;
                 this.Top = y;
             }
+            else
+            {
+                initWindowPosition = true;
+            }
 
             topmostHelper = new WindowTopmostHelper(this)
             {
                 HideWhenFullScreenAppOpen = HideWhenFullScreenAppOpen
             };
             this.Icon = WindowHelper.GetDefaultAppIconImage();
+
+            this.IsVisibleChanged += HostWindow_IsVisibleChanged;
         }
+
 
         private LyricWindowViewModel VM => (LyricWindowViewModel)DataContext!;
 
+        private bool initWindowPosition;
         private bool isClosing;
         private Windows.UI.Composition.ContainerVisual? rootVisual;
         private Compositor? compositor;
@@ -157,6 +166,8 @@ namespace HotLyric.Win32.Views
                 //UpdateMouseEvent();
 
                 CommandLineArgsHelper.ActivateMainInstanceEventReceived += CommandLineArgsHelper_ActivateMainInstanceEventReceived;
+
+                SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
             }));
         }
 
@@ -169,6 +180,15 @@ namespace HotLyric.Win32.Views
 
 
         #region Window Events
+
+        private void HostWindow_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
+        {
+            if (initWindowPosition)
+            {
+                WindowBoundsHelper.ResetWindowBounds(new WindowInteropHelper(this).Handle);
+                Dispatcher.BeginInvoke(new Action(SaveBounds), DispatcherPriority.Background);
+            }
+        }
 
         private void HostWindow_SizeChanged(object sender, SizeChangedEventArgs e)
         {
@@ -206,9 +226,11 @@ namespace HotLyric.Win32.Views
             else
             {
                 isClosing = true;
+                SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
+
                 VM.BackgroundHelper?.Dispose();
                 VM.BackgroundHelper = null;
-                //UpdateMouseEvent();
+
                 topmostHelper?.Dispose();
                 topmostHelper = null!;
             }
@@ -219,6 +241,52 @@ namespace HotLyric.Win32.Views
             base.OnClosed(e);
             LyricWindowHostControl?.Dispose();
         }
+
+
+        private async void SystemEvents_DisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            await Task.Delay(1000);
+            await Dispatcher.BeginInvoke(new Action(() =>
+            {
+                if (isClosing || !IsVisible || hwndSource == null) return;
+
+                if (User32.GetWindowRect(hwndSource.Handle, out var _windowRect))
+                {
+                    var windowRect = (System.Drawing.Rectangle)_windowRect;
+                    var minSize = 30;
+
+                    var screenRects = System.Windows.Forms.Screen.AllScreens.Select(c => c.Bounds).ToArray();
+                    var primaryRect = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
+                    var primaryWorkarea = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
+
+                    var flag = false;
+
+                    foreach (var rect in screenRects)
+                    {
+                        var tmp = windowRect;
+                        tmp.Intersect(rect);
+
+                        if (tmp.Width >= minSize && tmp.Height >= minSize)
+                        {
+                            flag = true;
+                            break;
+                        }
+                    }
+
+                    if (!flag)
+                    {
+                        WindowBoundsHelper.ResetWindowBounds(hwndSource.Handle);
+                        Dispatcher.BeginInvoke(new Action(() =>
+                        {
+                            SaveBounds();
+                            VM.ShowBackgroundTransient(TimeSpan.FromSeconds(2));
+                        }), DispatcherPriority.Background);
+                    }
+                }
+            }), DispatcherPriority.Background);
+
+        }
+
 
         #endregion Window Events
 

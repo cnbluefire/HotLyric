@@ -150,5 +150,27 @@ namespace HotLyric.Win32.Views
             LyricOpacityComboBox.SelectedItem = LyricOpacityComboBox.Items.OfType<ComboBoxItem>().FirstOrDefault(c => object.Equals($"{VM.LyricOpacity * 100}%", c.Content));
             if (LyricOpacityComboBox.SelectedItem == null) LyricOpacityComboBox.SelectedItem = LyricOpacityComboBox.Items[0];
         }
+
+        private void ResetWindowBoundsButton_Click(object sender, RoutedEventArgs e)
+        {
+            var hostWindow = App.Current.Windows.OfType<HostWindow>().FirstOrDefault();
+            if (hostWindow == null) return;
+
+            var vm = ViewModelLocator.Instance.LyricWindowViewModel;
+
+            if (vm.IsMinimized) vm.IsMinimized = false;
+
+            // 此时窗口仍不可见
+            if (vm.ActualMinimized) return;
+
+            var hwnd = new WindowInteropHelper(hostWindow).Handle;
+
+            WindowBoundsHelper.ResetWindowBounds(hwnd);
+            Dispatcher.BeginInvoke(new Action(() =>
+            {
+                hostWindow.SaveBounds();
+                vm.ShowBackgroundTransient(TimeSpan.FromSeconds(2));
+            }), System.Windows.Threading.DispatcherPriority.Background);
+        }
     }
 }

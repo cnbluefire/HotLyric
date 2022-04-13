@@ -38,8 +38,6 @@ namespace HotLyric.Win32
             }
             catch { }
 
-            Log($"args: {string.Join(", ", e.Args)}");
-
             notifyIcon = new NotifyIconHelper();
             lyricHostWindow = new HostWindow();
             lyricHostWindow.Show();
@@ -54,23 +52,6 @@ namespace HotLyric.Win32
             notifyIcon = null;
 
             base.OnExit(e);
-        }
-
-        public static void Log(string msg)
-        {
-            if (string.IsNullOrEmpty(msg)) return;
-
-            var msg2 = $"[{DateTime.Now}]{msg}";
-
-            var fileName = "AAALog.log";
-            try
-            {
-                using (var sw = System.IO.File.AppendText(System.IO.Path.Combine(global::Windows.Storage.ApplicationData.Current.LocalCacheFolder.Path, fileName)))
-                {
-                    sw.WriteLine(msg2);
-                }
-            }
-            catch { }
         }
     }
 }

@@ -45,6 +45,31 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 SMTCAppPositionMode.OnlyUseTimer,
                 defaultLrcProvider: "QQMusic",
                 convertToSimpleChinese: false),
+
+            ["Groove"] = new SMTCApp(
+                "Microsoft.ZuneMusic_",
+                "9wzdncrfj3pt",
+                SMTCAppPositionMode.FromAppAndUseTimer,
+                defaultLrcProvider: "NeteaseMusic",
+                convertToSimpleChinese: true,
+                minSupportedVersion: new Version(11, 2111, 0, 0)),
+
+            ["Groove_Old"] = new SMTCApp(
+                "Microsoft.ZuneMusic_",
+                "9wzdncrfj3pt",
+                SMTCAppPositionMode.OnlyUseTimer,
+                defaultLrcProvider: "NeteaseMusic",
+                convertToSimpleChinese: true),
+
+            ["Foobar2000"] = new SMTCApp(
+                "foobar2000.exe",
+                "",
+                SMTCAppPositionMode.OnlyUseTimer,
+                customName: "Foobar2000",
+                new BitmapImage(new Uri("/Assets/Foobar2kIcon.png", UriKind.RelativeOrAbsolute)),
+                supportLaunch: false,
+                defaultLrcProvider: "NeteaseMusic",
+                convertToSimpleChinese: true)
         };
 
         public static IReadOnlyDictionary<string, SMTCApp> AllApps => allApps;
@@ -64,7 +89,8 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             ImageSource? customAppIcon = null,
             bool supportLaunch = true,
             string? defaultLrcProvider = null,
-            bool convertToSimpleChinese = false)
+            bool convertToSimpleChinese = false,
+            Version? minSupportedVersion = null)
         {
             PackageFamilyNamePrefix = packageFamilyNamePrefix;
             ProductId = productId;
@@ -75,6 +101,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             SupportLaunch = supportLaunch;
             DefaultLrcProvider = defaultLrcProvider;
             ConvertToSimpleChinese = convertToSimpleChinese;
+            MinSupportedVersion = minSupportedVersion;
         }
 
         public Uri StoreUri { get; }
@@ -94,6 +121,8 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         public string? DefaultLrcProvider { get; }
 
         public bool ConvertToSimpleChinese { get; }
+
+        public Version? MinSupportedVersion { get; }
     }
 
     public enum SMTCAppPositionMode

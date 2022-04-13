@@ -231,8 +231,16 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 mediaPropertiesSource = taskSource;
                 try
                 {
-                    var mediaProperties = await session.TryGetMediaPropertiesAsync();
-                    taskSource.SetResult(mediaProperties);
+                    var mediaProperties = await session?.TryGetMediaPropertiesAsync();
+
+                    var playbackType = mediaProperties?.PlaybackType;
+
+                    taskSource.SetResult(mediaProperties?.PlaybackType switch
+                    {
+                        Windows.Media.MediaPlaybackType.Video => null,
+                        Windows.Media.MediaPlaybackType.Image => null,
+                        _ => mediaProperties
+                    });
                 }
                 catch
                 {

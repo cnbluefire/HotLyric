@@ -118,6 +118,11 @@ namespace HotLyric.Win32.Models
 
         public MediaModel CreateMediaModel()
         {
+            if (string.IsNullOrEmpty(MediaTitle))
+            {
+                return MediaModel.CreateEmptyMedia();
+            }
+
             return new MediaModel(MediaTitle, MediaArtist, NeteaseMusicId, LocalLrcPath, Session.EndTime, Session.App.DefaultLrcProvider, Session.App.ConvertToSimpleChinese);
         }
 

@@ -24,16 +24,16 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             this.supportedApps = supportedApps;
 
             manager.SessionsChanged += Manager_SessionsChanged;
-            UpdateSessions();
+            _ = UpdateSessionsAsync();
         }
 
-        private void Manager_SessionsChanged(GlobalSystemMediaTransportControlsSessionManager sender, SessionsChangedEventArgs args)
+        private async void Manager_SessionsChanged(GlobalSystemMediaTransportControlsSessionManager sender, SessionsChangedEventArgs args)
         {
-            UpdateSessions();
+            await UpdateSessionsAsync();
             SessionsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private void UpdateSessions()
+        private async Task UpdateSessionsAsync()
         {
             var list = new List<SMTCSession>();
             var appIdHash = new HashSet<string>();
@@ -41,8 +41,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             var tmp = manager.GetSessions();
             var curSession = manager.GetCurrentSession();
 
-            var app = GetApp(curSession);
-
+            var app = await GetAppAsync(curSession);
             if (app != null)
             {
                 var s = new SMTCSession(curSession, app.PositionMode, app);
@@ -57,7 +56,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
             foreach (var session in tmp)
             {
-                var app2 = GetApp(session);
+                var app2 = await GetAppAsync(session);
                 if (app2 != null && appIdHash.Add(session.SourceAppUserModelId))
                 {
                     var s = new SMTCSession(session, app2.PositionMode, app2);
@@ -68,7 +67,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             sessions = list.ToArray();
         }
 
-        private SMTCApp? GetApp(GlobalSystemMediaTransportControlsSession session)
+        private async Task<SMTCApp?> GetAppAsync(GlobalSystemMediaTransportControlsSession session)
         {
             if (session == null) return null;
 
@@ -86,7 +85,24 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             {
                 if (appid.StartsWith(item.PackageFamilyNamePrefix, StringComparison.OrdinalIgnoreCase))
                 {
-                    return item;
+                    if (item.MinSupportedVersion != null)
+                    {
+                        var package = await ApplicationHelper.TryGetPackageFromAppUserModelIdAsync(appid);
+                        if (package != null)
+                        {
+                            try
+                            {
+                                var v = package.Id.Version;
+                                var packageVersion = new Version(v.Major, v.Minor, v.Build, v.Revision);
+                                if (packageVersion >= item.MinSupportedVersion) return item;
+                            }
+                            catch { }
+                        }
+                    }
+                    else
+                    {
+                        return item;
+                    }
                 }
             }
 

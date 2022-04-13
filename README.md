@@ -15,10 +15,17 @@
 |[Spotify](https://www.spotify.com/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup>
 |[网易云音乐UWP不更新版](https://github.com/JasonWei512/NetEase-Cloud-Music-UWP-Repack)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup>
 |[QQ音乐UWP](https://www.microsoft.com/store/productId/9WZDNCRFJ1Q1)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup>
+|[媒体播放器(Groove音乐)](https://www.microsoft.com/store/productId/9WZDNCRFJ3PT)|歌词可能匹配不准确<sup><a href="#ref1">1</a>
+|[Foobar2000(v1.5.1+)](https://www.foobar2000.org/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup>
 ---
-1. <span id="ref1">由于QQ音乐UWP和网易云音乐UWP未提供进度信息，热词使用内置定时器更新歌词进度，所以当手动修改播放进度后热词将无法匹配到正确的歌词。</span>
 
-2. <span id="ref2">由于热词对网易云音乐UWP、QQ音乐UWP和Spotify的歌词匹配基于歌名歌手搜索，所以匹配可能不精准或匹配不到。</span>
+1. <span id="ref1">由于热词对这些播放器的歌词匹配基于歌名歌手搜索，所以匹配可能不精准或匹配不到。</span>
+2. <span id="ref2">由于播放器未提供进度信息，热词使用内置定时器更新歌词进度，所以当手动修改播放进度后热词将无法匹配到正确的歌词。</span>
+
+## 已知问题
+* Windows10中关闭所有播放器时热词可能不会自动隐藏。
+* 安装StartAllBack后热词渲染可能不正确，具体表现如歌词文字重叠，自定义颜色控件背景丢失等，卸载StartAllBack即可解决。
+* 11代Intel核心显卡使用WDDM版本为2.7的显卡驱动时，热词可能渲染不正确，升级核显驱动可以解决此问题，或开启热词的强制软件渲染进行缓解。
 
 ## 如何打开
 

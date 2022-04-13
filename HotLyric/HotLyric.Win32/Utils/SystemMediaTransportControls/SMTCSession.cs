@@ -5,6 +5,7 @@ using System.IO;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
+using System.Timers;
 using System.Windows.Input;
 using System.Windows.Media;
 using System.Windows.Threading;
@@ -30,7 +31,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
         private TimeSpan lastPosition = TimeSpan.Zero;
         private DateTime lastUpdatePositionTime = default;
-        private DispatcherTimer? internalPositionTimer;
+        private Timer? internalPositionTimer;
 
         public SMTCSession(GlobalSystemMediaTransportControlsSession session, SMTCAppPositionMode positionMode, SMTCApp app)
         {
@@ -56,11 +57,9 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
             if (positionMode == SMTCAppPositionMode.FromAppAndUseTimer || positionMode == SMTCAppPositionMode.OnlyUseTimer)
             {
-                internalPositionTimer = new DispatcherTimer()
-                {
-                    Interval = TimeSpan.FromMilliseconds(300)
-                };
-                internalPositionTimer.Tick += InternalPositionTimer_Tick;
+                internalPositionTimer = new Timer(300);
+
+                internalPositionTimer.Elapsed += InternalPositionTimer_Elapsed;
 
                 if (positionMode == SMTCAppPositionMode.OnlyUseTimer)
                 {
@@ -70,7 +69,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             }
         }
 
-        private void InternalPositionTimer_Tick(object? sender, EventArgs e)
+        private void InternalPositionTimer_Elapsed(object sender, ElapsedEventArgs e)
         {
             var pos = (DateTime.Now - lastUpdatePositionTime) * PlaybackRate + lastPosition;
             if (PositionMode == SMTCAppPositionMode.OnlyUseTimer
@@ -94,7 +93,10 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             {
                 lastPosition = Position;
                 lastUpdatePositionTime = DateTime.Now;
-                internalPositionTimer?.Start();
+                if (internalPositionTimer?.Enabled == false)
+                {
+                    internalPositionTimer?.Start();
+                }
             }
         }
 
@@ -333,7 +335,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
                     if (internalPositionTimer != null)
                     {
-                        internalPositionTimer.Tick -= InternalPositionTimer_Tick;
+                        internalPositionTimer.Elapsed -= InternalPositionTimer_Elapsed;
                         internalPositionTimer.Stop();
                         internalPositionTimer = null;
                     }

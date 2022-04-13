@@ -356,21 +356,24 @@ namespace HotLyric.Win32.ViewModels
 
         private void SmtcManager_SessionsChanged(object? sender, EventArgs e)
         {
-            if (smtcManager != null)
+            DispatcherHelper.UIDispatcher!.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
             {
-                var oldSessions = sessions;
-                sessions = smtcManager.Sessions.ToArray();
-
-                UpdateSesions();
-
-                if (oldSessions != null)
+                if (smtcManager != null)
                 {
-                    foreach (var session in oldSessions)
+                    var oldSessions = sessions;
+                    sessions = smtcManager.Sessions.ToArray();
+
+                    UpdateSesions();
+
+                    if (oldSessions != null)
                     {
-                        session.Dispose();
+                        foreach (var session in oldSessions)
+                        {
+                            session.Dispose();
+                        }
                     }
                 }
-            }
+            }));
         }
 
         private SMTCSession? GetNamedSession(string? appId)

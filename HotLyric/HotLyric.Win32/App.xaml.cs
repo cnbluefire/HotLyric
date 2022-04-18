@@ -1,5 +1,6 @@
 ﻿using HotLyric.Win32.Controls;
 using HotLyric.Win32.Utils;
+using HotLyric.Win32.ViewModels;
 using HotLyric.Win32.Views;
 using System;
 using System.Collections.Generic;
@@ -8,6 +9,8 @@ using System.Data;
 using System.Linq;
 using System.Threading.Tasks;
 using System.Windows;
+using Windows.Data.Xml.Dom;
+using Windows.UI.Notifications;
 
 namespace HotLyric.Win32
 {
@@ -41,10 +44,19 @@ namespace HotLyric.Win32
             notifyIcon = new NotifyIconHelper();
             lyricHostWindow = new HostWindow();
             lyricHostWindow.Show();
+
+            _ = CheckUpdateAsync();
         }
 
         protected override void OnExit(ExitEventArgs e)
         {
+            try
+            {
+                var manager = ToastNotificationManager.GetDefault();
+                manager.History.Clear();
+            }
+            catch { }
+
             Utils.ForegroundWindowHelper.Uninitialize();
             Input.MouseManager.Uninstall();
 
@@ -52,6 +64,40 @@ namespace HotLyric.Win32
             notifyIcon = null;
 
             base.OnExit(e);
+        }
+
+        private async Task CheckUpdateAsync()
+        {
+            var updateResult = await ApplicationHelper.CheckUpdateAsync();
+            if (updateResult.HasUpdate)
+            {
+                var notifier = ToastNotificationManager.CreateToastNotifier();
+
+                var content = @"<toast>
+  
+  <visual>
+    <binding template=""ToastGeneric"">
+      <text>发现新版本</text>
+      <text>点击前往商店查看</text>
+    </binding>
+  </visual>
+  
+</toast>";
+                var xml = new XmlDocument();
+                xml.LoadXml(content);
+                var toast = new ToastNotification(xml);
+                toast.Activated += (s, a) =>
+                {
+                    DispatcherHelper.UIDispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                    {
+                        _ = updateResult.TryStartUpdateAsync();
+                        var vm = ViewModelLocator.Instance.SettingsWindowViewModel;
+                        vm.OpenStorePageCmd.Execute(null);
+                    }));
+                };
+
+                notifier.Show(toast);
+            }
         }
     }
 }

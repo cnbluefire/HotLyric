@@ -12,12 +12,14 @@ using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
+using Windows.Services.Store;
 
 namespace HotLyric.Win32.Utils
 {
     public static class ApplicationHelper
     {
         private static HttpClient? client;
+        private static StoreContext? storeContext;
 
         public static bool RestartRequested { get; private set; }
 
@@ -226,6 +228,24 @@ namespace HotLyric.Win32.Utils
             System.Windows.Application.Current.Shutdown();
         }
 
+        public static async Task<ApplicationUpdateResult> CheckUpdateAsync()
+        {
+            try
+            {
+                if (storeContext == null)
+                {
+                    storeContext = StoreContext.GetDefault();
+                    var initWindow = (IInitializeWithWindow)(object)storeContext;
+                    initWindow.Initialize(System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle);
+                }
+
+                var updates = await storeContext.GetAppAndOptionalStorePackageUpdatesAsync();
+                return new ApplicationUpdateResult(updates);
+            }
+            catch { }
+            return new ApplicationUpdateResult(null);
+        }
+
         private enum ActivateOptions
         {
             /// <summary>
@@ -325,6 +345,31 @@ namespace HotLyric.Win32.Utils
             /// <returns>IntPtr.</returns>
             [MethodImpl(MethodImplOptions.InternalCall, MethodCodeType = MethodCodeType.Runtime)]
             public extern IntPtr ActivateForProtocol([In] String appUserModelId, [In] IntPtr /* IShellItemArray* */itemArray, [Out] out UInt32 processId);
+        }
+
+        public class ApplicationUpdateResult
+        {
+            private readonly IReadOnlyList<StorePackageUpdate>? updates;
+
+            internal ApplicationUpdateResult(IReadOnlyList<StorePackageUpdate>? updates)
+            {
+                this.updates = updates;
+                HasUpdate = updates != null && updates.Count > 0;
+            }
+
+
+            public bool HasUpdate { get; }
+
+            public async Task TryStartUpdateAsync()
+            {
+                try
+                {
+                    if (storeContext == null || !HasUpdate || !storeContext.CanSilentlyDownloadStorePackageUpdates) return;
+
+                    await storeContext.TrySilentDownloadAndInstallStorePackageUpdatesAsync(updates);
+                }
+                catch { }
+            }
         }
     }
 }

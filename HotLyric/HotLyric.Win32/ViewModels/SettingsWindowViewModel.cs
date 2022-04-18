@@ -128,7 +128,6 @@ namespace HotLyric.Win32.ViewModels
         private double lyricOpacity;
         private bool showLauncherWindowOnStartup;
 
-        private StoreContext? context;
         public StartupTaskHelper StartupTaskHelper { get; }
 
         public bool WindowTransparent
@@ -380,19 +379,12 @@ namespace HotLyric.Win32.ViewModels
         {
             try
             {
-                if (context == null)
-                {
-                    context = StoreContext.GetDefault();
-                    var initWindow = (IInitializeWithWindow)(object)context;
-                    initWindow.Initialize(System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle);
-                }
-
-                var updates = await context.GetAppAndOptionalStorePackageUpdatesAsync();
-
                 var ownerWindow = App.Current.Windows.OfType<SettingsWindow>().FirstOrDefault();
                 if (ownerWindow == null) return;
 
-                if (updates != null && updates.Count > 0)
+                var updateResult = await ApplicationHelper.CheckUpdateAsync();
+
+                if (updateResult.HasUpdate)
                 {
                     var contentDialog = new ModernWpf.Controls.ContentDialog()
                     {
@@ -410,10 +402,7 @@ namespace HotLyric.Win32.ViewModels
                     var result = await contentDialog.ShowAsync();
                     if (result == ModernWpf.Controls.ContentDialogResult.Primary)
                     {
-                        if (context.CanSilentlyDownloadStorePackageUpdates)
-                        {
-                            _ = context.TrySilentDownloadAndInstallStorePackageUpdatesAsync(updates);
-                        }
+                        _ = updateResult.TryStartUpdateAsync();
                         OpenStorePageCmd.Execute(null);
                     }
                 }

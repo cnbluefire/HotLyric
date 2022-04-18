@@ -52,5 +52,23 @@
     "karaokeBrush": "#FFF1E8A9",
     "lyricStrokeBrush": "#FF323232",
     "karaokeStrokeBrush": "#FFDBA714"
+  },
+  {
+    "name": "经典蓝",
+    "borderBrush": "#548F8F8F",
+    "backgroundBrush": "#FF2C2C2C",
+    "lyricBrush": "#FFFFFFFF",
+    "karaokeBrush": "#FF3835F8",
+    "lyricStrokeBrush": "#FF000000",
+    "karaokeStrokeBrush": "#FFFFFFFF"
+  },
+  {
+    "name": "经典绿",
+    "borderBrush": "#548F8F8F",
+    "backgroundBrush": "#FF2C2C2C",
+    "lyricBrush": "#FFFFFFFF",
+    "karaokeBrush": "#FF189958",
+    "lyricStrokeBrush": "#FF000000",
+    "karaokeStrokeBrush": "#FFFFFFFF"
   }
 ]

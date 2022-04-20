@@ -501,6 +501,10 @@ namespace HotLyric.Win32.Controls
                     dpi.PixelsPerInchY,
                     PixelFormats.Pbgra32);
             }
+            else
+            {
+                bitmap?.Clear();
+            }
 
             return bitmap;
         }

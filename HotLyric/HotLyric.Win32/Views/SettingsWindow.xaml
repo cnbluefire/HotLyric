@@ -159,7 +159,14 @@
                                 <ComboBoxItem Tag="{x:Static HorizontalAlignment.Right}">右对齐</ComboBoxItem>
                             </ComboBox>
                         </HeaderedContentControl>
-
+                        
+                        <HeaderedContentControl Style="{StaticResource CardStyle}" Header="暂停时自动隐藏">
+                            <HeaderedContentControl.Tag>
+                                <ui:FontIcon Glyph="&#xE103;" FontSize="16" />
+                            </HeaderedContentControl.Tag>
+                            <ui:ToggleSwitch IsOn="{Binding HideOnPaused,Mode=TwoWay}" />
+                        </HeaderedContentControl>
+                        
                         <HeaderedContentControl Style="{StaticResource CardStyle}" Header="清除缓存">
                             <HeaderedContentControl.Tag>
                                 <ui:FontIcon Glyph="&#xEA99;" FontSize="16" />

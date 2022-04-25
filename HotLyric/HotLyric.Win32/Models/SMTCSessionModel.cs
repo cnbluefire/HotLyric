@@ -152,6 +152,8 @@ namespace HotLyric.Win32.Models
                 OnPropertyChanged(playbackRateChangedArgs);
 
                 RaiseCommandButtonVisibleChanged();
+
+                PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
             }));
         }
 
@@ -164,6 +166,7 @@ namespace HotLyric.Win32.Models
         }
 
         public event EventHandler? MediaChanged;
+        public event EventHandler? PlaybackInfoChanged;
 
         protected virtual void Dispose(bool disposing)
         {

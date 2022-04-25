@@ -93,7 +93,7 @@ namespace HotLyric.Win32.Views
         protected override void OnMouseEnter(MouseEventArgs e)
         {
             base.OnMouseEnter(e);
-            VM.IsMouseOver = true;
+            VM.IsBackgroundTransientVisible = true;
 
         }
 
@@ -102,11 +102,10 @@ namespace HotLyric.Win32.Views
             base.OnMouseLeave(e);
 
             if (isDragMoving || Mouse.Captured != null) return;
-            if (VM.BackgroundTransientVisible) return;
 
             if (!SessionComboBox.IsDropDownOpen)
             {
-                VM.IsMouseOver = false;
+                VM.IsBackgroundTransientVisible = false;
             }
         }
 
@@ -143,7 +142,7 @@ namespace HotLyric.Win32.Views
 
         private void SessionComboBox_DropDownClosed(object sender, EventArgs e)
         {
-            VM.IsMouseOver = Mouse.DirectlyOver != null;
+            VM.IsBackgroundTransientVisible = Mouse.DirectlyOver != null;
         }
 
         private async void SessionComboBox_PreviewMouseDown(object sender, MouseButtonEventArgs e)

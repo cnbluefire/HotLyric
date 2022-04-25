@@ -41,6 +41,7 @@ namespace HotLyric.Win32.ViewModels
         private const string RenderSoftwareOnlySettingKey = "Settings_RenderSoftwareOnly";
         private const string LyricOpacitySettingKey = "Settings_LyricOpacity";
         private const string ShowLauncherWindowOnStartupSettingKey = "Settings_ShowLauncherWindowOnStartup";
+        private const string HideOnPausedSettingKey = "Settings_HideOnPaused";
 
         public SettingsWindowViewModel()
         {
@@ -97,6 +98,8 @@ namespace HotLyric.Win32.ViewModels
 
             StartupTaskHelper = new StartupTaskHelper("HotLyricStartupTask");
             StartupTaskHelper.PropertyChanged += StartupTaskHelper_PropertyChanged;
+
+            hideOnPaused = LoadSetting(HideOnPausedSettingKey, false);
         }
 
         private bool windowTransparent;
@@ -127,6 +130,7 @@ namespace HotLyric.Win32.ViewModels
         private bool renderSoftwareOnly;
         private double lyricOpacity;
         private bool showLauncherWindowOnStartup;
+        private bool hideOnPaused;
 
         public StartupTaskHelper StartupTaskHelper { get; }
 
@@ -251,6 +255,12 @@ namespace HotLyric.Win32.ViewModels
         {
             get => lowFrameRateMode;
             set => ChangeSettings(ref lowFrameRateMode, value, LowFrameRateModeSettingKey);
+        }
+
+        public bool HideOnPaused
+        {
+            get => hideOnPaused;
+            set => ChangeSettings(ref hideOnPaused, value, HideOnPausedSettingKey);
         }
 
         public FontFamily LyricFontFamilyWrapper => LyricFontFamily?.FontFamily ?? new FontFamily("Global User Interface");

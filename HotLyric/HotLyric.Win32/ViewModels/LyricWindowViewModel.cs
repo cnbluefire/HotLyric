@@ -33,6 +33,22 @@ namespace HotLyric.Win32.ViewModels
         {
             this.smtcFactory = smtcFactory;
             this.settingVm = settingVm;
+
+            isBackgroundTransientVisible = new DelayValueHolder<bool>(TimeSpan.FromSeconds(3));
+            isBackgroundTransientVisible.ValueChanged += (s, a) =>
+            {
+                OnPropertyChanged(nameof(IsBackgroundTransientVisible));
+                OnPropertyChanged(nameof(IsBackgroundVisible));
+                OnPropertyChanged(nameof(IsTitleButtonVisible));
+                OnPropertyChanged(nameof(LyricOpacity));
+            };
+
+            isMinimizedByPause = new DelayValueHolder<bool>(true, TimeSpan.FromSeconds(2));
+            isMinimizedByPause.ValueChanged += (s, a) =>
+            {
+                OnPropertyChanged(nameof(ActualMinimized));
+            };
+
             InitSessions();
 
             settingVm.SettingsChanged += SettingVm_SettingsChanged;
@@ -43,7 +59,6 @@ namespace HotLyric.Win32.ViewModels
         private SMTCSessionModel? selectedSession;
 
         private bool isTitleVisible;
-        private bool isMouseOver;
         private bool alwaysShowBackground;
         private HorizontalAlignment lyricHorizontalAlignment;
         private bool isTransparent;
@@ -54,13 +69,15 @@ namespace HotLyric.Win32.ViewModels
 
         private MediaModel? mediaModel = MediaModel.CreateEmptyMedia();
         private bool isMinimized;
-        private CancellationTokenSource? showBgCts;
+        private DelayValueHolder<bool> isMinimizedByPause;
         private bool sessionInited;
         private bool karaokeEnabled;
         private ICommand? openCurrentSessionAppCmd;
         private LyricThemeView? lyricTheme;
-        private bool backgroundTransientVisible;
+        private DelayValueHolder<bool> isBackgroundTransientVisible;
         private WindowBackgroundHelper? backgroundHelper;
+
+        private bool isPlaying;
 
         private string lyricPlaceholderText = "";
         private string lyricNextLinePlaceholderText = "";
@@ -83,21 +100,10 @@ namespace HotLyric.Win32.ViewModels
 
         public bool IsTitleButtonVisible => !IsTransparent;
 
-        public bool IsMouseOver
+        public bool IsBackgroundTransientVisible
         {
-            get => isMouseOver;
-            set
-            {
-                if (SetProperty(ref isMouseOver, value))
-                {
-                    OnPropertyChanged(nameof(IsBackgroundVisible));
-                    OnPropertyChanged(nameof(IsTitleButtonVisible));
-                    OnPropertyChanged(nameof(LyricOpacity));
-                }
-
-                showBgCts?.Cancel();
-                showBgCts = null;
-            }
+            get => isBackgroundTransientVisible.Value;
+            set => isBackgroundTransientVisible.Value = value;
         }
 
         public bool AlwaysShowBackground
@@ -112,8 +118,7 @@ namespace HotLyric.Win32.ViewModels
                     OnPropertyChanged(nameof(LyricOpacity));
                 }
 
-                showBgCts?.Cancel();
-                showBgCts = null;
+                isBackgroundTransientVisible.Value = false;
             }
         }
 
@@ -123,7 +128,7 @@ namespace HotLyric.Win32.ViewModels
             private set => SetProperty(ref lyricHorizontalAlignment, value);
         }
 
-        public bool IsBackgroundVisible => !ActualMinimized && (IsMouseOver || AlwaysShowBackground);
+        public bool IsBackgroundVisible => !ActualMinimized && (IsBackgroundTransientVisible || AlwaysShowBackground);
 
         public bool IsMinimized
         {
@@ -144,7 +149,7 @@ namespace HotLyric.Win32.ViewModels
             }
         }
 
-        public bool ActualMinimized => SelectedSession == null || IsMinimized || MediaModel == null || MediaModel.IsEmptyLyric;
+        public bool ActualMinimized => SelectedSession == null || IsMinimized || MediaModel == null || MediaModel.IsEmptyLyric || isMinimizedByPause.Value;
 
         public bool IsTransparent
         {
@@ -198,6 +203,18 @@ namespace HotLyric.Win32.ViewModels
             set => SetProperty(ref sessionModels, value);
         }
 
+        public bool IsPlaying
+        {
+            get => isPlaying;
+            private set
+            {
+                if (SetProperty(ref isPlaying, value))
+                {
+                    UpdateMinimizedByPause();
+                }
+            }
+        }
+
         public MediaModel? MediaModel
         {
             get => mediaModel;
@@ -246,6 +263,7 @@ namespace HotLyric.Win32.ViewModels
                 {
                     if (old != null)
                     {
+                        old.PlaybackInfoChanged -= SelectedSession_PlaybackInfoChanged;
                         old.MediaChanged -= SelectedSession_MediaChanged;
                     }
 
@@ -253,6 +271,7 @@ namespace HotLyric.Win32.ViewModels
 
                     if (selectedSession != null)
                     {
+                        selectedSession.PlaybackInfoChanged += SelectedSession_PlaybackInfoChanged;
                         selectedSession.MediaChanged += SelectedSession_MediaChanged;
                         model = selectedSession?.CreateMediaModel();
                     }
@@ -270,6 +289,9 @@ namespace HotLyric.Win32.ViewModels
 
                 }
                 IsTitleVisible = SelectedSession != null;
+
+                IsPlaying = SelectedSession?.IsPlaying ?? false;
+
                 if (oldId != selectedSession?.AppTitle && !IsBackgroundVisible)
                 {
                     ShowBackgroundTransient(TimeSpan.FromSeconds(2));
@@ -282,6 +304,7 @@ namespace HotLyric.Win32.ViewModels
                 App.Current.NotifyIcon?.UpdateToolTipText();
             }
         }
+
 
         public ICommand OpenCurrentSessionAppCmd => openCurrentSessionAppCmd ?? (openCurrentSessionAppCmd = new AsyncRelayCommand(async () =>
         {
@@ -314,12 +337,6 @@ namespace HotLyric.Win32.ViewModels
             }
         }
 
-        //public FontFamily? FontFamily
-        //{
-        //    get => fontFamily;
-        //    private set => SetProperty(ref fontFamily, value);
-        //}
-
 
         #region SMTC Session
 
@@ -351,6 +368,37 @@ namespace HotLyric.Win32.ViewModels
                 MediaModel?.Cancel();
                 MediaModel = model;
                 MediaModel?.StartLoad();
+            }
+        }
+
+
+        private void SelectedSession_PlaybackInfoChanged(object? sender, EventArgs e)
+        {
+            IsPlaying = SelectedSession?.IsPlaying ?? false;
+        }
+
+        private void UpdateMinimizedByPause()
+        {
+            if (settingVm.HideOnPaused)
+            {
+                var isPlaying = SelectedSession?.IsPlaying ?? false;
+
+                if (isPlaying)
+                {
+                    isMinimizedByPause.Value = false;
+                }
+                else
+                {
+                    // 如果不存在延迟值，或延迟值不是true，则设置延迟值
+                    if (!isMinimizedByPause.HasNextValue || !isMinimizedByPause.NextValue)
+                    {
+                        isMinimizedByPause.SetValueDelay(true);
+                    }
+                }
+            }
+            else
+            {
+                isMinimizedByPause.Value = false;
             }
         }
 
@@ -457,12 +505,6 @@ namespace HotLyric.Win32.ViewModels
 
         #endregion SMTC Session
 
-        public bool BackgroundTransientVisible
-        {
-            get => backgroundTransientVisible;
-            private set => SetProperty(ref backgroundTransientVisible, value);
-        }
-
         private void SettingVm_SettingsChanged(object? sender, EventArgs e)
         {
             UpdateSettings();
@@ -507,28 +549,19 @@ namespace HotLyric.Win32.ViewModels
 
             LyricTheme = settingVm.CurrentTheme;
 
+            UpdateMinimizedByPause();
+
             OnPropertyChanged(nameof(LyricOpacity));
         }
 
-        public async void ShowBackgroundTransient(TimeSpan time)
+        public void ShowBackgroundTransient(TimeSpan time)
         {
             if (ActualMinimized || AlwaysShowBackground) return;
-            IsMouseOver = true;
+            IsBackgroundTransientVisible = true;
             var cts = new CancellationTokenSource();
 
-            showBgCts?.Cancel();
-            showBgCts = cts;
-
-            try
-            {
-                await Task.Yield();
-                BackgroundTransientVisible = true;
-
-                await Task.Delay(time, cts.Token);
-                IsMouseOver = false;
-            }
-            catch { }
-            BackgroundTransientVisible = false;
+            isBackgroundTransientVisible.Value = true;
+            isBackgroundTransientVisible.SetValueDelay(false, time);
         }
     }
 }

@@ -26,7 +26,18 @@ namespace HotLyric.Win32.Utils
             }
         }
 
-        public static bool HasLaunchParameters => !string.IsNullOrEmpty(launchFromPackageFamilyName) && (DateTimeOffset.UtcNow - LaunchFromPackageFamilyNameLastChange.ToUniversalTime()).TotalMinutes < 5;
+        public static bool HasLaunchParameters
+        {
+            get
+            {
+                var lastChange = LaunchFromPackageFamilyNameLastChange;
+                var diffSeconds = (DateTimeOffset.Now - lastChange).TotalSeconds;
+
+                if (diffSeconds < 10) return true;
+
+                return !string.IsNullOrEmpty(launchFromPackageFamilyName) && diffSeconds < 5 * 60;
+            }
+        }
 
         public static void ProcessCommandLineArgs(string[] args)
         {
@@ -72,7 +83,6 @@ namespace HotLyric.Win32.Utils
 
             if (message.StartsWith(SingleInstance.ActivateMessage))
             {
-
                 var argsString = message.Substring(SingleInstance.ActivateMessage.Length);
                 if (!string.IsNullOrEmpty(argsString))
                 {

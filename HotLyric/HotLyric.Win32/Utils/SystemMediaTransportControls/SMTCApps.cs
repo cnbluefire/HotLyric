@@ -32,6 +32,12 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 "QQMusic",
                 true),
 
+            ["Spotify_Store"] = new SMTCApp(
+                "SpotifyAB.SpotifyMusic_",
+                "9ncbcszsjrsb",
+                SMTCAppPositionMode.FromAppAndUseTimer,
+                defaultLrcProvider: "QQMusic"),
+
             ["NeteaseMusic"] = new SMTCApp(
                 "1F8B0F94.122165AE053F_",
                 "9nblggh6g0jf",

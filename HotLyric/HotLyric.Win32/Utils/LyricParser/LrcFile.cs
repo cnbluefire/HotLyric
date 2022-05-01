@@ -220,7 +220,10 @@ namespace Kfstorm.LrcParser
                         }
                         else if (!unescaped && (ch == '\r' || ch == '\n') || ended)
                         {
-                            throw new FormatException(string.Format("Expect ']' at position {0}", i));
+                            // 只有'['没有']'，作为内容
+                            goto case 2;
+
+                            //throw new FormatException(string.Format("Expect ']' at position {0}", i));
                         }
                         else
                         {

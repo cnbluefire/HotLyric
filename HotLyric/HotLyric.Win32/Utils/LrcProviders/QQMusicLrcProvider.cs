@@ -51,6 +51,13 @@ namespace HotLyric.Win32.Utils.LrcProviders
                     catch { }
 
                     if (string.IsNullOrEmpty(lrcContent)) return null;
+
+                    try
+                    {
+                        lrcContent = System.Net.WebUtility.HtmlDecode(lrcContent);
+                    }
+                    catch { }
+
                     var lrcFile = LrcFile.FromText(lrcContent);
 
                     if (lrcFile != null)

@@ -27,6 +27,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
             ["Joker Xue"] = "薛之谦",
             ["Ronghao Li"] = "李荣浩",
             ["WeiBird"] = "韦礼安",
+            ["A-Mei Chang"] = "张惠妹",
         };
 
         /// <summary>

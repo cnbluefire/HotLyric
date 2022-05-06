@@ -477,8 +477,8 @@ namespace HotLyric.Win32.ViewModels
 
                 DispatcherHelper.UIDispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
                 {
-                    SelectedSession = models?.FirstOrDefault(c => c.Session.AppUserModelId == lastSelectedAppId)
-                        ?? SessionModels?.FirstOrDefault();
+                    SelectedSession = models?.FirstOrDefault(c => c?.Session.AppUserModelId == lastSelectedAppId)
+                        ?? models?.FirstOrDefault();
 
                     if (models != null)
                     {

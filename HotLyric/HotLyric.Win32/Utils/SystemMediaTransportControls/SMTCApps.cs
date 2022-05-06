@@ -36,6 +36,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 "SpotifyAB.SpotifyMusic_",
                 "9ncbcszsjrsb",
                 SMTCAppPositionMode.FromAppAndUseTimer,
+                customAppIcon: new BitmapImage(new Uri("/Assets/SpotifyIcon.png", UriKind.RelativeOrAbsolute)),
                 defaultLrcProvider: "QQMusic"),
 
             ["NeteaseMusic"] = new SMTCApp(

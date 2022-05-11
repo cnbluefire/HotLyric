@@ -42,7 +42,7 @@ namespace HotLyric.Win32.Utils
                             {
                                 packageId = appUserModelId.Substring(0, appUserModelId.Length - 4);
                             }
-                            else if (appUserModelId.IndexOf("!") is int index)
+                            else if (appUserModelId.IndexOf("!") is int index && index >= 0)
                             {
                                 packageId = appUserModelId.Substring(0, index);
                             }
@@ -102,6 +102,8 @@ namespace HotLyric.Win32.Utils
 
                         if (string.IsNullOrEmpty(entryPoint)) entryPoint = "App";
 
+                        var path = GetAppDataFolderLocation(package);
+
                         LaunchByAMUID($"{package.Id.FamilyName}!{entryPoint}");
 
                         //Process.Start("explorer.exe", $"shell:AppsFolder\\{package.Id.FamilyName}!App");
@@ -137,6 +139,26 @@ namespace HotLyric.Win32.Utils
                     }
                 }
 
+            }
+            catch { }
+
+            return null;
+        }
+
+        public static string? GetAppDataFolderLocation(Package package)
+        {
+            if (package == null) return null;
+
+            try
+            {
+                // 即使应用安装到非系统盘，依旧会在用户文件夹里建立链接，所以直接访问用户目录即可
+                var appdataPackages = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages");
+                var packageAppDataFolder = Path.Combine(appdataPackages, package.Id.FamilyName);
+                
+                if (Directory.Exists(packageAppDataFolder))
+                {
+                    return packageAppDataFolder;
+                }
             }
             catch { }
 

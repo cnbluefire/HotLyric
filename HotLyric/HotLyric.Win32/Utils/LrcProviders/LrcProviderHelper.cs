@@ -28,6 +28,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
             ["Ronghao Li"] = "李荣浩",
             ["WeiBird"] = "韦礼安",
             ["A-Mei Chang"] = "张惠妹",
+            ["Hins Cheung"] = "张敬轩",
         };
 
         /// <summary>

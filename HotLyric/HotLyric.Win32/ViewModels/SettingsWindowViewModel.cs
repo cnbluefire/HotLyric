@@ -8,9 +8,11 @@ using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
+using System.IO;
 using System.Linq;
 using System.Runtime.CompilerServices;
 using System.Text;
+using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
 using System.Windows.Media;
@@ -131,6 +133,7 @@ namespace HotLyric.Win32.ViewModels
         private double lyricOpacity;
         private bool showLauncherWindowOnStartup;
         private bool hideOnPaused;
+        private AsyncRelayCommand spotifySetLanguage;
 
         public StartupTaskHelper StartupTaskHelper { get; }
 
@@ -479,6 +482,134 @@ namespace HotLyric.Win32.ViewModels
             var uri = new Uri("https://github.com/cnbluefire/HotLyric");
             await Launcher.LaunchUriAsync(uri);
         }));
+
+        public AsyncRelayCommand SpotifySetLanguage => spotifySetLanguage ?? (spotifySetLanguage = new AsyncRelayCommand(async () =>
+        {
+            SpotifySetLanguage.NotifyCanExecuteChanged();
+
+            List<string> prefFileList = new List<string>();
+
+            try
+            {
+                var storePackageFolder = await ApplicationHelper.TryGetPackageFromAppUserModelIdAsync("SpotifyAB.SpotifyMusic_zpdnekdrzrea0");
+                if (storePackageFolder != null)
+                {
+                    var folder = ApplicationHelper.GetAppDataFolderLocation(storePackageFolder);
+
+                    if (!string.IsNullOrEmpty(folder))
+                    {
+                        var filePath = System.IO.Path.Combine(folder, "LocalState", "Spotify", "prefs");
+                        if (System.IO.File.Exists(filePath))
+                        {
+                            prefFileList.Add(filePath);
+                        }
+                    }
+                }
+            }
+            catch { }
+
+            try
+            {
+                var filePath = System.IO.Path.Combine(
+                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
+                    "Spotify", "prefs");
+
+                if (System.IO.File.Exists(filePath))
+                {
+                    prefFileList.Add(filePath);
+                }
+            }
+            catch { }
+
+            var regex = new Regex("language=\".+?\"");
+
+            int failedCount = 0;
+
+            foreach (var file in prefFileList)
+            {
+                try
+                {
+                    using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
+                    {
+                        string content = "";
+                        using (var reader = new StreamReader(fileStream, leaveOpen: true))
+                        {
+                            content = await reader.ReadToEndAsync();
+                        }
+
+                        bool flag = false;
+                        if (regex.IsMatch(content))
+                        {
+                            var content2 = regex.Replace(content, m => "language=\"zh-CN\"");
+                            flag = content != content2;
+                            content = content2;
+                        }
+                        else
+                        {
+                            flag = true;
+
+                            var sb = new StringBuilder(content);
+                            if (!content.EndsWith("\n"))
+                            {
+                                sb.Append('\n');
+                            }
+                            sb.Append("language=\"zh-CN\"\n");
+                            content = sb.ToString();
+                        }
+
+                        if (flag)
+                        {
+                            fileStream.Seek(0, SeekOrigin.Begin);
+                            using (var writer = new StreamWriter(fileStream, Encoding.UTF8, leaveOpen: true))
+                            {
+                                await writer.WriteAsync(content);
+                                await writer.FlushAsync();
+                            }
+
+                            fileStream.SetLength(fileStream.Position);
+                        }
+                    }
+                }
+                catch
+                {
+                    failedCount++;
+                }
+            }
+
+            var ownerWindow = App.Current.Windows.OfType<SettingsWindow>().FirstOrDefault();
+            if (ownerWindow != null)
+            {
+                var contentDialog = new ModernWpf.Controls.ContentDialog()
+                {
+                    Title = "热词",
+                    IsPrimaryButtonEnabled = false,
+                    IsSecondaryButtonEnabled = false,
+                    CloseButtonText = "确定",
+                    CornerRadius = new CornerRadius(8),
+                    Owner = ownerWindow
+                };
+
+
+                if (failedCount == prefFileList.Count)
+                {
+                    if (prefFileList.Count == 0)
+                    {
+                        contentDialog.Content = "设置失败。未找到Spotify配置文件。";
+                    }
+                    else
+                    {
+                        contentDialog.Content = "设置失败。";
+                    }
+                }
+                else
+                {
+                    contentDialog.Content = "设置成功，请手动重启Spotify。";
+                }
+
+                await contentDialog.ShowAsync();
+            }
+
+        }, () => !SpotifySetLanguage.IsRunning));
 
         [return: MaybeNull]
         private T LoadSetting<T>(string? settingsKey, [AllowNull] T defaultValue = default)

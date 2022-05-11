@@ -159,14 +159,14 @@
                                 <ComboBoxItem Tag="{x:Static HorizontalAlignment.Right}">右对齐</ComboBoxItem>
                             </ComboBox>
                         </HeaderedContentControl>
-                        
+
                         <HeaderedContentControl Style="{StaticResource CardStyle}" Header="暂停时自动隐藏">
                             <HeaderedContentControl.Tag>
                                 <ui:FontIcon Glyph="&#xE103;" FontSize="16" />
                             </HeaderedContentControl.Tag>
                             <ui:ToggleSwitch IsOn="{Binding HideOnPaused,Mode=TwoWay}" />
                         </HeaderedContentControl>
-                        
+
                         <HeaderedContentControl Style="{StaticResource CardStyle}" Header="清除缓存">
                             <HeaderedContentControl.Tag>
                                 <ui:FontIcon Glyph="&#xEA99;" FontSize="16" />
@@ -330,6 +330,35 @@
                         </StackPanel>
 
                     </ui:SimpleStackPanel>
+                </HeaderedContentControl>
+
+                <HeaderedContentControl>
+                    <HeaderedContentControl.Header>
+                        <TextBlock Text="杂项设置" FontWeight="Bold" Margin="4,0,0,0" />
+                    </HeaderedContentControl.Header>
+
+                    <HeaderedContentControl Style="{StaticResource CardStyle}" Margin="0,10,0,0">
+                        <HeaderedContentControl.Header>
+                            <Grid Margin="0,12">
+                                <Grid.RowDefinitions>
+                                    <RowDefinition Height="Auto" />
+                                    <RowDefinition Height="8" />
+                                    <RowDefinition Height="Auto" />
+                                </Grid.RowDefinitions>
+                                <TextBlock Text="设置Spotify为简体中文" />
+                                <TextBlock Grid.Row="2" Opacity="0.8" FontSize="12" Text="设置为简体中文可以提高中文歌词匹配准确性" />
+                            </Grid>
+                        </HeaderedContentControl.Header>
+                        <HeaderedContentControl.Resources>
+                            <ResourceDictionary>
+                                <ResourceDictionary.MergedDictionaries>
+                                    <ResourceDictionary Source="/Themes/CommonStyle.xaml" />
+                                </ResourceDictionary.MergedDictionaries>
+                            </ResourceDictionary>
+                        </HeaderedContentControl.Resources>
+                        <Button x:Name="SpotifySetLanguageButton" Content="设置" Command="{Binding SpotifySetLanguage}" />
+                    </HeaderedContentControl>
+
                 </HeaderedContentControl>
 
                 <HeaderedContentControl Focusable="False">

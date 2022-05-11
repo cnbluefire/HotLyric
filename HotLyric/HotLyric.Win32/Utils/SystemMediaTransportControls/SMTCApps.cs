@@ -53,6 +53,13 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 defaultLrcProvider: "QQMusic",
                 convertToSimpleChinese: false),
 
+            ["QQMusicPreview"] = new SMTCApp(
+                "903DB504.12708F202F598_",
+                "",
+                SMTCAppPositionMode.OnlyUseTimer,
+                defaultLrcProvider: "QQMusic",
+                convertToSimpleChinese: false),
+
             ["Groove"] = new SMTCApp(
                 "Microsoft.ZuneMusic_",
                 "9wzdncrfj3pt",

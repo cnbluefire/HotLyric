@@ -10,9 +10,11 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using System.Windows.Media.Imaging;
+using System.Xml.Linq;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
 using Windows.Services.Store;
+using Windows.Storage;
 
 namespace HotLyric.Win32.Utils
 {
@@ -73,9 +75,10 @@ namespace HotLyric.Win32.Utils
         public static async Task<bool> TryLaunchAppAsync(string packageFamilyNamePrefix, CancellationToken cancellationToken = default)
         {
             if (string.IsNullOrEmpty(packageFamilyNamePrefix)) return false;
+
             try
             {
-                return await Task.Run(() =>
+                return await Task.Run(async () =>
                 {
                     cancellationToken.ThrowIfCancellationRequested();
 
@@ -95,7 +98,11 @@ namespace HotLyric.Win32.Utils
                                 return new Version(0, 0, 0, 0);
                             }).FirstOrDefault();
 
-                        LaunchByAMUID($"{package.Id.FamilyName}!App");
+                        var entryPoint = await GetApplicationIdAsync(package);
+
+                        if (string.IsNullOrEmpty(entryPoint)) entryPoint = "App";
+
+                        LaunchByAMUID($"{package.Id.FamilyName}!{entryPoint}");
 
                         //Process.Start("explorer.exe", $"shell:AppsFolder\\{package.Id.FamilyName}!App");
                         return true;
@@ -106,6 +113,34 @@ namespace HotLyric.Win32.Utils
             }
             catch { }
             return false;
+        }
+
+        private static async Task<string?> GetApplicationIdAsync(Package package)
+        {
+            if (package == null) return null;
+
+            try
+            {
+                var appxManifest = (await package.InstalledLocation.TryGetItemAsync("AppxManifest.xml")) as StorageFile;
+                if (appxManifest != null)
+                {
+                    var content = await FileIO.ReadTextAsync(appxManifest);
+                    var xdoc = XDocument.Parse(content);
+
+                    var applicationNode = xdoc.Nodes().OfType<XElement>().FirstOrDefault(c => c.Name?.LocalName == "Package")?
+                        .Nodes().OfType<XElement>().FirstOrDefault(c => c.Name?.LocalName == "Applications")?
+                        .Nodes().OfType<XElement>().FirstOrDefault(c => c.Name?.LocalName == "Application");
+
+                    if (applicationNode != null)
+                    {
+                        return applicationNode.Attribute("Id")?.Value;
+                    }
+                }
+
+            }
+            catch { }
+
+            return null;
         }
 
         public static async Task<BitmapImage?> GetPackageIconAsync(Package package, CancellationToken cancellationToken = default)

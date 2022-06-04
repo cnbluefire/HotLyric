@@ -248,7 +248,7 @@ namespace HotLyric.Win32.Views
             await Task.Delay(1000);
             await Dispatcher.BeginInvoke(new Action(() =>
             {
-                if (isClosing || !IsVisible || hwndSource == null) return;
+                if (isClosing || !IsVisible || hwndSource == null || !ViewModelLocator.Instance.SettingsWindowViewModel.AutoResetWindowPos) return;
 
                 if (User32.GetWindowRect(hwndSource.Handle, out var _windowRect))
                 {

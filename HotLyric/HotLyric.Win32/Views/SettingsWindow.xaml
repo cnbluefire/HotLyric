@@ -181,20 +181,23 @@
                             <Button x:Name="ClearCacheButton" Content="清除" Command="{Binding ClearCacheCmd}" />
                         </HeaderedContentControl>
 
-                        <HeaderedContentControl Style="{StaticResource CardStyle}" Header="重置窗口位置">
-                            <HeaderedContentControl.Tag>
-                                <ui:FontIcon Glyph="&#xE777;" FontSize="16" />
-                            </HeaderedContentControl.Tag>
-                            <HeaderedContentControl.Resources>
-                                <ResourceDictionary>
-                                    <ResourceDictionary.MergedDictionaries>
-                                        <ResourceDictionary Source="/Themes/CommonStyle.xaml" />
-                                    </ResourceDictionary.MergedDictionaries>
-                                </ResourceDictionary>
-                            </HeaderedContentControl.Resources>
-                            <Button x:Name="ResetWindowBoundsButton" Content="重置" Click="ResetWindowBoundsButton_Click"/>
-                        </HeaderedContentControl>
-
+                        <control:ExpanderEx IsExpanded="True">
+                            <control:ExpanderEx.Header>
+                                <Grid HorizontalAlignment="Stretch">
+                                    <StackPanel Orientation="Horizontal" Margin="-4,0,0,0">
+                                        <ui:FontIcon Glyph="&#xE777;" FontSize="16" Margin="0,0,12,0" VerticalAlignment="Center" />
+                                        <TextBlock Text="重置窗口位置" VerticalAlignment="Center" />
+                                    </StackPanel>
+                                    <Button x:Name="ResetWindowBoundsButton" HorizontalAlignment="Right" Content="重置" Click="ResetWindowBoundsButton_Click"/>
+                                </Grid>
+                            </control:ExpanderEx.Header>
+                            <ui:SimpleStackPanel Orientation="Vertical" Margin="28,0,0,0" Spacing="16">
+                                <CheckBox Padding="12,0,0,0" Content="屏幕设置变动时自动重置窗口位置" 
+                                          IsChecked="{Binding AutoResetWindowPos,Mode=TwoWay}" 
+                                          ui:ControlHelper.CornerRadius="4" />
+                            </ui:SimpleStackPanel>
+                        </control:ExpanderEx>
+                        
                         <control:ExpanderEx IsExpanded="True">
                             <control:ExpanderEx.Header>
                                 <StackPanel Orientation="Horizontal" Margin="-4,0,0,0">

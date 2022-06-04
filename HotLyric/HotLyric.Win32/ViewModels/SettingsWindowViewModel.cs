@@ -44,6 +44,7 @@ namespace HotLyric.Win32.ViewModels
         private const string LyricOpacitySettingKey = "Settings_LyricOpacity";
         private const string ShowLauncherWindowOnStartupSettingKey = "Settings_ShowLauncherWindowOnStartup";
         private const string HideOnPausedSettingKey = "Settings_HideOnPaused";
+        private const string AutoResetWindowPosSettingsKey = "Settings_AutoResetWindowPos";
 
         public SettingsWindowViewModel()
         {
@@ -102,6 +103,8 @@ namespace HotLyric.Win32.ViewModels
             StartupTaskHelper.PropertyChanged += StartupTaskHelper_PropertyChanged;
 
             hideOnPaused = LoadSetting(HideOnPausedSettingKey, false);
+
+            autoResetWindowPos = LoadSetting(AutoResetWindowPosSettingsKey, true);
         }
 
         private bool windowTransparent;
@@ -133,7 +136,8 @@ namespace HotLyric.Win32.ViewModels
         private double lyricOpacity;
         private bool showLauncherWindowOnStartup;
         private bool hideOnPaused;
-        private AsyncRelayCommand spotifySetLanguage;
+        private bool autoResetWindowPos;
+        private AsyncRelayCommand? spotifySetLanguage;
 
         public StartupTaskHelper StartupTaskHelper { get; }
 
@@ -264,6 +268,12 @@ namespace HotLyric.Win32.ViewModels
         {
             get => hideOnPaused;
             set => ChangeSettings(ref hideOnPaused, value, HideOnPausedSettingKey);
+        }
+
+        public bool AutoResetWindowPos
+        {
+            get => autoResetWindowPos;
+            set => ChangeSettings(ref autoResetWindowPos, value, AutoResetWindowPosSettingsKey);
         }
 
         public FontFamily LyricFontFamilyWrapper => LyricFontFamily?.FontFamily ?? new FontFamily("Global User Interface");

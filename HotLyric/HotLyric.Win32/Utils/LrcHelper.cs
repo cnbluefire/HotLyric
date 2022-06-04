@@ -27,6 +27,11 @@ namespace HotLyric.Win32.Utils
         }
 
         private static IReadOnlyDictionary<string, ILrcProvider> Providers { get; }
+        private static readonly HashSet<string> absoluteMusicLyricFlags = new HashSet<string>()
+        {
+            "纯音乐，请欣赏",
+            "此歌曲为没有填词的纯音乐，请您欣赏"
+        };
 
         public static readonly ILrcFile EmptyLyric = LrcFile.FromText("[00:00.00]暂无歌词");
         public static readonly ILrcFile DownloadingLyric = LrcFile.FromText("[00:00.00]正在加载...");
@@ -45,7 +50,14 @@ namespace HotLyric.Win32.Utils
             {
                 if (!System.IO.File.Exists(filePath)) return null;
                 var content = await System.IO.File.ReadAllTextAsync(filePath, cancellationToken);
+
                 var lrcFile = LrcFile.FromText(content);
+
+                if (lrcFile?.Lyrics?.Any(c => absoluteMusicLyricFlags.Contains(c.Content)) == true)
+                {
+                    return null;
+                }
+
                 return new LyricModel(lrcFile, null, content, null);
             }
             catch (Exception ex) when (!(ex is OperationCanceledException)) { }
@@ -73,6 +85,11 @@ namespace HotLyric.Win32.Utils
                 return null;
             }
 
+            if (file?.Lyric?.Lyrics?.Any(c => absoluteMusicLyricFlags.Contains(c.Content)) == true)
+            {
+                return null;
+            }
+
             return file;
         }
 
@@ -96,7 +113,17 @@ namespace HotLyric.Win32.Utils
                 }
 
                 var lyric = await Providers["NetEase"].GetByIdAsync(neteaseMusicId!, cancellationToken);
-                if (lyric != null) return lyric;
+                if (lyric != null)
+                {
+                    await LrcProviderHelper.SetLyricCacheAsync(LrcProviderHelper.BuildSearchKey(name, artists), lyric.LyricContent, lyric.TranslateContent, cancellationToken);
+
+                    if (lyric?.Lyric?.Lyrics?.Any(c => absoluteMusicLyricFlags.Contains(c.Content)) == true)
+                    {
+                        return null;
+                    }
+
+                    return lyric;
+                }
 
                 List<ILrcProvider> providers = new List<ILrcProvider>();
 
@@ -131,6 +158,12 @@ namespace HotLyric.Win32.Utils
                         if (lyric != null)
                         {
                             await LrcProviderHelper.SetLyricCacheAsync(LrcProviderHelper.BuildSearchKey(name, artists), lyric.LyricContent, lyric.TranslateContent, cancellationToken);
+                            
+                            if (lyric?.Lyric?.Lyrics?.Any(c => absoluteMusicLyricFlags.Contains(c.Content)) == true)
+                            {
+                                return null;
+                            }
+
                             return lyric;
                         }
                     }

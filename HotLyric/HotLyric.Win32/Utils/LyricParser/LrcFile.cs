@@ -202,7 +202,7 @@ namespace Kfstorm.LrcParser
                         {
                             state = 1;
                         }
-                        else if (!unescaped && (ch == '\r' || ch == '\n') || ended)
+                        else if (!unescaped && (ch == '\r' || ch == '\n' || ch == ' ') || ended)
                         {
                             state = 0;
                         }

@@ -65,5 +65,6 @@
 	<Capabilities>
 		<Capability Name="internetClient" />
 		<rescap:Capability Name="runFullTrust" />
+		<uap7:Capability Name="globalMediaControl" />
 	</Capabilities>
 </Package>

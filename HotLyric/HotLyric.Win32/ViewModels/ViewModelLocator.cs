@@ -1,4 +1,4 @@
-﻿using HotLyric.Win32.Utils.SystemMediaTransportControls;
+﻿using HotLyric.Win32.Utils.MediaSessions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -21,7 +21,7 @@ namespace HotLyric.Win32.ViewModels
 
         private void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<SMTCFactory>();
+            services.AddSingleton<MediaSessionManagerFactory>();
             services.AddSingleton<LyricWindowViewModel>();
             services.AddSingleton<SettingsWindowViewModel>();
         }

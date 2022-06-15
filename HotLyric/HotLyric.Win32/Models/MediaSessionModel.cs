@@ -1,5 +1,6 @@
 ﻿using HotLyric.Win32.Utils;
-using HotLyric.Win32.Utils.SystemMediaTransportControls;
+using HotLyric.Win32.Utils.MediaSessions;
+using HotLyric.Win32.Utils.MediaSessions.SMTC;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
 using Microsoft.Toolkit.Mvvm.Input;
 using System;
@@ -15,7 +16,7 @@ using Windows.Media.Control;
 
 namespace HotLyric.Win32.Models
 {
-    public partial class SMTCSessionModel : ObservableObject, IDisposable
+    public partial class MediaSessionModel : ObservableObject, IDisposable
     {
         private static readonly PropertyChangedEventArgs positionChangedArgs = new PropertyChangedEventArgs(nameof(Position));
         private static readonly PropertyChangedEventArgs isPlayingChangedArgs = new PropertyChangedEventArgs(nameof(IsPlaying));
@@ -33,11 +34,11 @@ namespace HotLyric.Win32.Models
         private bool disposedValue;
 
         public SMTCSession Session { get; private set; }
-        private GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties;
+        private MediaSessionMediaProperties? mediaProperties;
         private string? neteaseMusicId;
         private string? localLrcPath;
 
-        private SMTCSessionModel(SMTCSession session)
+        private MediaSessionModel(SMTCSession session)
         {
             Session = session;
             Session.PlaybackInfoChanged += Session_PlaybackInfoChanged;
@@ -62,7 +63,7 @@ namespace HotLyric.Win32.Models
 
         public TimeSpan Position => Session.Position;
 
-        public bool IsPlaying => Session.PlaybackStatus == GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing;
+        public bool IsPlaying => Session.PlaybackStatus == MediaSessionPlaybackStatus.Playing;
 
         public bool IsPlayButtonVisible => !IsPlaying && Session.PlayCommand.CanExecute(null);
 
@@ -178,7 +179,6 @@ namespace HotLyric.Win32.Models
                     Session.PlaybackInfoChanged -= Session_PlaybackInfoChanged;
                     Session.MediaPropertiesChanged -= Session_MediaPropertiesChanged;
 
-                    Session.Dispose();
                     Session = null!;
                 }
 
@@ -202,36 +202,25 @@ namespace HotLyric.Win32.Models
             GC.SuppressFinalize(this);
         }
 
-        public static async Task<SMTCSessionModel?> CreateAsync(SMTCSession session)
+        public static async Task<MediaSessionModel?> CreateAsync(SMTCSession session)
         {
             if (session == null) return null;
 
-            ImageSource? image = session.App.CustomAppIcon;
-            string? title = session.App.CustomName;
+            var image = await session.GetSessionIconAsync();
+            var title = (await session.GetSessionNameAsync()) ?? string.Empty;
 
-            if (image == null && string.IsNullOrEmpty(title))
+            MediaSessionMediaProperties? mediaProperties = null;
+            for (int i = 0; i < 5; i++)
             {
-                var package = await session.GetAppPackageAsync();
-                if (package != null)
-                {
-                    if (string.IsNullOrEmpty(title))
-                    {
-                        title = package.DisplayName ?? string.Empty;
-                    }
-
-                    if (image == null)
-                    {
-                        image = await ApplicationHelper.GetPackageIconAsync(package);
-                    }
-                }
+                mediaProperties = await session.GetMediaPropertiesAsync();
+                if (mediaProperties != null) break;
+                await Task.Delay(50);
             }
 
-            var mediaProperties = await session.GetMediaPropertiesAsync();
-
-            return new SMTCSessionModel(session)
+            return new MediaSessionModel(session)
             {
                 appTitle = title,
-                appIcon = image,
+                appIcon = image ?? new BitmapImage(new Uri("pack://application:,,,/HotLyric.Win32;component/Assets/HotLyricIcon.png")),
                 mediaProperties = mediaProperties,
             };
         }

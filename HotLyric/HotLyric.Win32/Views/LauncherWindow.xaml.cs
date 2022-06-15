@@ -1,5 +1,5 @@
 ﻿using HotLyric.Win32.Utils;
-using HotLyric.Win32.Utils.SystemMediaTransportControls;
+using HotLyric.Win32.Utils.MediaSessions.SMTC;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -39,12 +39,18 @@ namespace HotLyric.Win32.Views
 
         private async void OpenHyPlayerButton_Click(object sender, RoutedEventArgs e)
         {
-            await LaunchApp(SMTCApps.HyPlayer.PackageFamilyNamePrefix, SMTCApps.HyPlayer.StoreUri);
+            if (SMTCApps.HyPlayer.StoreUri != null)
+            {
+                await LaunchApp(SMTCApps.HyPlayer.PackageFamilyNamePrefix, SMTCApps.HyPlayer.StoreUri);
+            }
         }
 
         private async void OpenLyricEaseButton_Click(object sender, RoutedEventArgs e)
         {
-            await LaunchApp(SMTCApps.LyricEase.PackageFamilyNamePrefix, SMTCApps.LyricEase.StoreUri);
+            if (SMTCApps.LyricEase.StoreUri != null)
+            {
+                await LaunchApp(SMTCApps.LyricEase.PackageFamilyNamePrefix, SMTCApps.LyricEase.StoreUri);
+            }
         }
 
         private async Task LaunchApp(string packageFamilyNamePrefix, Uri uri)

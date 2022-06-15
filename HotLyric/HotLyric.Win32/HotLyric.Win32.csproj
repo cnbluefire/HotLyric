@@ -33,6 +33,8 @@
 
 	<ItemGroup>
 		<ApplicationDefinition Remove="App.xaml" />
+		<None Remove="Assets\Foobar2kIcon.png" />
+		<None Remove="Assets\HotLyricIcon.png" />
 		<None Remove="Assets\HyPlayerIcon.png" />
 		<None Remove="Assets\LyricEaseIcon.png" />
 		<None Remove="Assets\NoiseAsset_256x256_PNG.png" />
@@ -62,6 +64,8 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<Resource Include="Assets\Foobar2kIcon.png" />
+		<Resource Include="Assets\HotLyricIcon.png" />
 		<Resource Include="Assets\HyPlayerIcon.png" />
 		<Resource Include="Assets\LyricEaseIcon.png" />
 		<Resource Include="Assets\NoiseAsset_256x256_PNG.png" />

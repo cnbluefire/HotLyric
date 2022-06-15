@@ -1,7 +1,8 @@
 ﻿using HotLyric.Win32.Controls;
 using HotLyric.Win32.Models;
 using HotLyric.Win32.Utils;
-using HotLyric.Win32.Utils.SystemMediaTransportControls;
+using HotLyric.Win32.Utils.MediaSessions;
+using HotLyric.Win32.Utils.MediaSessions.SMTC;
 using HotLyric.Win32.Utils.WindowBackgrounds;
 using HotLyric.Win32.Views;
 using Microsoft.Toolkit.Mvvm.ComponentModel;
@@ -23,13 +24,12 @@ namespace HotLyric.Win32.ViewModels
 {
     public partial class LyricWindowViewModel : ObservableObject
     {
-        private readonly SMTCFactory smtcFactory;
+        private readonly MediaSessionManagerFactory smtcFactory;
         private readonly SettingsWindowViewModel settingVm;
         private SMTCManager? smtcManager;
         private SMTCSession[]? sessions;
-        private Brush hitTestBrush = new SolidColorBrush(Color.FromArgb(1, 255, 255, 255));
 
-        public LyricWindowViewModel(SMTCFactory smtcFactory, SettingsWindowViewModel settingVm)
+        public LyricWindowViewModel(MediaSessionManagerFactory smtcFactory, SettingsWindowViewModel settingVm)
         {
             this.smtcFactory = smtcFactory;
             this.settingVm = settingVm;
@@ -56,7 +56,7 @@ namespace HotLyric.Win32.ViewModels
         }
 
 
-        private SMTCSessionModel? selectedSession;
+        private MediaSessionModel? selectedSession;
 
         private bool isTitleVisible;
         private bool alwaysShowBackground;
@@ -65,7 +65,7 @@ namespace HotLyric.Win32.ViewModels
         private bool showShadow;
         private bool textStrokeEnabled;
 
-        private ObservableCollection<SMTCSessionModel>? sessionModels;
+        private ObservableCollection<MediaSessionModel>? sessionModels;
 
         private MediaModel? mediaModel = MediaModel.CreateEmptyMedia();
         private bool isMinimized;
@@ -149,7 +149,7 @@ namespace HotLyric.Win32.ViewModels
             }
         }
 
-        public bool ActualMinimized => SelectedSession == null || IsMinimized || MediaModel == null || MediaModel.IsEmptyLyric || isMinimizedByPause.Value;
+        public bool ActualMinimized => SelectedSession == null || IsMinimized || MediaModel == null || isMinimizedByPause.Value;
 
         public bool IsTransparent
         {
@@ -197,7 +197,7 @@ namespace HotLyric.Win32.ViewModels
 
         public double LyricOpacity => IsBackgroundVisible ? 1d : settingVm.LyricOpacity;
 
-        public ObservableCollection<SMTCSessionModel>? SessionModels
+        public ObservableCollection<MediaSessionModel>? SessionModels
         {
             get => sessionModels;
             set => SetProperty(ref sessionModels, value);
@@ -252,7 +252,7 @@ namespace HotLyric.Win32.ViewModels
             App.Current.NotifyIcon?.UpdateToolTipText();
         }
 
-        public SMTCSessionModel? SelectedSession
+        public MediaSessionModel? SelectedSession
         {
             get => selectedSession;
             set
@@ -308,7 +308,7 @@ namespace HotLyric.Win32.ViewModels
 
         public ICommand OpenCurrentSessionAppCmd => openCurrentSessionAppCmd ?? (openCurrentSessionAppCmd = new AsyncRelayCommand(async () =>
         {
-            if (SelectedSession?.Session?.App?.SupportLaunch == true)
+            if (SelectedSession?.Session?.App is SMTCApp app && app.SupportLaunch)
             {
                 var curSessionAUMID = SelectedSession?.Session?.AppUserModelId;
                 if (string.IsNullOrEmpty(curSessionAUMID)) return;
@@ -349,7 +349,7 @@ namespace HotLyric.Win32.ViewModels
 
                 CommandLineArgsHelper.ActivateMainInstanceEventReceived += CommandLineArgsHelper_ActivateMainInstanceEventReceived;
 
-                UpdateSesions();
+                UpdateSessions();
                 smtcManager.SessionsChanged += SmtcManager_SessionsChanged;
             }
         }
@@ -357,7 +357,7 @@ namespace HotLyric.Win32.ViewModels
 
         private void CommandLineArgsHelper_ActivateMainInstanceEventReceived(object? sender, EventArgs e)
         {
-            UpdateSesions();
+            UpdateSessions();
         }
 
         private void SelectedSession_MediaChanged(object? sender, EventArgs e)
@@ -408,18 +408,9 @@ namespace HotLyric.Win32.ViewModels
             {
                 if (smtcManager != null)
                 {
-                    var oldSessions = sessions;
                     sessions = smtcManager.Sessions.ToArray();
 
-                    UpdateSesions();
-
-                    if (oldSessions != null)
-                    {
-                        foreach (var session in oldSessions)
-                        {
-                            session.Dispose();
-                        }
-                    }
+                    UpdateSessions();
                 }
             }));
         }
@@ -444,7 +435,7 @@ namespace HotLyric.Win32.ViewModels
             return null;
         }
 
-        private async void UpdateSesions()
+        private async void UpdateSessions()
         {
             string? from = "";
             if (CommandLineArgsHelper.HasLaunchParameters)
@@ -472,21 +463,30 @@ namespace HotLyric.Win32.ViewModels
 
                 lastSelectedAppId = curSession?.AppUserModelId ?? string.Empty;
 
-                var models = await Task.WhenAll(sessions.Select(async c => await SMTCSessionModel.CreateAsync(c)));
-
+                var models = await Task.WhenAll(sessions.Select(async c => await MediaSessionModel.CreateAsync(c)));
 
                 DispatcherHelper.UIDispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
                 {
                     SelectedSession = models?.FirstOrDefault(c => c?.Session.AppUserModelId == lastSelectedAppId)
                         ?? models?.FirstOrDefault();
 
+                    var oldSessionModels = SessionModels?.ToArray();
+
                     if (models != null)
                     {
-                        SessionModels = new ObservableCollection<SMTCSessionModel>(models!);
+                        SessionModels = new ObservableCollection<MediaSessionModel>(models!);
                     }
                     else
                     {
                         SessionModels = null;
+                    }
+
+                    if (oldSessionModels != null)
+                    {
+                        foreach (var model in oldSessionModels)
+                        {
+                            model.Dispose();
+                        }
                     }
 
                     if (!sessionInited)

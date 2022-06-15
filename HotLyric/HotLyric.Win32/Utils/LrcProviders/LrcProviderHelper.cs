@@ -145,7 +145,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
                         try
                         {
                             text2 = await FileIO.ReadTextAsync(file2).AsTask(cancellationToken);
-                            if (!string.IsNullOrEmpty(text2))
+                            if (!string.IsNullOrWhiteSpace(text2))
                             {
                                 translated = LrcFile.FromText(text2);
 

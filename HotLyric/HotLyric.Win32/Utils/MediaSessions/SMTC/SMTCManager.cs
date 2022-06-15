@@ -6,7 +6,7 @@ using System.Threading;
 using System.Threading.Tasks;
 using Windows.Media.Control;
 
-namespace HotLyric.Win32.Utils.SystemMediaTransportControls
+namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 {
     public class SMTCManager : IDisposable
     {
@@ -16,7 +16,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         private readonly IReadOnlyList<SMTCApp> supportedApps;
         private SMTCSession[]? sessions;
         private SMTCSession? curSession;
-
+        private Task initSessionTask;
 
         private SMTCManager(GlobalSystemMediaTransportControlsSessionManager manager, IReadOnlyList<SMTCApp> supportedApps)
         {
@@ -24,7 +24,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             this.supportedApps = supportedApps;
 
             manager.SessionsChanged += Manager_SessionsChanged;
-            _ = UpdateSessionsAsync();
+            initSessionTask = UpdateSessionsAsync();
         }
 
         private async void Manager_SessionsChanged(GlobalSystemMediaTransportControlsSessionManager sender, SessionsChangedEventArgs args)
@@ -38,13 +38,15 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             var list = new List<SMTCSession>();
             var appIdHash = new HashSet<string>();
 
-            var tmp = manager.GetSessions();
+            var tmp = manager.GetSessions().ToArray();
             var curSession = manager.GetCurrentSession();
 
             var app = await GetAppAsync(curSession);
             if (app != null)
             {
-                var s = new SMTCSession(curSession, app.PositionMode, app);
+                var s = sessions?.FirstOrDefault(c => c.Session == curSession) ??
+                    new SMTCSession(curSession, app.PositionMode, app);
+
                 list.Add(s);
                 appIdHash.Add(curSession.SourceAppUserModelId);
                 this.curSession = s;
@@ -59,12 +61,19 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 var app2 = await GetAppAsync(session);
                 if (app2 != null && appIdHash.Add(session.SourceAppUserModelId))
                 {
-                    var s = new SMTCSession(session, app2.PositionMode, app2);
+                    var s = sessions?.FirstOrDefault(c => c.Session == session)
+                        ?? new SMTCSession(session, app2.PositionMode, app2);
                     list.Add(s);
                 }
             }
 
             sessions = list.ToArray();
+
+            var removed = sessions.Where(c => !list.Contains(c)).ToList();
+            foreach (var item in removed)
+            {
+                item.Dispose();
+            }
         }
 
         private async Task<SMTCApp?> GetAppAsync(GlobalSystemMediaTransportControlsSession session)
@@ -161,7 +170,10 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
             var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync().AsTask(cancellationToken);
 
-            return new SMTCManager(manager, supportedApps);
+            var smtcManager = new SMTCManager(manager, supportedApps);
+            await smtcManager.initSessionTask.ConfigureAwait(false);
+
+            return smtcManager;
         }
     }
 }

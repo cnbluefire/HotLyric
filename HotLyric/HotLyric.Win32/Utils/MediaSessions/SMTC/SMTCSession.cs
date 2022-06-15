@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HotLyric.Win32.Utils.MediaSessions;
+using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.IO;
@@ -12,14 +13,14 @@ using System.Windows.Threading;
 using Windows.ApplicationModel;
 using Windows.Media.Control;
 
-namespace HotLyric.Win32.Utils.SystemMediaTransportControls
+namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 {
-    public class SMTCSession : IDisposable
+    public class SMTCSession : IDisposable, IMediaSession
     {
         private bool disposedValue;
         private GlobalSystemMediaTransportControlsSession session;
         private string appUserModelId;
-        private TaskCompletionSource<GlobalSystemMediaTransportControlsSessionMediaProperties?>? mediaPropertiesSource;
+        private TaskCompletionSource<MediaSessionMediaProperties?>? mediaPropertiesSource;
         private GlobalSystemMediaTransportControlsSessionPlaybackInfo? playbackInfo;
         private GlobalSystemMediaTransportControlsSessionTimelineProperties? timelineProperties;
         private TaskCompletionSource<Package?>? packageSource;
@@ -73,7 +74,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
         {
             var pos = (DateTime.Now - lastUpdatePositionTime) * PlaybackRate + lastPosition;
             if (PositionMode == SMTCAppPositionMode.OnlyUseTimer
-                || (pos >= StartTime && pos <= EndTime))
+                || pos >= StartTime && pos <= EndTime)
             {
                 Position = pos;
             }
@@ -85,7 +86,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
         private void UpdateInternalTimerState()
         {
-            if (timelineProperties == null || PlaybackStatus != GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing)
+            if (timelineProperties == null || PlaybackStatus != MediaSessionPlaybackStatus.Playing)
             {
                 internalPositionTimer?.Stop();
             }
@@ -169,12 +170,21 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 var rate = playbackInfo.PlaybackRate ?? 1;
                 PlaybackRate = rate > 0.001 ? rate : 1;
 
-                PlaybackStatus = playbackInfo.PlaybackStatus;
+                PlaybackStatus = playbackInfo.PlaybackStatus switch
+                {
+                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Closed => MediaSessionPlaybackStatus.Closed,
+                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Opened => MediaSessionPlaybackStatus.Opened,
+                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Changing => MediaSessionPlaybackStatus.Changing,
+                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Stopped => MediaSessionPlaybackStatus.Stopped,
+                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Playing => MediaSessionPlaybackStatus.Playing,
+                    GlobalSystemMediaTransportControlsSessionPlaybackStatus.Paused => MediaSessionPlaybackStatus.Paused,
+                    _ => MediaSessionPlaybackStatus.Closed
+                };
             }
             else
             {
                 PlaybackRate = 1;
-                PlaybackStatus = GlobalSystemMediaTransportControlsSessionPlaybackStatus.Stopped;
+                PlaybackStatus = MediaSessionPlaybackStatus.Stopped;
             }
 
             UpdateInternalTimerState();
@@ -200,34 +210,12 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             }
         }
 
-        public double PlaybackRate { get; private set; }
-
-        public TimeSpan StartTime { get; private set; }
-
-        public TimeSpan EndTime { get; private set; }
-
-        public TimeSpan Position { get; private set; }
-
-        public GlobalSystemMediaTransportControlsSessionPlaybackStatus PlaybackStatus { get; private set; }
-
-        public string AppUserModelId => appUserModelId;
-
-
-        public ICommand PlayCommand => playCommand;
-        public ICommand PauseCommand => pauseCommand;
-        public ICommand SkipPreviousCommand => skipPreviousCommand;
-        public ICommand SkipNextCommand => skipNextCommand;
-
-        public SMTCAppPositionMode PositionMode { get; }
-
-        public SMTCApp App { get; }
-
-        public async Task<GlobalSystemMediaTransportControlsSessionMediaProperties?> GetMediaPropertiesAsync()
+        public async Task<MediaSessionMediaProperties?> GetMediaPropertiesAsync()
         {
             var taskSource = mediaPropertiesSource;
             if (taskSource == null)
             {
-                taskSource = new TaskCompletionSource<GlobalSystemMediaTransportControlsSessionMediaProperties?>();
+                taskSource = new TaskCompletionSource<MediaSessionMediaProperties?>();
                 mediaPropertiesSource = taskSource;
                 try
                 {
@@ -239,7 +227,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                     {
                         Windows.Media.MediaPlaybackType.Video => null,
                         Windows.Media.MediaPlaybackType.Image => null,
-                        _ => mediaProperties
+                        _ => CreateMediaProperties(mediaProperties)
                     });
                 }
                 catch
@@ -251,7 +239,46 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             return await taskSource.Task.ConfigureAwait(false);
         }
 
-        public async Task<Package?> GetAppPackageAsync()
+        internal GlobalSystemMediaTransportControlsSession Session => session;
+
+        public double PlaybackRate { get; private set; }
+
+        public TimeSpan StartTime { get; private set; }
+
+        public TimeSpan EndTime { get; private set; }
+
+        public TimeSpan Position { get; private set; }
+
+        public MediaSessionPlaybackStatus PlaybackStatus { get; private set; }
+
+        public string AppUserModelId => appUserModelId;
+
+
+        public ICommand PlayCommand => playCommand;
+        public ICommand PauseCommand => pauseCommand;
+        public ICommand SkipPreviousCommand => skipPreviousCommand;
+        public ICommand SkipNextCommand => skipNextCommand;
+
+        public SMTCAppPositionMode PositionMode { get; }
+
+        public MediaSessionApp App { get; }
+
+        private MediaSessionMediaProperties? CreateMediaProperties(GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties)
+        {
+            if (mediaProperties == null) return null;
+
+            return new MediaSessionMediaProperties(
+                mediaProperties.AlbumArtist,
+                mediaProperties.AlbumTitle,
+                mediaProperties.AlbumTrackCount,
+                mediaProperties.Artist,
+                mediaProperties.Genres,
+                mediaProperties.Subtitle,
+                mediaProperties.Title,
+                mediaProperties.TrackNumber);
+        }
+
+        private async Task<Package?> GetAppPackageAsync()
         {
             if (packageSource == null)
             {
@@ -261,6 +288,27 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             }
 
             return await packageSource.Task.ConfigureAwait(false);
+        }
+
+
+        public async Task<string?> GetSessionNameAsync()
+        {
+            if (!string.IsNullOrEmpty(App.CustomName)) return App.CustomName;
+
+            var package = await GetAppPackageAsync();
+            return package?.DisplayName;
+        }
+
+        public async Task<ImageSource?> GetSessionIconAsync()
+        {
+            if (App.CustomAppIcon != null) return App.CustomAppIcon;
+
+            var package = await GetAppPackageAsync();
+            if (package != null)
+            {
+                return await ApplicationHelper.GetPackageIconAsync(package);
+            }
+            return null;
         }
 
         public event EventHandler? PlaybackInfoChanged;
@@ -296,6 +344,11 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
             public event EventHandler? CanExecuteChanged;
             public event PropertyChangedEventHandler? PropertyChanged;
 
+            internal void UpdateAction(Func<Task> action)
+            {
+                this.action = action ?? throw new ArgumentNullException(nameof(action));
+            }
+
             bool ICommand.CanExecute(object? parameter)
             {
                 return CanExecute;
@@ -324,7 +377,7 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
 
             internal void NotifyCanExecuteChanged()
             {
-                _ = DispatcherHelper.UIDispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+                _ = DispatcherHelper.UIDispatcher?.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
                 {
                     CanExecuteChanged?.Invoke(this, EventArgs.Empty);
                     PropertyChanged?.Invoke(this, CanExecutePropertyChangedEventArgs);

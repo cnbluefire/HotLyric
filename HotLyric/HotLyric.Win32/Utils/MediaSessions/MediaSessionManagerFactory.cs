@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HotLyric.Win32.Utils.MediaSessions.SMTC;
+using System;
 using System.Collections.Concurrent;
 using System.Collections.Generic;
 using System.Diagnostics.CodeAnalysis;
@@ -7,12 +8,10 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 
-namespace HotLyric.Win32.Utils.SystemMediaTransportControls
+namespace HotLyric.Win32.Utils.MediaSessions
 {
-    public class SMTCFactory
+    public class MediaSessionManagerFactory
     {
-        private static readonly IReadOnlyList<string> DefaultSessionsPrefix = SMTCApps.AllApps.Values.Select(c => c.PackageFamilyNamePrefix).ToArray();
-
         private bool? isSupported;
 
         public async Task<SMTCManager?> GetManagerAsync(CancellationToken cancellationToken = default)
@@ -40,27 +39,6 @@ namespace HotLyric.Win32.Utils.SystemMediaTransportControls
                 if (!isSupported.HasValue) isSupported = false;
             }
             return null;
-        }
-
-        private class ListEqualityComparer : IEqualityComparer<IReadOnlyList<string>>
-        {
-            public bool Equals(IReadOnlyList<string>? x, IReadOnlyList<string>? y)
-            {
-                if (x == null && y == null) return true;
-                else if (x == null || y == null) return false;
-                else return Enumerable.SequenceEqual(x, y, StringComparer.OrdinalIgnoreCase);
-            }
-
-            public int GetHashCode([DisallowNull] IReadOnlyList<string> obj)
-            {
-                var code = 0;
-                foreach (var item in obj)
-                {
-                    code = HashCode.Combine(item);
-                }
-
-                return code;
-            }
         }
     }
 }

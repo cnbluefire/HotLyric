@@ -107,13 +107,6 @@ namespace HotLyric.Win32.Utils
             }
         }
 
-
-        private void EventProc(User32.HWINEVENTHOOK hWinEventHook, uint winEvent, HWND hwnd, int idObject, int idChild, uint idEventThread, uint dwmsEventTime)
-        {
-            var foregroundWindow = User32.GetForegroundWindow();
-
-        }
-
         private async void Update()
         {
             cts?.Cancel();

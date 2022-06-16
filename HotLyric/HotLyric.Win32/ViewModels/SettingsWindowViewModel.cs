@@ -97,7 +97,7 @@ namespace HotLyric.Win32.ViewModels
 
             lyricOpacity = Math.Clamp(LoadSetting(LyricOpacitySettingKey, 1d), 0.1d, 1d);
 
-            showLauncherWindowOnStartup = LoadSetting(ShowLauncherWindowOnStartupSettingKey, true);
+            showLauncherWindowOnStartup = LoadSetting(ShowLauncherWindowOnStartupSettingKey, false);
 
             StartupTaskHelper = new StartupTaskHelper("HotLyricStartupTask");
             StartupTaskHelper.PropertyChanged += StartupTaskHelper_PropertyChanged;

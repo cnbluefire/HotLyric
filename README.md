@@ -14,13 +14,15 @@
 |[LyricEase](https://github.com/brandonw3612/LyricEase)|完全支持
 |[Spotify](https://www.spotify.com/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup>
 |[网易云音乐UWP不更新版](https://github.com/JasonWei512/NetEase-Cloud-Music-UWP-Repack)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup>
-|[QQ音乐UWP](https://www.microsoft.com/store/productId/9WZDNCRFJ1Q1)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup>
+|[QQ音乐UWP](https://www.microsoft.com/store/productId/9WZDNCRFJ1Q1)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup> <sup><a href="#ref3">3</a></sup>无法获取歌曲信息
 |[媒体播放器(Groove音乐)](https://www.microsoft.com/store/productId/9WZDNCRFJ3PT)|歌词可能匹配不准确<sup><a href="#ref1">1</a>
 |[Foobar2000(v1.5.1+)](https://www.foobar2000.org/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup>
+|[YesPlayerMusic(请使用最新版)](https://github.com/qier222/YesPlayMusic)|完全支持
 ---
 
 1. <span id="ref1">由于热词对这些播放器的歌词匹配基于歌名歌手搜索，所以匹配可能不精准或匹配不到。</span>
 2. <span id="ref2">由于播放器未提供进度信息，热词使用内置定时器更新歌词进度，所以当手动修改播放进度后热词将无法匹配到正确的歌词。</span>
+2. <span id="ref3">可能无法获取到QQ音乐UWP的播放信息，先开启QQ音乐UWP再启动热词可以缓解。</span>
 
 ## 已知问题
 * Windows10中关闭所有播放器时热词可能不会自动隐藏。

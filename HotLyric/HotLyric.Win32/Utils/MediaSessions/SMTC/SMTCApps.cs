@@ -86,14 +86,25 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
             ["Foobar2000"] = new SMTCApp(
                 appId: "foobar2000.exe",
-                packageFamilyNamePrefix: "",
+                packageFamilyNamePrefix: "foobar2000.exe",
                 hasStoreUri: false,
                 positionMode: SMTCAppPositionMode.OnlyUseTimer,
                 customName: "Foobar2000",
                 customAppIcon: new BitmapImage(new Uri("/Assets/Foobar2kIcon.png", UriKind.RelativeOrAbsolute)),
                 supportLaunch: false,
                 defaultLrcProvider: "NeteaseMusic",
-                convertToSimpleChinese: true)
+                convertToSimpleChinese: true),
+
+            ["YesPlayerMusic"] = new SMTCApp(
+                appId: "com.electron.yesplaymusic",
+                packageFamilyNamePrefix: "com.electron.yesplaymusic",
+                hasStoreUri: false,
+                positionMode: SMTCAppPositionMode.FromApp,
+                customName: "YesPlayerMusic",
+                customAppIcon: new BitmapImage(new Uri("/Assets/YesPlayerMusicIcon.png", UriKind.RelativeOrAbsolute)),
+                supportLaunch: false,
+                defaultLrcProvider: "NeteaseMusic",
+                convertToSimpleChinese: false),
         };
 
         public static IReadOnlyDictionary<string, SMTCApp> AllApps => allApps;

@@ -1,7 +1,6 @@
 ﻿using HotLyric.Win32.Utils.MediaSessions;
 using System;
 using System.Collections.Generic;
-using System.ComponentModel;
 using System.IO;
 using System.Linq;
 using System.Text;
@@ -9,13 +8,12 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
 using System.Windows.Media;
-using System.Windows.Threading;
 using Windows.ApplicationModel;
 using Windows.Media.Control;
 
 namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 {
-    public class SMTCSession : IDisposable, IMediaSession
+    public partial class SMTCSession : ISMTCSession
     {
         private bool disposedValue;
         private GlobalSystemMediaTransportControlsSession session;
@@ -25,19 +23,19 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         private GlobalSystemMediaTransportControlsSessionTimelineProperties? timelineProperties;
         private TaskCompletionSource<Package?>? packageSource;
 
-        private InternalCommand playCommand;
-        private InternalCommand pauseCommand;
-        private InternalCommand skipPreviousCommand;
-        private InternalCommand skipNextCommand;
+        private SMTCCommand playCommand;
+        private SMTCCommand pauseCommand;
+        private SMTCCommand skipPreviousCommand;
+        private SMTCCommand skipNextCommand;
 
         private TimeSpan lastPosition = TimeSpan.Zero;
         private DateTime lastUpdatePositionTime = default;
         private Timer? internalPositionTimer;
 
-        public SMTCSession(GlobalSystemMediaTransportControlsSession session, SMTCAppPositionMode positionMode, SMTCApp app)
+        public SMTCSession(GlobalSystemMediaTransportControlsSession session, SMTCApp app)
         {
             this.session = session ?? throw new ArgumentNullException(nameof(session));
-            PositionMode = positionMode;
+            PositionMode = app.PositionMode;
             App = app;
             appUserModelId = session.SourceAppUserModelId;
 
@@ -48,21 +46,21 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             playbackInfo = session.GetPlaybackInfo();
             timelineProperties = session.GetTimelineProperties();
 
-            playCommand = new InternalCommand(async () => await session.TryPlayAsync());
-            pauseCommand = new InternalCommand(async () => await session.TryPauseAsync());
-            skipPreviousCommand = new InternalCommand(async () => await session.TrySkipPreviousAsync());
-            skipNextCommand = new InternalCommand(async () => await session.TrySkipNextAsync());
+            playCommand = new SMTCCommand(async () => await session.TryPlayAsync());
+            pauseCommand = new SMTCCommand(async () => await session.TryPauseAsync());
+            skipPreviousCommand = new SMTCCommand(async () => await session.TrySkipPreviousAsync());
+            skipNextCommand = new SMTCCommand(async () => await session.TrySkipNextAsync());
 
             UpdateTimelineProperties();
             UpdatePlaybackInfo();
 
-            if (positionMode == SMTCAppPositionMode.FromAppAndUseTimer || positionMode == SMTCAppPositionMode.OnlyUseTimer)
+            if (PositionMode == SMTCAppPositionMode.FromAppAndUseTimer || PositionMode == SMTCAppPositionMode.OnlyUseTimer)
             {
                 internalPositionTimer = new Timer(300);
 
                 internalPositionTimer.Elapsed += InternalPositionTimer_Elapsed;
 
-                if (positionMode == SMTCAppPositionMode.OnlyUseTimer)
+                if (PositionMode == SMTCAppPositionMode.OnlyUseTimer)
                 {
                     lastUpdatePositionTime = DateTime.Now;
                     UpdateInternalTimerState();
@@ -239,7 +237,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             return await taskSource.Task.ConfigureAwait(false);
         }
 
-        internal GlobalSystemMediaTransportControlsSession Session => session;
+        public GlobalSystemMediaTransportControlsSession Session => session;
 
         public double PlaybackRate { get; private set; }
 
@@ -267,12 +265,44 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         {
             if (mediaProperties == null) return null;
 
+            int skip = 0;
+
+            var neteaseMusicId = string.Empty;
+            var localLrcPath = string.Empty;
+
+            var genres = mediaProperties.Genres?.ToArray();
+
+            if (genres != null)
+            {
+                if (genres.Length > 0 && genres[0]?.StartsWith("ncm-", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    neteaseMusicId = genres[0].Substring(4);
+                    skip++;
+                }
+
+                if (genres.Length > 1
+                    && !string.IsNullOrEmpty(genres[1])
+                    && genres[1].Trim() is string path
+                    && System.IO.Path.IsPathFullyQualified(path))
+                {
+                    localLrcPath = path;
+                    skip++;
+                }
+            }
+
+            if (skip > 0)
+            {
+                genres = genres.Skip(skip).ToArray();
+            }
+
             return new MediaSessionMediaProperties(
                 mediaProperties.AlbumArtist,
                 mediaProperties.AlbumTitle,
                 mediaProperties.AlbumTrackCount,
                 mediaProperties.Artist,
-                mediaProperties.Genres,
+                neteaseMusicId,
+                localLrcPath,
+                genres ?? Array.Empty<string>(),
                 mediaProperties.Subtitle,
                 mediaProperties.Title,
                 mediaProperties.TrackNumber);
@@ -314,76 +344,6 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         public event EventHandler? PlaybackInfoChanged;
 
         public event EventHandler? MediaPropertiesChanged;
-
-        private class InternalCommand : ICommand, INotifyPropertyChanged
-        {
-            private static readonly PropertyChangedEventArgs CanExecutePropertyChangedEventArgs = new PropertyChangedEventArgs(nameof(CanExecute));
-
-            private bool canExecute;
-            private Func<Task> action;
-            private Task? curTask;
-
-            public InternalCommand(Func<Task> action)
-            {
-                this.action = action ?? throw new ArgumentNullException(nameof(action));
-            }
-
-            internal bool CanExecute
-            {
-                get => canExecute;
-                set
-                {
-                    if (canExecute != value)
-                    {
-                        canExecute = value;
-                        NotifyCanExecuteChanged();
-                    }
-                }
-            }
-
-            public event EventHandler? CanExecuteChanged;
-            public event PropertyChangedEventHandler? PropertyChanged;
-
-            internal void UpdateAction(Func<Task> action)
-            {
-                this.action = action ?? throw new ArgumentNullException(nameof(action));
-            }
-
-            bool ICommand.CanExecute(object? parameter)
-            {
-                return CanExecute;
-            }
-
-            public void Execute(object? parameter)
-            {
-                if (curTask != null) return;
-                RunCore();
-
-                async void RunCore()
-                {
-                    try
-                    {
-                        curTask = action.Invoke();
-                        await curTask;
-                    }
-                    catch { }
-                    finally
-                    {
-                        curTask = null;
-                    }
-                    NotifyCanExecuteChanged();
-                }
-            }
-
-            internal void NotifyCanExecuteChanged()
-            {
-                _ = DispatcherHelper.UIDispatcher?.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
-                {
-                    CanExecuteChanged?.Invoke(this, EventArgs.Empty);
-                    PropertyChanged?.Invoke(this, CanExecutePropertyChangedEventArgs);
-                }));
-            }
-        }
 
 
         protected virtual void Dispose(bool disposing)

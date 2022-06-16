@@ -27,7 +27,7 @@ namespace HotLyric.Win32.ViewModels
         private readonly MediaSessionManagerFactory smtcFactory;
         private readonly SettingsWindowViewModel settingVm;
         private SMTCManager? smtcManager;
-        private SMTCSession[]? sessions;
+        private ISMTCSession[]? sessions;
 
         public LyricWindowViewModel(MediaSessionManagerFactory smtcFactory, SettingsWindowViewModel settingVm)
         {
@@ -310,7 +310,7 @@ namespace HotLyric.Win32.ViewModels
         {
             if (SelectedSession?.Session?.App is SMTCApp app && app.SupportLaunch)
             {
-                var curSessionAUMID = SelectedSession?.Session?.AppUserModelId;
+                var curSessionAUMID = (SelectedSession?.Session as ISMTCSession)?.Session?.SourceAppUserModelId;
                 if (string.IsNullOrEmpty(curSessionAUMID)) return;
 
                 var package = await ApplicationHelper.TryGetPackageFromAppUserModelIdAsync(curSessionAUMID);
@@ -415,7 +415,7 @@ namespace HotLyric.Win32.ViewModels
             }));
         }
 
-        private SMTCSession? GetNamedSession(string? appId)
+        private ISMTCSession? GetNamedSession(string? appId)
         {
             if (sessions == null || sessions.Length == 0) return null;
 
@@ -426,7 +426,7 @@ namespace HotLyric.Win32.ViewModels
 
             foreach (var session in sessions)
             {
-                if (session.AppUserModelId?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) == true)
+                if (session.Session.SourceAppUserModelId?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) == true)
                 {
                     return session;
                 }
@@ -446,10 +446,10 @@ namespace HotLyric.Win32.ViewModels
                 sessionInited = true;
             }
 
-            var lastSelectedAppId = SelectedSession?.Session.AppUserModelId ?? "";
+            var lastSelectedAppId = (SelectedSession?.Session as ISMTCSession)?.Session?.SourceAppUserModelId ?? "";
             if (smtcManager != null)
             {
-                SMTCSession? curSession = GetNamedSession(from);
+                var curSession = GetNamedSession(from);
 
                 if (curSession != null)
                 {
@@ -461,13 +461,13 @@ namespace HotLyric.Win32.ViewModels
                     curSession = GetNamedSession(lastSelectedAppId) ?? smtcManager.CurrentSession;
                 }
 
-                lastSelectedAppId = curSession?.AppUserModelId ?? string.Empty;
+                lastSelectedAppId = curSession?.Session?.SourceAppUserModelId ?? string.Empty;
 
                 var models = await Task.WhenAll(sessions.Select(async c => await MediaSessionModel.CreateAsync(c)));
 
                 DispatcherHelper.UIDispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
                 {
-                    SelectedSession = models?.FirstOrDefault(c => c?.Session.AppUserModelId == lastSelectedAppId)
+                    SelectedSession = models?.FirstOrDefault(c => (c?.Session as ISMTCSession)?.Session?.SourceAppUserModelId == lastSelectedAppId)
                         ?? models?.FirstOrDefault();
 
                     var oldSessionModels = SessionModels?.ToArray();
@@ -532,7 +532,7 @@ namespace HotLyric.Win32.ViewModels
         {
             var uri = new Uri("https://github.com/cnbluefire/HotLyric#%E5%AF%B9%E9%83%A8%E5%88%86%E8%BD%AF%E4%BB%B6%E6%8F%90%E4%BE%9B%E6%9C%89%E9%99%90%E6%94%AF%E6%8C%81");
             await Launcher.LaunchUriAsync(uri);
-        }, () => SelectedSession?.Session?.PositionMode == SMTCAppPositionMode.OnlyUseTimer && !OnlyUseTimerHelpCmd.IsRunning));
+        }, () => SelectedSession?.Session is SMTCSession session && session.PositionMode == SMTCAppPositionMode.OnlyUseTimer && !OnlyUseTimerHelpCmd.IsRunning));
 
         public bool OnlyUseTimerHelpButtonVisible => OnlyUseTimerHelpCmd.CanExecute(null);
 

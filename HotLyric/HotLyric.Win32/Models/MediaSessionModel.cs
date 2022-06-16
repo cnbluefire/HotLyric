@@ -33,12 +33,10 @@ namespace HotLyric.Win32.Models
 
         private bool disposedValue;
 
-        public SMTCSession Session { get; private set; }
+        public IMediaSession Session { get; private set; }
         private MediaSessionMediaProperties? mediaProperties;
-        private string? neteaseMusicId;
-        private string? localLrcPath;
 
-        private MediaSessionModel(SMTCSession session)
+        private MediaSessionModel(IMediaSession session)
         {
             Session = session;
             Session.PlaybackInfoChanged += Session_PlaybackInfoChanged;
@@ -79,43 +77,9 @@ namespace HotLyric.Win32.Models
 
         public string MediaArtist => mediaProperties?.Artist ?? string.Empty;
 
-        public string NeteaseMusicId
-        {
-            get
-            {
-                if (neteaseMusicId == null)
-                {
-                    var genres = mediaProperties?.Genres?.ToArray();
-                    if (genres != null && genres.Length > 0 && genres[0]?.StartsWith("ncm-", StringComparison.OrdinalIgnoreCase) == true)
-                    {
-                        neteaseMusicId = genres[0].Substring(4);
-                    }
-                }
-                if (neteaseMusicId == null) neteaseMusicId = string.Empty;
-                return neteaseMusicId;
-            }
-        }
+        public string NeteaseMusicId => mediaProperties?.NeteaseMusicId ?? string.Empty;
 
-        public string LocalLrcPath
-        {
-            get
-            {
-                if (localLrcPath == null)
-                {
-                    var genres = mediaProperties?.Genres?.ToArray();
-                    if (genres != null
-                        && genres.Length > 1
-                        && !string.IsNullOrEmpty(genres[1])
-                        && genres[1].Trim() is string path
-                        && System.IO.Path.IsPathFullyQualified(path))
-                    {
-                        localLrcPath = path;
-                    }
-                }
-                if (localLrcPath == null) localLrcPath = string.Empty;
-                return localLrcPath;
-            }
-        }
+        public string LocalLrcPath => mediaProperties?.LocalLrcPath ?? string.Empty;
 
         public MediaModel CreateMediaModel()
         {
@@ -130,8 +94,6 @@ namespace HotLyric.Win32.Models
         private async void Session_MediaPropertiesChanged(object? sender, EventArgs e)
         {
             mediaProperties = await Session.GetMediaPropertiesAsync();
-
-            neteaseMusicId = null;
 
             await DispatcherHelper.UIDispatcher!.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
             {
@@ -202,7 +164,7 @@ namespace HotLyric.Win32.Models
             GC.SuppressFinalize(this);
         }
 
-        public static async Task<MediaSessionModel?> CreateAsync(SMTCSession session)
+        public static async Task<MediaSessionModel?> CreateAsync(IMediaSession session)
         {
             if (session == null) return null;
 

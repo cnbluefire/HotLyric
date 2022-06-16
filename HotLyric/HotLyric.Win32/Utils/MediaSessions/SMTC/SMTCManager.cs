@@ -14,8 +14,8 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         private GlobalSystemMediaTransportControlsSessionManager manager;
         private readonly IReadOnlyList<SMTCApp> supportedApps;
-        private SMTCSession[]? sessions;
-        private SMTCSession? curSession;
+        private ISMTCSession[]? sessions;
+        private ISMTCSession? curSession;
         private Task initSessionTask;
 
         private SMTCManager(GlobalSystemMediaTransportControlsSessionManager manager, IReadOnlyList<SMTCApp> supportedApps)
@@ -35,7 +35,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         private async Task UpdateSessionsAsync()
         {
-            var list = new List<SMTCSession>();
+            var list = new List<ISMTCSession>();
             var appIdHash = new HashSet<string>();
 
             var tmp = manager.GetSessions().ToArray();
@@ -44,8 +44,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             var app = await GetAppAsync(curSession);
             if (app != null)
             {
-                var s = sessions?.FirstOrDefault(c => c.Session == curSession) ??
-                    new SMTCSession(curSession, app.PositionMode, app);
+                var s = CreateMediaSession(curSession, app, sessions); ;
 
                 list.Add(s);
                 appIdHash.Add(curSession.SourceAppUserModelId);
@@ -61,8 +60,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 var app2 = await GetAppAsync(session);
                 if (app2 != null && appIdHash.Add(session.SourceAppUserModelId))
                 {
-                    var s = sessions?.FirstOrDefault(c => c.Session == session)
-                        ?? new SMTCSession(session, app2.PositionMode, app2);
+                    var s = CreateMediaSession(session, app2, sessions);
                     list.Add(s);
                 }
             }
@@ -74,6 +72,18 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             {
                 item.Dispose();
             }
+        }
+
+        private ISMTCSession CreateMediaSession(GlobalSystemMediaTransportControlsSession session, SMTCApp app, IReadOnlyList<ISMTCSession>? oldSessions)
+        {
+            var result = oldSessions?.FirstOrDefault(c => c.Session == session);
+            if (result != null) return result;
+
+            if (app.AppId == "com.electron.yesplaymusic")
+            {
+                return new YesPlayerMusicSession(session, app);
+            }
+            return new SMTCSession(session, app);
         }
 
         private async Task<SMTCApp?> GetAppAsync(GlobalSystemMediaTransportControlsSession session)
@@ -118,9 +128,9 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             return null;
         }
 
-        public SMTCSession? CurrentSession => curSession;
+        public ISMTCSession? CurrentSession => curSession;
 
-        public IReadOnlyList<SMTCSession> Sessions => sessions?.ToArray() ?? Array.Empty<SMTCSession>();
+        public IReadOnlyList<ISMTCSession> Sessions => sessions?.ToArray() ?? Array.Empty<ISMTCSession>();
 
 
         public event EventHandler? SessionsChanged;

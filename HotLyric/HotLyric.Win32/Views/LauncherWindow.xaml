@@ -7,16 +7,19 @@
         xmlns:ui="http://schemas.modernwpf.com/2019"
         mc:Ignorable="d" ResizeMode="NoResize"
         Title="热词" Height="240" Width="300" WindowStartupLocation="CenterScreen">
-    <Grid Margin="12,0">
+    <Grid Margin="12,0" ui:ThemeManager.RequestedTheme="Light">
         <Grid.RowDefinitions>
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
+            <RowDefinition Height="Auto" />
         </Grid.RowDefinitions>
         <Grid.ColumnDefinitions>
             <ColumnDefinition Width="*" />
             <ColumnDefinition Width="*" />
         </Grid.ColumnDefinitions>
-        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0,8" TextWrapping="WrapWithOverflow">热词是一款桌面歌词软件，需要和如下播放器配合使用，点击图标下载或运行播放器。</TextBlock>
+        <TextBlock Grid.Row="0" Grid.ColumnSpan="2" Margin="0,8" TextWrapping="WrapWithOverflow">热词是一款桌面歌词软件，需要和如下播放器配合使用，点击图标下载或运行播放器。
+            <Hyperlink DataContext="{Binding Source={StaticResource Locator},Path=SettingsWindowViewModel}" Command="{Binding GithubCmd}">查看说明</Hyperlink>
+        </TextBlock>
         <Button x:Name="OpenHyPlayerButton" Grid.Row="1" Background="Transparent" HorizontalAlignment="Center" Cursor="Hand" Click="OpenHyPlayerButton_Click">
             <StackPanel Orientation="Vertical" HorizontalAlignment="Center">
                 <Image Source="/Assets/HyPlayerIcon.png" Width="72" Height="72" />
@@ -29,5 +32,10 @@
                 <TextBlock HorizontalAlignment="Center" Margin="0,8,0,0" Foreground="Black" FontSize="12">LyricEase</TextBlock>
             </StackPanel>
         </Button>
+        <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Margin="0,0,0,4"
+                  Content="启动时显示"
+                  DataContext="{Binding Source={StaticResource Locator},Path=SettingsWindowViewModel}" 
+                  Visibility="{Binding ShowLauncherWindowOnStartupEnabled,Converter={StaticResource BooleanToVisibilityConverter}}"
+                  IsChecked="{Binding ShowLauncherWindowOnStartup,Mode=TwoWay}" />
     </Grid>
 </Window>

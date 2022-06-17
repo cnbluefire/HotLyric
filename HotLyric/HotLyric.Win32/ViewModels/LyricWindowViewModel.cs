@@ -491,7 +491,9 @@ namespace HotLyric.Win32.ViewModels
 
                     if (!sessionInited)
                     {
-                        if (SelectedSession == null && settingVm.ShowLauncherWindowOnStartupEnabled)
+                        if (SelectedSession == null
+                            && settingVm.ShowLauncherWindowOnStartupEnabled
+                            && settingVm.ShowLauncherWindowOnStartup)
                         {
                             settingVm.ShowLauncherWindow();
                         }

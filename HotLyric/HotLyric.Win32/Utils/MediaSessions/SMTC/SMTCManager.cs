@@ -79,7 +79,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             var result = oldSessions?.FirstOrDefault(c => c.Session == session);
             if (result != null) return result;
 
-            if (app.AppId == "com.electron.yesplaymusic")
+            if (app.AppId == "com.electron.yesplaymusic" || app.AppId == "YesPlayMusic.exe")
             {
                 return new YesPlayerMusicSession(session, app);
             }

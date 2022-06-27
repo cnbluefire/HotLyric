@@ -19,6 +19,7 @@ namespace HotLyric.Win32.Controls
         private bool disposedValue;
         private NotifyIcon notifyIcon;
 
+        private System.Windows.Controls.MenuItem launcherMenuItem;
         private System.Windows.Controls.MenuItem transparentMenuItem;
         private System.Windows.Controls.MenuItem alwaysShowBackgroundMenuItem;
         private System.Windows.Controls.MenuItem karaokeMenuItem;
@@ -37,6 +38,12 @@ namespace HotLyric.Win32.Controls
             var contextMenu = new System.Windows.Controls.ContextMenu();
 
             contextMenu.AddHandler(System.Windows.Controls.MenuItem.ClickEvent, new RoutedEventHandler(ContextMenu_ItemClick));
+
+            launcherMenuItem = new System.Windows.Controls.MenuItem()
+            {
+                Header = "引导窗口",
+                Name = "Launcher",
+            };
 
             transparentMenuItem = new System.Windows.Controls.MenuItem()
             {
@@ -105,6 +112,7 @@ namespace HotLyric.Win32.Controls
                 Name = "Exit"
             };
 
+            contextMenu.Items.Add(launcherMenuItem);
             contextMenu.Items.Add(transparentMenuItem);
             contextMenu.Items.Add(alwaysShowBackgroundMenuItem);
             contextMenu.Items.Add(karaokeMenuItem);
@@ -197,7 +205,11 @@ namespace HotLyric.Win32.Controls
             {
                 await Task.Delay(10);
 
-                if (menuItem.Name == "Transparent")
+                if (menuItem.Name == "Launcher")
+                {
+                    ViewModelLocator.Instance.SettingsWindowViewModel.ShowLauncherWindow();
+                }
+                else if (menuItem.Name == "Transparent")
                 {
                     ViewModelLocator.Instance.SettingsWindowViewModel.WindowTransparent = menuItem.IsChecked;
                 }

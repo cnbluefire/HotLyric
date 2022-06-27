@@ -713,13 +713,8 @@ namespace HotLyric.Win32.ViewModels
 
         public void ActivateInstance()
         {
-            if (ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession == null
-                && !CommandLineArgsHelper.HasLaunchParameters
-                && ShowLauncherWindowOnStartupEnabled)
-            {
-                ViewModelLocator.Instance.SettingsWindowViewModel.ShowLauncherWindow();
-            }
-            else
+            if (ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession != null
+                || CommandLineArgsHelper.HasLaunchParameters)
             {
                 if (ViewModelLocator.Instance.LyricWindowViewModel.IsMinimized)
                 {

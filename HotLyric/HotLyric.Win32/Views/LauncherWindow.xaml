@@ -33,7 +33,7 @@
             </StackPanel>
         </Button>
         <CheckBox Grid.Row="2" Grid.ColumnSpan="2" Margin="0,0,0,4"
-                  Content="启动时显示"
+                  Content="自动显示"
                   DataContext="{Binding Source={StaticResource Locator},Path=SettingsWindowViewModel}" 
                   Visibility="{Binding ShowLauncherWindowOnStartupEnabled,Converter={StaticResource BooleanToVisibilityConverter}}"
                   IsChecked="{Binding ShowLauncherWindowOnStartup,Mode=TwoWay}" />

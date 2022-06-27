@@ -248,16 +248,17 @@ namespace HotLyric.Win32.Views
             await Task.Delay(1000);
             await Dispatcher.BeginInvoke(new Action(() =>
             {
-                if (isClosing || !IsVisible || hwndSource == null || !ViewModelLocator.Instance.SettingsWindowViewModel.AutoResetWindowPos) return;
+                if (isClosing
+                  || !IsVisible
+                  || hwndSource == null
+                  || !ViewModelLocator.Instance.SettingsWindowViewModel.AutoResetWindowPos) return;
 
                 if (User32.GetWindowRect(hwndSource.Handle, out var _windowRect))
                 {
                     var windowRect = (System.Drawing.Rectangle)_windowRect;
-                    var minSize = 30;
+                    var minSize = 24;
 
                     var screenRects = System.Windows.Forms.Screen.AllScreens.Select(c => c.Bounds).ToArray();
-                    var primaryRect = System.Windows.Forms.Screen.PrimaryScreen.Bounds;
-                    var primaryWorkarea = System.Windows.Forms.Screen.PrimaryScreen.WorkingArea;
 
                     var flag = false;
 

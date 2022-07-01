@@ -46,6 +46,8 @@ namespace HotLyric.Win32
             lyricHostWindow.Show();
 
             _ = CheckUpdateAsync();
+
+            ViewModelLocator.Instance.SettingsWindowViewModel.TryShowReadMeOnStartup();
         }
 
         protected override void OnExit(ExitEventArgs e)

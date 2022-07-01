@@ -70,7 +70,6 @@ namespace HotLyric.Win32.ViewModels
         private MediaModel? mediaModel = MediaModel.CreateEmptyMedia();
         private bool isMinimized;
         private DelayValueHolder<bool> isMinimizedByPause;
-        private bool sessionInited;
         private bool karaokeEnabled;
         private ICommand? openCurrentSessionAppCmd;
         private LyricThemeView? lyricTheme;
@@ -443,7 +442,6 @@ namespace HotLyric.Win32.ViewModels
                 from = CommandLineArgsHelper.LaunchFromPackageFamilyName;
 
                 // 从参数启动时不弹出启动app的窗口
-                sessionInited = true;
             }
 
             var lastSelectedAppId = (SelectedSession?.Session as ISMTCSession)?.Session?.SourceAppUserModelId ?? "";
@@ -488,17 +486,6 @@ namespace HotLyric.Win32.ViewModels
                             model.Dispose();
                         }
                     }
-
-                    if (!sessionInited)
-                    {
-                        if (SelectedSession == null
-                            && settingVm.ShowLauncherWindowOnStartupEnabled
-                            && settingVm.ShowLauncherWindowOnStartup)
-                        {
-                            settingVm.ShowLauncherWindow();
-                        }
-                    }
-                    sessionInited = true;
 
                     OnPropertyChanged(nameof(HasMoreSession));
                 }));

@@ -10,7 +10,7 @@
 	<ItemGroup>
 		<PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.18362.2005" />
 		<PackageReference Include="RawInput.Sharp" Version="0.0.4" />
-		<PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.0" />
-		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.0" />
+		<PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.3" />
+		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.3" />
 	</ItemGroup>
 </Project>

@@ -98,6 +98,8 @@ namespace HotLyric.Win32.Utils
                                 return new Version(0, 0, 0, 0);
                             }).FirstOrDefault();
 
+                        if (package == null) return false;
+
                         var entryPoint = await GetApplicationIdAsync(package);
 
                         if (string.IsNullOrEmpty(entryPoint)) entryPoint = "App";
@@ -154,7 +156,7 @@ namespace HotLyric.Win32.Utils
                 // 即使应用安装到非系统盘，依旧会在用户文件夹里建立链接，所以直接访问用户目录即可
                 var appdataPackages = Path.Combine(Environment.GetFolderPath(Environment.SpecialFolder.LocalApplicationData), "Packages");
                 var packageAppDataFolder = Path.Combine(appdataPackages, package.Id.FamilyName);
-                
+
                 if (Directory.Exists(packageAppDataFolder))
                 {
                     return packageAppDataFolder;

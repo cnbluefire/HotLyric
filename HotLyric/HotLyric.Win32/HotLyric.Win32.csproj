@@ -51,12 +51,12 @@
 		<PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
 		<PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.7" />
 		<PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.18362.2005" />
-		<PackageReference Include="ModernWpfUI" Version="0.9.4" />
+		<PackageReference Include="ModernWpfUI" Version="0.9.6" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.0" />
-		<PackageReference Include="Vanara.PInvoke.Security" Version="3.4.0" />
-		<PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.0" />
-		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.0" />
+		<PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.3" />
+		<PackageReference Include="Vanara.PInvoke.Security" Version="3.4.3" />
+		<PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.3" />
+		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.3" />
 		<PackageReference Include="Win2D.uwp" Version="1.26.0" />
 	</ItemGroup>
 

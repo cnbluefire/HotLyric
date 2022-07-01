@@ -213,7 +213,7 @@
                                           Command="{Binding StartupTaskHelper.ToggleStartupTaskCommand}"
                                           ui:ControlHelper.CornerRadius="4" />
 
-                                <CheckBox Padding="12,0,0,0" Content="启用引导窗口" 
+                                <CheckBox Padding="12,0,0,0" Content="启用引导窗口" Visibility="Collapsed"
                                           IsChecked="{Binding ShowLauncherWindowOnStartup,Mode=TwoWay}"
                                           IsEnabled="{Binding ShowLauncherWindowOnStartupEnabled,Mode=OneWay}"
                                           ui:ControlHelper.CornerRadius="4" />

@@ -45,6 +45,7 @@ namespace HotLyric.Win32.ViewModels
         private const string ShowLauncherWindowOnStartupSettingKey = "Settings_ShowLauncherWindowOnStartup";
         private const string HideOnPausedSettingKey = "Settings_HideOnPaused";
         private const string AutoResetWindowPosSettingsKey = "Settings_AutoResetWindowPos";
+        private const string ReadMeAlreadyShowedOnStartUpSettingsKey = "Settings_ReadMeAlreadyShowedOnStartUp";
 
         public SettingsWindowViewModel()
         {
@@ -643,23 +644,7 @@ namespace HotLyric.Win32.ViewModels
         {
             if (SetProperty(ref field, value, propertyName))
             {
-                settingsKey = settingsKey?.Trim();
-                if (!string.IsNullOrEmpty(settingsKey))
-                {
-                    try
-                    {
-                        if (value is null)
-                        {
-                            ApplicationData.Current.LocalSettings.Values.Remove(settingsKey);
-                        }
-                        else
-                        {
-                            var json = JsonConvert.SerializeObject(value);
-                            ApplicationData.Current.LocalSettings.Values[settingsKey] = json;
-                        }
-                    }
-                    catch { }
-                }
+                SetSettings(settingsKey, value);
 
                 try
                 {
@@ -670,6 +655,27 @@ namespace HotLyric.Win32.ViewModels
                 return true;
             }
             return false;
+        }
+
+        private void SetSettings<T>(string? settingsKey, T value)
+        {
+            settingsKey = settingsKey?.Trim();
+            if (!string.IsNullOrEmpty(settingsKey))
+            {
+                try
+                {
+                    if (value is null)
+                    {
+                        ApplicationData.Current.LocalSettings.Values.Remove(settingsKey);
+                    }
+                    else
+                    {
+                        var json = JsonConvert.SerializeObject(value);
+                        ApplicationData.Current.LocalSettings.Values[settingsKey] = json;
+                    }
+                }
+                catch { }
+            }
         }
 
         private void NotifySettingsChanged()
@@ -709,6 +715,23 @@ namespace HotLyric.Win32.ViewModels
                 launcherWindow.Activate();
             }
             catch { }
+        }
+
+        public void ShowReadMe()
+        {
+            DispatcherHelper.UIDispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(async () =>
+            {
+                await Launcher.LaunchUriAsync(new Uri("https://github.com/cnbluefire/HotLyric/blob/main/README.md"));
+            }));
+        }
+
+        public void TryShowReadMeOnStartup()
+        {
+            if (!LoadSetting(ReadMeAlreadyShowedOnStartUpSettingsKey, false))
+            {
+                SetSettings(ReadMeAlreadyShowedOnStartUpSettingsKey, true);
+                ShowReadMe();
+            }
         }
 
         public void ActivateInstance()

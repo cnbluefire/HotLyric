@@ -41,8 +41,8 @@ namespace HotLyric.Win32.Controls
 
             launcherMenuItem = new System.Windows.Controls.MenuItem()
             {
-                Header = "引导窗口",
-                Name = "Launcher",
+                Header = "使用帮助",
+                Name = "ReadMe",
             };
 
             transparentMenuItem = new System.Windows.Controls.MenuItem()
@@ -205,9 +205,9 @@ namespace HotLyric.Win32.Controls
             {
                 await Task.Delay(10);
 
-                if (menuItem.Name == "Launcher")
+                if (menuItem.Name == "ReadMe")
                 {
-                    ViewModelLocator.Instance.SettingsWindowViewModel.ShowLauncherWindow();
+                    ViewModelLocator.Instance.SettingsWindowViewModel.ShowReadMe();
                 }
                 else if (menuItem.Name == "Transparent")
                 {

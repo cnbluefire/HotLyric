@@ -14,6 +14,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 appId: "9n5td916686k",
                 packageFamilyNamePrefix: "48848aaaaaaccd.HyPlayer_",
                 hasStoreUri: true,
+                purchaseUrl:"https://go.microsoft.com/fwlink/?LinkId=532540&mstoken=GVMC9-P946G-YXTMM-6GMVG-MVMPZ",
                 positionMode: SMTCAppPositionMode.FromApp,
                 defaultLrcProvider: "NetEase"),
 

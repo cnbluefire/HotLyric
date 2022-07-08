@@ -21,7 +21,7 @@
 ---
 
 1. <span id="ref1">由于热词对这些播放器的歌词匹配基于歌名歌手搜索，所以匹配可能不精准或匹配不到。</span>
-2. <span id="ref2">请使用真 UWP 不更新版，微软商店最新版为 Win32，非 UWP 版。</span>
+2. <span id="ref2">请使用 [UWP 不更新版](https://github.com/JasonWei512/NetEase-Cloud-Music-UWP-Repack)，微软商店最新版为 Win32 版，非 UWP 版。</span>
 3. <span id="ref3">由于播放器未提供进度信息，热词使用内置定时器更新歌词进度，所以当手动修改播放进度后热词将无法匹配到正确的歌词。</span>
 4. <span id="ref4">可能无法获取到QQ音乐UWP的播放信息，先开启QQ音乐UWP再启动热词可以缓解。</span>
 

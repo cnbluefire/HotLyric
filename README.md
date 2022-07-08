@@ -13,7 +13,7 @@
 |[HyPlayer](https://github.com/HyPlayer/HyPlayer)|完全支持
 |[LyricEase](https://github.com/brandonw3612/LyricEase)|完全支持
 |[Spotify](https://www.spotify.com/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup>
-|[网易云音乐 UWP](https://github.com/JasonWei512/NetEase-Cloud-Music-UWP-Repack)<sup><a href="#ref2">2</a></sup>|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup>（）
+|[网易云音乐 UWP](https://github.com/JasonWei512/NetEase-Cloud-Music-UWP-Repack)<sup><a href="#ref2">2</a></sup>|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup>
 |[QQ音乐 UWP](https://www.microsoft.com/store/productId/9WZDNCRFJ1Q1)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup> 无法获取歌曲信息<sup><a href="#ref4">4</a></sup>
 |[媒体播放器（Groove 音乐）](https://www.microsoft.com/store/productId/9WZDNCRFJ3PT)|歌词可能匹配不准确<sup><a href="#ref1">1</a>
 |[Foobar2000 (v1.5.1+)](https://www.foobar2000.org/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup>

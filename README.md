@@ -13,21 +13,22 @@
 |[HyPlayer](https://github.com/HyPlayer/HyPlayer)|完全支持
 |[LyricEase](https://github.com/brandonw3612/LyricEase)|完全支持
 |[Spotify](https://www.spotify.com/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup>
-|[网易云音乐UWP不更新版](https://github.com/JasonWei512/NetEase-Cloud-Music-UWP-Repack)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup>
-|[QQ音乐UWP](https://www.microsoft.com/store/productId/9WZDNCRFJ1Q1)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup> 无法获取歌曲信息<sup><a href="#ref3">3</a></sup>
-|[媒体播放器(Groove音乐)](https://www.microsoft.com/store/productId/9WZDNCRFJ3PT)|歌词可能匹配不准确<sup><a href="#ref1">1</a>
-|[Foobar2000(v1.5.1+)](https://www.foobar2000.org/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref2">2</a></sup>
-|[YesPlayerMusic(请使用最新版)](https://github.com/qier222/YesPlayMusic)|完全支持
+|[网易云音乐 UWP](https://github.com/JasonWei512/NetEase-Cloud-Music-UWP-Repack)<sup><a href="#ref2">2</a></sup>|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup>（）
+|[QQ音乐 UWP](https://www.microsoft.com/store/productId/9WZDNCRFJ1Q1)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup> 无法获取歌曲信息<sup><a href="#ref4">4</a></sup>
+|[媒体播放器（Groove 音乐）](https://www.microsoft.com/store/productId/9WZDNCRFJ3PT)|歌词可能匹配不准确<sup><a href="#ref1">1</a>
+|[Foobar2000 (v1.5.1+)](https://www.foobar2000.org/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup>
+|[YesPlayerMusic](https://github.com/qier222/YesPlayMusic)|完全支持（请使用最新版）
 ---
 
 1. <span id="ref1">由于热词对这些播放器的歌词匹配基于歌名歌手搜索，所以匹配可能不精准或匹配不到。</span>
-2. <span id="ref2">由于播放器未提供进度信息，热词使用内置定时器更新歌词进度，所以当手动修改播放进度后热词将无法匹配到正确的歌词。</span>
-2. <span id="ref3">可能无法获取到QQ音乐UWP的播放信息，先开启QQ音乐UWP再启动热词可以缓解。</span>
+2. <span id="ref2">请使用真 UWP 不更新版，微软商店最新版为 Win32，非 UWP 版。</span>
+3. <span id="ref3">由于播放器未提供进度信息，热词使用内置定时器更新歌词进度，所以当手动修改播放进度后热词将无法匹配到正确的歌词。</span>
+4. <span id="ref4">可能无法获取到QQ音乐UWP的播放信息，先开启QQ音乐UWP再启动热词可以缓解。</span>
 
 ## 已知问题
-* Windows10中关闭所有播放器时热词可能不会自动隐藏。
-* 安装StartAllBack后热词渲染可能不正确，具体表现如歌词文字重叠，自定义颜色控件背景丢失等，卸载StartAllBack即可解决。
-* 11代Intel核心显卡使用WDDM版本为2.7的显卡驱动时，热词可能渲染不正确，升级核显驱动可以解决此问题，或开启热词的强制软件渲染进行缓解。
+* Windows 10 中关闭所有播放器时热词可能不会自动隐藏。
+* 安装 StartAllBack 后热词渲染可能不正确，具体表现如歌词文字重叠，自定义颜色控件背景丢失等，卸载 StartAllBack 即可解决。
+* 11 代 Intel 核心显卡使用 WDDM 版本为 2.7 的显卡驱动时，热词可能渲染不正确，升级核显驱动可以解决此问题，或开启热词的强制软件渲染进行缓解。
 
 ## 如何打开
 
@@ -42,7 +43,7 @@
 ![lyricease](https://github.com/cnbluefire/HotLyric/blob/main/assets/lyricease.png)
 
 ### Spotify
-Spotify需要在设置中开启 **在使用媒体键时显示桌面重叠**
+Spotify 需要在设置中开启 **在使用媒体键时显示桌面重叠**
 ![spotify](https://github.com/cnbluefire/HotLyric/blob/main/assets/spotify.png)
 
 ## 使用说明

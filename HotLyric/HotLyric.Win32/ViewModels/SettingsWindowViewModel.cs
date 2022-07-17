@@ -129,6 +129,7 @@ namespace HotLyric.Win32.ViewModels
         private AsyncRelayCommand? checkUpdateCmd;
         private AsyncRelayCommand? thirdPartyNoticeCmd;
         private AsyncRelayCommand? githubCmd;
+        private AsyncRelayCommand? fontSizeCmd;
         private bool skipEmptyLyricLine;
         private bool textOpacityMask;
         private bool hideWhenFullScreenAppOpen;
@@ -492,6 +493,38 @@ namespace HotLyric.Win32.ViewModels
         {
             var uri = new Uri("https://github.com/cnbluefire/HotLyric");
             await Launcher.LaunchUriAsync(uri);
+        }));
+
+        public AsyncRelayCommand FontSizeCmd => fontSizeCmd ?? (fontSizeCmd = new AsyncRelayCommand(async () =>
+        {
+            var ownerWindow = App.Current.Windows.OfType<SettingsWindow>().FirstOrDefault();
+
+            var contentDialog = new ModernWpf.Controls.ContentDialog()
+            {
+                Title = "字号帮助",
+                Content = new ModernWpf.Controls.ScrollViewerEx()
+                {
+                    Content = new System.Windows.Controls.TextBlock()
+                    {
+                        Text = "拖拽歌词窗口尺寸即可改变文字大小",
+                        TextWrapping = TextWrapping.Wrap,
+                        FontSize = 14
+                    }
+                },
+                IsPrimaryButtonEnabled = true,
+                IsSecondaryButtonEnabled = true,
+                PrimaryButtonText = "查看更多帮助",
+                SecondaryButtonText = "确定",
+                CornerRadius = new CornerRadius(8),
+            };
+
+            contentDialog.Owner = ownerWindow;
+            var res = await contentDialog.ShowAsync();
+
+            if (res == ModernWpf.Controls.ContentDialogResult.Primary)
+            {
+                ShowReadMe();
+            }
         }));
 
         public AsyncRelayCommand SpotifySetLanguage => spotifySetLanguage ?? (spotifySetLanguage = new AsyncRelayCommand(async () =>

@@ -172,5 +172,10 @@ namespace HotLyric.Win32.Views
                 vm.ShowBackgroundTransient(TimeSpan.FromSeconds(2));
             }), System.Windows.Threading.DispatcherPriority.Background);
         }
+
+        private void ScrollViewerEx_ManipulationBoundaryFeedback(object sender, ManipulationBoundaryFeedbackEventArgs e)
+        {
+            e.Handled = true;
+        }
     }
 }

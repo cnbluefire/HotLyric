@@ -99,7 +99,7 @@
                 </Setter>
             </Style>
         </Grid.Resources>
-        <ui:ScrollViewerEx PanningMode="Both" IsManipulationEnabled="True">
+        <ui:ScrollViewerEx PanningMode="Both" ManipulationBoundaryFeedback="ScrollViewerEx_ManipulationBoundaryFeedback">
             <ui:SimpleStackPanel Margin="36,20" Orientation="Vertical" Spacing="12" Background="Transparent">
                 <HeaderedContentControl Focusable="False">
                     <HeaderedContentControl.Header>
@@ -279,6 +279,21 @@
                             </ComboBox>
                         </HeaderedContentControl>
 
+                        <HeaderedContentControl Style="{StaticResource CardStyle}" Header="字号">
+                            <HeaderedContentControl.Tag>
+                                <ui:FontIcon Glyph="&#xE1C8;" FontSize="16" />
+                            </HeaderedContentControl.Tag>
+                            <HeaderedContentControl.Resources>
+                                <ResourceDictionary>
+                                    <ResourceDictionary.MergedDictionaries>
+                                        <ResourceDictionary Source="/Themes/CommonStyle.xaml" />
+                                    </ResourceDictionary.MergedDictionaries>
+                                </ResourceDictionary>
+                            </HeaderedContentControl.Resources>
+                            <Button Content="帮助" Command="{Binding FontSizeCmd}" />
+
+                        </HeaderedContentControl>
+                        
                         <HeaderedContentControl Style="{StaticResource CardStyle}" Header="字体设置">
                             <HeaderedContentControl.Tag>
                                 <ui:FontIcon Glyph="&#xE185;" FontSize="16" />

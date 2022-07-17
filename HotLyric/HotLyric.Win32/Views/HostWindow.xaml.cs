@@ -183,8 +183,10 @@ namespace HotLyric.Win32.Views
 
         private void HostWindow_IsVisibleChanged(object sender, DependencyPropertyChangedEventArgs e)
         {
-            if (initWindowPosition)
+            if (e.NewValue is true && initWindowPosition)
             {
+                initWindowPosition = false;
+
                 WindowBoundsHelper.ResetWindowBounds(new WindowInteropHelper(this).Handle);
                 Dispatcher.BeginInvoke(new Action(SaveBounds), DispatcherPriority.Background);
             }

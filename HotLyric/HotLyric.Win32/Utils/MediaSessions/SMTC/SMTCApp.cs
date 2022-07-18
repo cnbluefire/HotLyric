@@ -17,7 +17,8 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             bool supportLaunch = true,
             string? defaultLrcProvider = null,
             bool convertToSimpleChinese = false,
-            Version? minSupportedVersion = null)
+            Version? minSupportedVersion = null,
+            string? purchaseUrl = null)
             : base(appId, customName, customAppIcon, defaultLrcProvider, convertToSimpleChinese, minSupportedVersion)
         {
             PackageFamilyNamePrefix = packageFamilyNamePrefix;
@@ -26,7 +27,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
             if (hasStoreUri)
             {
-                StoreUri = new Uri($"ms-windows-store://pdp/?productid={AppId}&mode=mini");
+                StoreUri = new Uri(purchaseUrl ?? $"ms-windows-store://pdp/?productid={AppId}&mode=mini");
             }
         }
 

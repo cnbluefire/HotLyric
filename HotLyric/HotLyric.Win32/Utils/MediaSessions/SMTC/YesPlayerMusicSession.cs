@@ -107,7 +107,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
                         var curEndTime = endTime;
 
-                        endTime = TimeSpan.FromMilliseconds(Math.Max(0, model.currentTrack.dt));
+                        endTime = model.currentTrack.DurationTime;
                         position = TimeSpan.FromSeconds(Math.Max(0, model.progress));
                     }
                     else
@@ -343,11 +343,39 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
                 public int id { get; set; }
 
-                public double dt { get; set; }
+                public double? dt { get; set; }
 
                 public Artist[]? ar { get; set; }
 
                 public Album? al { get; set; }
+
+                public Music? bMusic { get; set; }
+
+                public Music? hMusic { get; set; }
+
+                public Music? mMusic { get; set; }
+
+                public Music? lMusic { get; set; }
+
+                [JsonIgnore]
+                public TimeSpan DurationTime
+                {
+                    get
+                    {
+                        var t = dt
+                            ?? bMusic?.playTime
+                            ?? lMusic?.playTime
+                            ?? mMusic?.playTime
+                            ?? hMusic?.playTime;
+
+                        if (t.HasValue)
+                        {
+                            return TimeSpan.FromMilliseconds(Math.Max(0, t.Value));
+                        }
+
+                        return TimeSpan.Zero;
+                    }
+                }
             }
 
             public class Artist
@@ -361,6 +389,11 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             {
                 public int id { get; set; }
                 public string? name { get; set; }
+            }
+
+            public class Music
+            {
+                public double playTime { get; set; }
             }
 
         }

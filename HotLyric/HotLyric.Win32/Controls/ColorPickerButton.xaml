@@ -38,7 +38,7 @@
                                 </ResourceDictionary.MergedDictionaries>
                             </ResourceDictionary>
                         </Border.Resources>
-                        <hc:ColorPicker x:Name="InnterColorPicker" hc:Theme.Skin="Dark" />
+                        <hc:ColorPicker x:Name="InnterColorPicker" hc:Theme.Skin="Dark" Background="#1c1c1c" />
                     </Border>
                 </ui:Flyout>
             </ui:DropDownButton.Flyout>

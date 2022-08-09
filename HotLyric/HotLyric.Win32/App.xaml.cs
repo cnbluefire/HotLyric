@@ -29,6 +29,7 @@ namespace HotLyric.Win32
 
         protected override void OnStartup(StartupEventArgs e)
         {
+            this.DispatcherUnhandledException += App_DispatcherUnhandledException;
             CommandLineArgsHelper.ProcessCommandLineArgs(e.Args.Take(1).ToArray());
             base.OnStartup(e);
 
@@ -48,6 +49,16 @@ namespace HotLyric.Win32
             _ = CheckUpdateAsync();
 
             ViewModelLocator.Instance.SettingsWindowViewModel.TryShowReadMeOnStartup();
+        }
+
+        private async void App_DispatcherUnhandledException(object sender, System.Windows.Threading.DispatcherUnhandledExceptionEventArgs e)
+        {
+            if (e.Exception is ArgumentException ex && ex.ParamName == "maximum")
+            {
+                e.Handled = true;
+                PointerSupportHelper.IsPointerSupported = false;
+                await ApplicationHelper.RestartApplicationAsync();
+            }
         }
 
         protected override void OnExit(ExitEventArgs e)

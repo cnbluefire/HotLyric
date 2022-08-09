@@ -18,7 +18,7 @@ namespace HotLyric.Win32
                 return;
             }
 
-            AppContext.SetSwitch("Switch.System.Windows.Input.Stylus.EnablePointerSupport", true);
+            PointerSupportHelper.Initialize();
 
             var app = new App();
             app.InitializeComponent();

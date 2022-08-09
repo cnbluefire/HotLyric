@@ -118,7 +118,7 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
 
         private static WindowBackgroundProvider CreateProvider(Window window)
         {
-            if (DeviceHelper.HasTouchDevice)
+            if (DeviceHelper.HasTouchDeviceOrPen)
             {
                 return new TouchBackgroundProvider(window);
             }

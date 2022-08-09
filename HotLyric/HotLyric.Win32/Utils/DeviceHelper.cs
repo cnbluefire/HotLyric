@@ -29,7 +29,7 @@ namespace HotLyric.Win32.Utils
             }
         }
 
-        public static bool HasTouchDevice
+        public static bool HasTouchDeviceOrPen
         {
             get
             {
@@ -38,7 +38,9 @@ namespace HotLyric.Win32.Utils
                 return flag != SM_DIGITIZER_FLAG.TABLET_CONFIG_NONE
                     && (flag & SM_DIGITIZER_FLAG.NID_READY) != 0
                     && ((flag & SM_DIGITIZER_FLAG.NID_INTEGRATED_TOUCH) != 0
-                        || (flag & SM_DIGITIZER_FLAG.NID_EXTERNAL_TOUCH) != 0);
+                        || (flag & SM_DIGITIZER_FLAG.NID_EXTERNAL_TOUCH) != 0
+                        || (flag & SM_DIGITIZER_FLAG.NID_INTEGRATED_PEN) != 0
+                        || (flag & SM_DIGITIZER_FLAG.NID_EXTERNAL_PEN) != 0);
 
             }
         }
@@ -74,7 +76,7 @@ namespace HotLyric.Win32.Utils
                 }
             }
 
-            if (HasTouchDevice && User32.GetSystemMetrics(User32.SystemMetric.SM_CONVERTIBLESLATEMODE) == 0)
+            if (HasTouchDeviceOrPen && User32.GetSystemMetrics(User32.SystemMetric.SM_CONVERTIBLESLATEMODE) == 0)
             {
                 // 认为平板是低性能设备
                 return true;

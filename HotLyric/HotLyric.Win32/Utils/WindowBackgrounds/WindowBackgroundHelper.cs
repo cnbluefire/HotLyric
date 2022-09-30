@@ -5,6 +5,7 @@ using System.Collections.Generic;
 using System.Text;
 using System.Windows;
 using System.Windows.Media;
+using System.Windows.Threading;
 using Vanara.PInvoke;
 
 namespace HotLyric.Win32.Utils.WindowBackgrounds
@@ -14,9 +15,14 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
         public WindowBackgroundHelper(Window window)
         {
             this.window = window;
-            UpdateProvider();
 
-            // TODO: 连接到触摸屏的事件
+            popupTimer = new DispatcherTimer(DispatcherPriority.Background)
+            {
+                Interval = TimeSpan.FromSeconds(0.5)
+            };
+            popupTimer.Tick += (s, a) => UpdateHitTestVisible();
+
+            UpdateProvider();
         }
 
         private static readonly Brush hitTestBrush = new SolidColorBrush(Color.FromArgb(1, 255, 255, 255));
@@ -27,6 +33,8 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
         private WindowBackgroundProvider? provider;
         private bool isHitTestVisible;
         private bool isTransparent;
+        private bool forceVisible;
+        private DispatcherTimer popupTimer;
 
         public bool IsTransparent
         {
@@ -36,8 +44,24 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
                 if (isTransparent != value)
                 {
                     isTransparent = value;
+
+                    if (provider != null)
+                    {
+                        provider.IsTransparent = value;
+                    }
+
                     UpdateHitTestVisible();
                 }
+            }
+        }
+
+        public bool ForceVisible
+        {
+            get => forceVisible;
+            set
+            {
+                forceVisible = value;
+                UpdateHitTestVisible();
             }
         }
 
@@ -57,7 +81,25 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
 
         private void UpdateHitTestVisible()
         {
-            IsHitTestVisible = !IsTransparent && (provider?.IsHitTestVisible ?? false);
+            if (disposedValue) throw new ObjectDisposedException(nameof(WindowBackgroundHelper));
+
+            var hasOpenedPopup = WindowTopmostHelper.HasOpenedPopup();
+
+            if (hasOpenedPopup)
+            {
+                popupTimer.Start();
+                IsHitTestVisible = true;
+            }
+            else
+            {
+                popupTimer.Stop();
+                IsHitTestVisible = !IsTransparent && (provider?.IsHitTestVisible ?? ForceVisible);
+            }
+        }
+
+        public void UpdatePopupState()
+        {
+            UpdateHitTestVisible();
         }
 
         private void UpdateProvider()
@@ -70,6 +112,7 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
             provider = CreateProvider(window);
             if (provider != null)
             {
+                provider.IsTransparent = IsTransparent;
                 provider.IsHitTestVisibleChanged += Provider_IsHitTestVisibleChanged;
             }
 
@@ -87,6 +130,9 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
             {
                 if (disposing)
                 {
+                    popupTimer?.Stop();
+                    popupTimer = null!;
+
                     if (provider != null)
                     {
                         provider.IsHitTestVisibleChanged -= Provider_IsHitTestVisibleChanged;
@@ -118,14 +164,7 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
 
         private static WindowBackgroundProvider CreateProvider(Window window)
         {
-            if (DeviceHelper.HasTouchDeviceOrPen)
-            {
-                return new TouchBackgroundProvider(window);
-            }
-            else
-            {
-                return new MouseBackgroundProvider(window);
-            }
+            return new DefaultWindowBackgroundProvider(window);
         }
     }
 }

@@ -217,6 +217,19 @@ namespace HotLyric.Win32.Views
             SaveBounds();
         }
 
+        protected override void OnLocationChanged(EventArgs e)
+        {
+            base.OnLocationChanged(e);
+
+            Dispatcher.BeginInvoke(DispatcherPriority.Input, new Action(() =>
+            {
+                if (!VM.IsBackgroundTransientVisible)
+                {
+                    VM.ShowBackgroundTransient(TimeSpan.FromSeconds(3));
+                }
+            }));
+        }
+
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);
@@ -486,7 +499,6 @@ namespace HotLyric.Win32.Views
 
             Window.Top = 0;
             Window.Left = 0;
-
 
             var handle = new WindowInteropHelper(Window).EnsureHandle();
 

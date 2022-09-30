@@ -90,25 +90,6 @@ namespace HotLyric.Win32.Views
             ParentWindow?.SaveBounds();
         }
 
-        protected override void OnMouseEnter(MouseEventArgs e)
-        {
-            base.OnMouseEnter(e);
-            VM.IsBackgroundTransientVisible = true;
-
-        }
-
-        protected override void OnMouseLeave(MouseEventArgs e)
-        {
-            base.OnMouseLeave(e);
-
-            if (isDragMoving || Mouse.Captured != null) return;
-
-            if (!SessionComboBox.IsDropDownOpen)
-            {
-                VM.IsBackgroundTransientVisible = false;
-            }
-        }
-
         protected override void OnClosing(CancelEventArgs e)
         {
             base.OnClosing(e);

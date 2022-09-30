@@ -25,6 +25,8 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
             }
         }
 
+        public abstract bool IsTransparent { get; set; }
+
         protected virtual void OnIsHitTestVisibleChanged()
         {
             IsHitTestVisibleChanged?.Invoke(this, EventArgs.Empty);

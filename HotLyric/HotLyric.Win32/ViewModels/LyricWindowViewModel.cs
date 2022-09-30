@@ -37,6 +37,10 @@ namespace HotLyric.Win32.ViewModels
             isBackgroundTransientVisible = new DelayValueHolder<bool>(TimeSpan.FromSeconds(3));
             isBackgroundTransientVisible.ValueChanged += (s, a) =>
             {
+                if (backgroundHelper != null)
+                {
+                    backgroundHelper.ForceVisible = isBackgroundTransientVisible.Value;
+                }
                 OnPropertyChanged(nameof(IsBackgroundTransientVisible));
                 OnPropertyChanged(nameof(IsBackgroundVisible));
                 OnPropertyChanged(nameof(IsTitleButtonVisible));
@@ -88,7 +92,32 @@ namespace HotLyric.Win32.ViewModels
         public WindowBackgroundHelper? BackgroundHelper
         {
             get => backgroundHelper;
-            set => SetProperty(ref backgroundHelper, value);
+            set
+            {
+                var old = backgroundHelper;
+                if (SetProperty(ref backgroundHelper, value))
+                {
+                    if (old != null)
+                    {
+                        WeakEventManager<INotifyPropertyChanged, PropertyChangedEventArgs>.RemoveHandler(
+                            old, "PropertyChanged", OnBackgroundHelperPropertyChanged);
+                    }
+                    if (backgroundHelper != null)
+                    {
+                        WeakEventManager<INotifyPropertyChanged, PropertyChangedEventArgs>.AddHandler(
+                            backgroundHelper, "PropertyChanged", OnBackgroundHelperPropertyChanged);
+                    }
+                }
+            }
+        }
+
+        private void OnBackgroundHelperPropertyChanged(object? sender, PropertyChangedEventArgs e)
+        {
+            if (sender is WindowBackgroundHelper helper
+                && e.PropertyName == nameof(helper.IsHitTestVisible))
+            {
+                IsBackgroundTransientVisible = helper.IsHitTestVisible;
+            }
         }
 
         public bool IsTitleVisible

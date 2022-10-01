@@ -171,7 +171,7 @@ namespace HotLyric.Win32.Utils
             }
         }
 
-        public static bool HasOpenedPopup(Window? window = null)
+        public static bool HasOpenedPopup(Window? window = null, bool ignoreTooltip = true)
         {
             return PresentationSource.CurrentSources.OfType<System.Windows.Interop.HwndSource>()
                 .Select(h => h.RootVisual)
@@ -179,6 +179,7 @@ namespace HotLyric.Win32.Utils
                 .Select(f => f.Parent)
                 .OfType<System.Windows.Controls.Primitives.Popup>()
                 .Where(c => window == null || Window.GetWindow(c) == window)
+                .Where(c => !ignoreTooltip || !(c.Child is ToolTip))
                 .Any(p => p.IsOpen);
         }
 

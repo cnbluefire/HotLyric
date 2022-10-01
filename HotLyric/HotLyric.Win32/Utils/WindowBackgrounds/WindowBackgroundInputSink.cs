@@ -178,16 +178,19 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
 
         private void StartTouchTimer()
         {
-            updateStateTimer?.Stop();
-            touchTimer?.Stop();
-            touchTimer?.Start();
+            window.Dispatcher.BeginInvoke(DispatcherPriority.Background, new Action(() =>
+            {
+                updateStateTimer?.Stop();
+                touchTimer?.Stop();
+                touchTimer?.Start();
+            }));
         }
 
         private IntPtr WndProc(IntPtr hwnd, int msg, IntPtr wParam, IntPtr lParam, ref bool handled)
         {
             if (hwnd == this.hwnd && msg == (int)User32.WindowMessage.WM_WINDOWPOSCHANGED)
             {
-                UpdateInnerWindowPosAndShow();
+                UpdateInnerWindowPosAndShow(false);
             }
             return IntPtr.Zero;
         }
@@ -209,7 +212,7 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
             }
         }
 
-        private void UpdateInnerWindowPosAndShow()
+        private void UpdateInnerWindowPosAndShow(bool updateState = true)
         {
             if (innerWindow.IsDragMoving) return;
 
@@ -228,7 +231,10 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
                     User32.SetWindowPosFlags.SWP_SHOWWINDOW
                         | User32.SetWindowPosFlags.SWP_NOACTIVATE);
 
-                UpdateMouseState();
+                if (updateState)
+                {
+                    UpdateMouseState();
+                }
             }
             else
             {

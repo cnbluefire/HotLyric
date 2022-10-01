@@ -37,5 +37,6 @@ namespace HotLyric.Win32.Utils.MediaSessions
 
         Task<ImageSource?> GetSessionIconAsync();
 
+        public bool IsDisposed { get; }
     }
 }

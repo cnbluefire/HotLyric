@@ -83,17 +83,24 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
         {
             if (disposedValue) throw new ObjectDisposedException(nameof(WindowBackgroundHelper));
 
-            var hasOpenedPopup = WindowTopmostHelper.HasOpenedPopup();
+            popupTimer.Stop();
 
-            if (hasOpenedPopup)
+            if (IsTransparent)
+            {
+                IsHitTestVisible = false;
+            }
+            else if (ForceVisible)
+            {
+                IsHitTestVisible = true;
+            }
+            else if (WindowTopmostHelper.HasOpenedPopup())
             {
                 popupTimer.Start();
                 IsHitTestVisible = true;
             }
             else
             {
-                popupTimer.Stop();
-                IsHitTestVisible = !IsTransparent && (provider?.IsHitTestVisible ?? ForceVisible);
+                IsHitTestVisible = provider?.IsHitTestVisible ?? false;
             }
         }
 

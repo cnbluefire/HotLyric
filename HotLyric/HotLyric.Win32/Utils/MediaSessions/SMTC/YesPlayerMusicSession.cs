@@ -259,6 +259,8 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         public MediaSessionApp App { get; }
 
+        public bool IsDisposed => disposedValue;
+
         public Task<string?> GetSessionNameAsync()
         {
             if (!string.IsNullOrEmpty(App.CustomName)) return Task.FromResult<string?>(App.CustomName);

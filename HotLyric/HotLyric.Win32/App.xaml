@@ -23,7 +23,7 @@
             <Style TargetType="Image">
                 <Setter Property="RenderOptions.BitmapScalingMode" Value="HighQuality" />
             </Style>
-            
+
             <Style x:Key="TransparentWindowStyleUseWindowChrome" TargetType="Window">
                 <Setter Property="WindowStyle" Value="None" />
                 <Setter Property="ResizeMode" Value="NoResize" />

@@ -44,7 +44,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             var app = await GetAppAsync(curSession);
             if (app != null)
             {
-                var s = CreateMediaSession(curSession, app, sessions); ;
+                var s = CreateMediaSession(curSession, app, sessions);
 
                 list.Add(s);
                 appIdHash.Add(curSession.SourceAppUserModelId);

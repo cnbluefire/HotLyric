@@ -37,10 +37,6 @@ namespace HotLyric.Win32.ViewModels
             isBackgroundTransientVisible = new DelayValueHolder<bool>(TimeSpan.FromSeconds(3));
             isBackgroundTransientVisible.ValueChanged += (s, a) =>
             {
-                if (backgroundHelper != null)
-                {
-                    backgroundHelper.ForceVisible = isBackgroundTransientVisible.Value;
-                }
                 OnPropertyChanged(nameof(IsBackgroundTransientVisible));
                 OnPropertyChanged(nameof(IsBackgroundVisible));
                 OnPropertyChanged(nameof(IsTitleButtonVisible));
@@ -141,6 +137,11 @@ namespace HotLyric.Win32.ViewModels
             {
                 if (SetProperty(ref alwaysShowBackground, value))
                 {
+                    if (backgroundHelper != null)
+                    {
+                        backgroundHelper.ForceVisible = value;
+                    }
+
                     OnPropertyChanged(nameof(IsBackgroundVisible));
                     OnPropertyChanged(nameof(IsTitleButtonVisible));
                     OnPropertyChanged(nameof(LyricOpacity));
@@ -454,7 +455,7 @@ namespace HotLyric.Win32.ViewModels
 
             foreach (var session in sessions)
             {
-                if (session.Session.SourceAppUserModelId?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) == true)
+                if (!session.IsDisposed && session.Session.SourceAppUserModelId?.StartsWith(prefix, StringComparison.OrdinalIgnoreCase) == true)
                 {
                     return session;
                 }

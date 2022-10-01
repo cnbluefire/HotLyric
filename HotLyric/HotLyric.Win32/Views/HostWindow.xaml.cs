@@ -161,7 +161,8 @@ namespace HotLyric.Win32.Views
 
                 VM.BackgroundHelper = new Utils.WindowBackgrounds.WindowBackgroundHelper(this)
                 {
-                    IsTransparent = IsTransparent
+                    IsTransparent = IsTransparent,
+                    ForceVisible = VM.AlwaysShowBackground
                 };
                 //UpdateMouseEvent();
 
@@ -483,7 +484,10 @@ namespace HotLyric.Win32.Views
 
         public void SaveBounds()
         {
-            WindowBoundsHelper.SetWindowBounds("lyric", Left, Top, Width, Height);
+            if (Width != double.NaN && Height != double.NaN)
+            {
+                WindowBoundsHelper.SetWindowBounds("lyric", Left, Top, Width, Height);
+            }
         }
 
     }

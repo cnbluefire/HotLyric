@@ -261,6 +261,8 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         public MediaSessionApp App { get; }
 
+        public bool IsDisposed => disposedValue;
+
         private MediaSessionMediaProperties? CreateMediaProperties(GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties)
         {
             if (mediaProperties == null) return null;

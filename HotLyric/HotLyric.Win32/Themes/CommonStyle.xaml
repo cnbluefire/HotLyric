@@ -13,6 +13,8 @@
 
     <Style TargetType="ui:FontIcon">
         <Setter Property="FontFamily" Value="{StaticResource SymbolThemeFontFamily}" />
+        <Setter Property="TextOptions.TextRenderingMode" Value="Grayscale" />
+        <Setter Property="TextOptions.TextHintingMode" Value="Animated" />
     </Style>
 
 

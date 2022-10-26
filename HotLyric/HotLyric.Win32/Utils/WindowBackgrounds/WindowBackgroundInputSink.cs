@@ -116,7 +116,7 @@ namespace HotLyric.Win32.Utils.WindowBackgrounds
             }
         }
 
-        private void InnerWindow_MouseMove(object sender, MouseEventArgs e)
+        private void InnerWindow_MouseMove(object? sender, MouseEventArgs e)
         {
             if (innerWindow == null || (DateTime.UtcNow - innerWindow.lastTouchTime).TotalSeconds > 0.5)
             {

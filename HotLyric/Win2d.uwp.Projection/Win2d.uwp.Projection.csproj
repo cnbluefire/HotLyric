@@ -1,0 +1,69 @@
+﻿<Project Sdk="Microsoft.NET.Sdk">
+
+	<PropertyGroup>
+		<TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
+		<ImplicitUsings>enable</ImplicitUsings>
+		<Nullable>enable</Nullable>
+		<Platforms>x86;x64</Platforms>
+		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
+		<IsTrimmable>true</IsTrimmable>
+		<AssetTargetFallback>uap10.0.18362.0</AssetTargetFallback>
+		<DefineConstants>$(DefineConstants);UAC_VERSION_8</DefineConstants>
+		<NoWarn>$(NoWarn);0108</NoWarn>
+	</PropertyGroup>
+
+	<PropertyGroup>
+		<CsWinRTFilters>
+			-input 10.0.18362.0
+			-input "$(PkgWin2D_uwp)\lib\netcoreapp3.0\Microsoft.Graphics.Canvas.winmd"
+			-exclude "*"
+			-exclude "Microsoft.Graphics.Canvas.UI.Xaml"
+			-include "Microsoft.Graphics.Canvas"
+			-include "Windows.UI.Xaml.DependencyObject"
+			-include "Windows.UI.Xaml.IDependencyObject"
+			-include "Windows.UI.Xaml.DependencyProperty"
+			-include "Windows.UI.Xaml.IDependencyProperty"
+			-include "Windows.UI.Xaml.IDependencyPropertyChangedEventArgs"
+			-include "Windows.UI.Xaml.PropertyMetadata"
+			-include "Windows.UI.Xaml.IPropertyMetadata"
+			-include "Windows.UI.Xaml.CreateDefaultValueCallback"
+			-include "Windows.UI.Xaml.PropertyChangedCallback"
+		</CsWinRTFilters>
+	</PropertyGroup>
+
+	<ItemGroup>
+		<PackageReference Include="Microsoft.Windows.CsWinRT" Version="2.0.0" />
+		<PackageReference Include="Win2D.uwp" Version="1.26.0" GeneratePathProperty="true">
+			<ExcludeAssets>all</ExcludeAssets>
+		</PackageReference>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Platform)' == 'ARM'">
+		<ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-arm\native\Microsoft.Graphics.Canvas.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
+		</ContentWithTargetPath>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Platform)' == 'ARM64'">
+		<ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-arm64\native\Microsoft.Graphics.Canvas.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
+		</ContentWithTargetPath>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Platform)' == 'x86'">
+		<ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-x86\native\Microsoft.Graphics.Canvas.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
+		</ContentWithTargetPath>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Platform)' == 'x64'">
+		<ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-x64\native\Microsoft.Graphics.Canvas.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
+		</ContentWithTargetPath>
+	</ItemGroup>
+
+</Project>

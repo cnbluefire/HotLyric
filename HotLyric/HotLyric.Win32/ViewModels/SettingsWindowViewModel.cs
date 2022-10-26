@@ -2,8 +2,8 @@
 using HotLyric.Win32.Models;
 using HotLyric.Win32.Utils;
 using HotLyric.Win32.Views;
-using Microsoft.Toolkit.Mvvm.ComponentModel;
-using Microsoft.Toolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -336,7 +336,7 @@ namespace HotLyric.Win32.ViewModels
 
         public bool ShowLauncherWindowOnStartupEnabled => !StartupTaskHelper.IsStartupTaskEnabled;
 
-        private void StartupTaskHelper_PropertyChanged(object sender, System.ComponentModel.PropertyChangedEventArgs e)
+        private void StartupTaskHelper_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs e)
         {
             if (!ShowLauncherWindowOnStartupEnabled)
             {
@@ -455,7 +455,7 @@ namespace HotLyric.Win32.ViewModels
         {
             try
             {
-                var path = System.IO.Path.Combine(new System.IO.DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).Parent.FullName, "ThirdPartyNotices.txt");
+                var path = System.IO.Path.Combine(new System.IO.DirectoryInfo(AppDomain.CurrentDomain.BaseDirectory).Parent!.FullName, "ThirdPartyNotices.txt");
                 if (System.IO.File.Exists(path))
                 {
                     var allText = await System.IO.File.ReadAllTextAsync(path);

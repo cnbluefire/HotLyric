@@ -11,6 +11,7 @@ using System.Numerics;
 using System.Diagnostics.CodeAnalysis;
 using Windows.System;
 using Vanara.PInvoke;
+using WinRT;
 
 namespace HotLyric.Win32.BackgroundHelpers
 {
@@ -68,8 +69,8 @@ namespace HotLyric.Win32.BackgroundHelpers
             CreateDispatcherQueueController(options, out var pUnknown).ThrowIfFailed();
 
             var obj = Marshal.GetObjectForIUnknown(pUnknown);
-
-            this.dispatcherQueueController = (DispatcherQueueController)((object)obj);
+            
+            this.dispatcherQueueController = DispatcherQueueController.FromAbi(pUnknown);
 
             compositor = new Compositor();
 
@@ -88,15 +89,15 @@ namespace HotLyric.Win32.BackgroundHelpers
         }
 
         public ContainerVisual CreateRootVisual(IntPtr hwndTarget, bool isTopmost)
-        {
-            var interop = (ICompositorDesktopInterop?)((object?)compositor);
+        {            
+            var interop = WinRT.CastExtensions.As<ICompositorDesktopInterop>(compositor);
             if (interop == null) throw new ArgumentException(nameof(interop));
 
             interop.CreateDesktopWindowTarget(hwndTarget, isTopmost, out var pUnknown);
 
-            var obj = Marshal.GetObjectForIUnknown(pUnknown);
-
-            var target = (DesktopWindowTarget)obj;
+            //var obj = Marshal.GetObjectForIUnknown(pUnknown);
+            
+            var target = DesktopWindowTarget.FromAbi(pUnknown);
 
             var root = compositor!.CreateContainerVisual();
             root.RelativeSizeAdjustment = new Vector2(1f, 1f);

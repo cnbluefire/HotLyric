@@ -38,7 +38,6 @@ namespace HotLyric.Win32.Views
         private LyricWindowViewModel VM => (LyricWindowViewModel)DataContext!;
 
         private HwndSource? hwndSource;
-        private bool isDragMoving;
 
         public HostWindow ParentWindow
         {
@@ -83,9 +82,7 @@ namespace HotLyric.Win32.Views
 
             base.OnMouseLeftButtonDown(e);
 
-            isDragMoving = true;
             ParentWindow?.DragMove();
-            isDragMoving = false;
 
             ParentWindow?.SaveBounds();
         }

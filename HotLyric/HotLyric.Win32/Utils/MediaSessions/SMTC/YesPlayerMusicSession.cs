@@ -137,7 +137,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             }
         }
 
-        private async void InternalPositionTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private async void InternalPositionTimer_Elapsed(object? sender, ElapsedEventArgs? e)
         {
             await UpdatePlayerInfoAsync();
         }

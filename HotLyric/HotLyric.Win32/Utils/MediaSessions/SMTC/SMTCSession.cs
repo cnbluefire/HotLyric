@@ -68,7 +68,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             }
         }
 
-        private void InternalPositionTimer_Elapsed(object sender, ElapsedEventArgs e)
+        private void InternalPositionTimer_Elapsed(object? sender, ElapsedEventArgs? e)
         {
             var pos = (DateTime.Now - lastUpdatePositionTime) * PlaybackRate + lastPosition;
             if (PositionMode == SMTCAppPositionMode.OnlyUseTimer
@@ -294,7 +294,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
             if (skip > 0)
             {
-                genres = genres.Skip(skip).ToArray();
+                genres = genres?.Skip(skip).ToArray();
             }
 
             return new MediaSessionMediaProperties(

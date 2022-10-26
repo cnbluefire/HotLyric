@@ -205,7 +205,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
 
         internal static string BuildSearchKey(string? name, string[]? artists)
         {
-            return BuildSearchKey(name, string.Join(" ", artists.Where(c => !string.IsNullOrEmpty(c))));
+            return BuildSearchKey(name, artists != null ? string.Join(" ", artists.Where(c => !string.IsNullOrEmpty(c))) : null);
         }
 
 

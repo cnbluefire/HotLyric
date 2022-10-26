@@ -5,8 +5,8 @@ using HotLyric.Win32.Utils.MediaSessions;
 using HotLyric.Win32.Utils.MediaSessions.SMTC;
 using HotLyric.Win32.Utils.WindowBackgrounds;
 using HotLyric.Win32.Views;
-using Microsoft.Toolkit.Mvvm.ComponentModel;
-using Microsoft.Toolkit.Mvvm.Input;
+using CommunityToolkit.Mvvm.ComponentModel;
+using CommunityToolkit.Mvvm.Input;
 using System;
 using System.Collections.Generic;
 using System.Collections.ObjectModel;
@@ -491,7 +491,9 @@ namespace HotLyric.Win32.ViewModels
 
                 lastSelectedAppId = curSession?.Session?.SourceAppUserModelId ?? string.Empty;
 
-                var models = await Task.WhenAll(sessions.Select(async c => await MediaSessionModel.CreateAsync(c)));
+                var _sessions = sessions ?? Array.Empty<ISMTCSession>();
+
+                var models = await Task.WhenAll(_sessions.Select(async c => await MediaSessionModel.CreateAsync(c)));
 
                 DispatcherHelper.UIDispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
                 {

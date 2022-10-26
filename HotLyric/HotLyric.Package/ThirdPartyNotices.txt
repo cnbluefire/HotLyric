@@ -149,7 +149,7 @@ SOFTWARE.
 
 --------------------------
 
-Microsoft.Toolkit.Mvvm
+CommunityToolkit.Mvvm
 https://github.com/CommunityToolkit/WindowsCommunityToolkit
 
 # Windows Community Toolkit

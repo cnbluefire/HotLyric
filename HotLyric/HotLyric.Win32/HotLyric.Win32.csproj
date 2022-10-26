@@ -1,8 +1,8 @@
-﻿<Project Sdk="Microsoft.NET.Sdk.WindowsDesktop">
+﻿<Project Sdk="Microsoft.NET.Sdk">
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>netcoreapp3.1</TargetFramework>
+		<TargetFramework>net6-windows10.0.18362.0</TargetFramework>
 		<!--<ImplicitUsings>enable</ImplicitUsings>-->
 		<Nullable>enable</Nullable>
 		<UseWPF>true</UseWPF>
@@ -13,7 +13,7 @@
 
 		<StartupObject>HotLyric.Win32.Program</StartupObject>
 
-		<NoWarn>1701;1702;WFAC01</NoWarn>
+		<NoWarn>$(NoWarn);WFAC01</NoWarn>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
@@ -44,24 +44,23 @@
 	</ItemGroup>
 
 	<ItemGroup>
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
 		<PackageReference Include="Fastenshtein" Version="1.0.0.8" />
 		<PackageReference Include="HandyControl" Version="3.3.0" />
 		<PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-		<PackageReference Include="Microsoft.Toolkit.Mvvm" Version="7.1.2" />
 		<PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.7" />
-		<PackageReference Include="Microsoft.Windows.SDK.Contracts" Version="10.0.18362.2005" />
 		<PackageReference Include="ModernWpfUI" Version="0.9.6" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
 		<PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.3" />
 		<PackageReference Include="Vanara.PInvoke.Security" Version="3.4.3" />
 		<PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.3" />
 		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.3" />
-		<PackageReference Include="Win2D.uwp" Version="1.26.0" />
 	</ItemGroup>
 
 	<ItemGroup>
-	  <ProjectReference Include="..\HotLyric.Input\HotLyric.Input.csproj" />
+		<ProjectReference Include="..\HotLyric.Input\HotLyric.Input.csproj" />
+		<ProjectReference Include="..\Win2d.uwp.Projection\Win2d.uwp.Projection.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>
@@ -75,9 +74,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <None Update="Assets\defaultTheme.json">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </None>
+		<None Update="Assets\defaultTheme.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
 	</ItemGroup>
 
 </Project>

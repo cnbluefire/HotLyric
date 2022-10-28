@@ -3,7 +3,7 @@
 	<PropertyGroup>
 		<TargetFramework>net6-windows10.0.18362.0</TargetFramework>
 		<Nullable>enable</Nullable>
-		<Platforms>x86;x64</Platforms>
+		<Platforms>x86;x64;ARM64</Platforms>
 		<UseWindowsForms>true</UseWindowsForms>
 	</PropertyGroup>
 	

@@ -8,8 +8,8 @@
 		<UseWPF>true</UseWPF>
 		<UseWindowsForms>true</UseWindowsForms>
 		<ApplicationManifest>app.manifest</ApplicationManifest>
-		<Platforms>x86;x64</Platforms>
-		<RuntimeIdentifiers>win10-x86;win10-x64</RuntimeIdentifiers>
+		<Platforms>x86;x64;ARM64</Platforms>
+		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
 
 		<StartupObject>HotLyric.Win32.Program</StartupObject>
 
@@ -19,6 +19,11 @@
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
 		<RuntimeIdentifier>win10-x86</RuntimeIdentifier>
 		<SelfContained>true</SelfContained>
+	</PropertyGroup>
+	
+	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
+	  <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
+	  <SelfContained>true</SelfContained>
 	</PropertyGroup>
 
 	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">

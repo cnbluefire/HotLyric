@@ -4,7 +4,7 @@
 		<TargetFramework>net6.0-windows10.0.18362.0</TargetFramework>
 		<ImplicitUsings>enable</ImplicitUsings>
 		<Nullable>enable</Nullable>
-		<Platforms>x86;x64</Platforms>
+		<Platforms>x86;x64;ARM64</Platforms>
 		<EnableTrimAnalyzer>true</EnableTrimAnalyzer>
 		<IsTrimmable>true</IsTrimmable>
 		<AssetTargetFallback>uap10.0.18362.0</AssetTargetFallback>
@@ -38,13 +38,6 @@
 		</PackageReference>
 	</ItemGroup>
 
-	<ItemGroup Condition="'$(Platform)' == 'ARM'">
-		<ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-arm\native\Microsoft.Graphics.Canvas.dll">
-			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-			<TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
-		</ContentWithTargetPath>
-	</ItemGroup>
-
 	<ItemGroup Condition="'$(Platform)' == 'ARM64'">
 		<ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-arm64\native\Microsoft.Graphics.Canvas.dll">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -57,6 +50,20 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
 		</ContentWithTargetPath>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Platform)'=='ARM64'">
+	  <ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-x86\native\Microsoft.Graphics.Canvas.dll">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    <TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
+	  </ContentWithTargetPath>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(Platform)'=='ARM32'">
+	  <ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-x86\native\Microsoft.Graphics.Canvas.dll">
+	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+	    <TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
+	  </ContentWithTargetPath>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Platform)' == 'x64'">

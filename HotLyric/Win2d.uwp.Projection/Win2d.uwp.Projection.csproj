@@ -13,21 +13,23 @@
 	</PropertyGroup>
 
 	<PropertyGroup>
+		<_DependencyObjectObjects>
+			Windows.UI.Xaml.DependencyObject;
+			Windows.UI.Xaml.IDependencyObject;
+			Windows.UI.Xaml.DependencyProperty;
+			Windows.UI.Xaml.IDependencyProperty;
+			Windows.UI.Xaml.IDependencyPropertyChangedEventArgs;
+			Windows.UI.Xaml.PropertyMetadata;
+			Windows.UI.Xaml.IPropertyMetadata;
+			Windows.UI.Xaml.CreateDefaultValueCallback;
+			Windows.UI.Xaml.PropertyChangedCallback;
+		</_DependencyObjectObjects>
 		<CsWinRTFilters>
 			-input 10.0.18362.0
 			-input "$(PkgWin2D_uwp)\lib\netcoreapp3.0\Microsoft.Graphics.Canvas.winmd"
-			-exclude "*"
-			-exclude "Microsoft.Graphics.Canvas.UI.Xaml"
+			-exclude "Microsoft;Windows;Microsoft.Graphics.Canvas.UI.Xaml"
 			-include "Microsoft.Graphics.Canvas"
-			-include "Windows.UI.Xaml.DependencyObject"
-			-include "Windows.UI.Xaml.IDependencyObject"
-			-include "Windows.UI.Xaml.DependencyProperty"
-			-include "Windows.UI.Xaml.IDependencyProperty"
-			-include "Windows.UI.Xaml.IDependencyPropertyChangedEventArgs"
-			-include "Windows.UI.Xaml.PropertyMetadata"
-			-include "Windows.UI.Xaml.IPropertyMetadata"
-			-include "Windows.UI.Xaml.CreateDefaultValueCallback"
-			-include "Windows.UI.Xaml.PropertyChangedCallback"
+			-include "$(_DependencyObjectObjects)"
 		</CsWinRTFilters>
 	</PropertyGroup>
 

@@ -40,6 +40,13 @@
 		</PackageReference>
 	</ItemGroup>
 
+	<ItemGroup Condition="'$(Platform)' == 'ARM'">
+		<ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-arm\native\Microsoft.Graphics.Canvas.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
+		</ContentWithTargetPath>
+	</ItemGroup>
+
 	<ItemGroup Condition="'$(Platform)' == 'ARM64'">
 		<ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-arm64\native\Microsoft.Graphics.Canvas.dll">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
@@ -52,20 +59,6 @@
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 			<TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
 		</ContentWithTargetPath>
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(Platform)'=='ARM64'">
-	  <ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-x86\native\Microsoft.Graphics.Canvas.dll">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	    <TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
-	  </ContentWithTargetPath>
-	</ItemGroup>
-
-	<ItemGroup Condition="'$(Platform)'=='ARM32'">
-	  <ContentWithTargetPath Include="$(PkgWin2D_uwp)\runtimes\win10-x86\native\Microsoft.Graphics.Canvas.dll">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	    <TargetPath>Microsoft.Graphics.Canvas.dll</TargetPath>
-	  </ContentWithTargetPath>
 	</ItemGroup>
 
 	<ItemGroup Condition="'$(Platform)' == 'x64'">

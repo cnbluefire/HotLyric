@@ -1,5 +1,6 @@
 ﻿using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.UI.Composition;
+using Microsoft.Win32;
 using System;
 using System.Collections.Generic;
 using System.Text;
@@ -24,6 +25,13 @@ namespace HotLyric.Win32.BackgroundHelpers
                 size,
                 Windows.Graphics.DirectX.DirectXPixelFormat.B8G8R8A8UIntNormalized,
                 Windows.Graphics.DirectX.DirectXAlphaMode.Premultiplied);
+
+            SystemEvents.DisplaySettingsChanged += SystemEvents_DisplaySettingsChanged;
+        }
+
+        private void SystemEvents_DisplaySettingsChanged(object? sender, EventArgs e)
+        {
+            graphicsDevice?.DispatcherQueue.TryEnqueue(() => OnDraw());
         }
 
         private void GraphicsDevice_RenderingDeviceReplaced(CompositionGraphicsDevice sender, RenderingDeviceReplacedEventArgs args)
@@ -92,6 +100,8 @@ namespace HotLyric.Win32.BackgroundHelpers
                     surface?.Dispose();
                     surface = null;
                 }
+
+                SystemEvents.DisplaySettingsChanged -= SystemEvents_DisplaySettingsChanged;
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器
                 // TODO: 将大型字段设置为 null

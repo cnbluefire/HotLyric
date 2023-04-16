@@ -1,8 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 {
@@ -30,7 +29,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 hasStoreUri: true,
                 positionMode: SMTCAppPositionMode.FromAppAndUseTimer,
                 customName: "Spotify",
-                customAppIcon: new BitmapImage(new Uri("/Assets/SpotifyIcon.png", UriKind.RelativeOrAbsolute)),
+                customAppIcon: new BitmapImage(new Uri("ms-appx:///Assets/SpotifyIcon.png", UriKind.RelativeOrAbsolute)),
                 supportLaunch: false,
                 defaultLrcProvider: "QQMusic",
                 convertToSimpleChinese: true),
@@ -40,7 +39,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 packageFamilyNamePrefix: "SpotifyAB.SpotifyMusic_",
                 hasStoreUri: true,
                 positionMode: SMTCAppPositionMode.FromAppAndUseTimer,
-                customAppIcon: new BitmapImage(new Uri("/Assets/SpotifyIcon.png", UriKind.RelativeOrAbsolute)),
+                customAppIcon: new BitmapImage(new Uri("ms-appx:///Assets/SpotifyIcon.png", UriKind.RelativeOrAbsolute)),
                 defaultLrcProvider: "QQMusic"),
 
             ["NeteaseMusic"] = new SMTCApp(
@@ -90,7 +89,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 hasStoreUri: false,
                 positionMode: SMTCAppPositionMode.OnlyUseTimer,
                 customName: "Foobar2000",
-                customAppIcon: new BitmapImage(new Uri("/Assets/Foobar2kIcon.png", UriKind.RelativeOrAbsolute)),
+                customAppIcon: new BitmapImage(new Uri("ms-appx:///Assets/Foobar2kIcon.png", UriKind.RelativeOrAbsolute)),
                 supportLaunch: false,
                 defaultLrcProvider: "NeteaseMusic",
                 convertToSimpleChinese: true),
@@ -101,7 +100,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 hasStoreUri: false,
                 positionMode: SMTCAppPositionMode.FromApp,
                 customName: "YesPlayerMusic",
-                customAppIcon: new BitmapImage(new Uri("/Assets/YesPlayerMusicIcon.png", UriKind.RelativeOrAbsolute)),
+                customAppIcon: new BitmapImage(new Uri("ms-appx:///Assets/YesPlayerMusicIcon.png", UriKind.RelativeOrAbsolute)),
                 supportLaunch: false,
                 defaultLrcProvider: "NeteaseMusic",
                 convertToSimpleChinese: false),
@@ -112,7 +111,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 hasStoreUri: false,
                 positionMode: SMTCAppPositionMode.FromApp,
                 customName: "YesPlayerMusic",
-                customAppIcon: new BitmapImage(new Uri("/Assets/YesPlayerMusicIcon.png", UriKind.RelativeOrAbsolute)),
+                customAppIcon: new BitmapImage(new Uri("ms-appx:///Assets/YesPlayerMusicIcon.png", UriKind.RelativeOrAbsolute)),
                 supportLaunch: false,
                 defaultLrcProvider: "NeteaseMusic",
                 convertToSimpleChinese: false),

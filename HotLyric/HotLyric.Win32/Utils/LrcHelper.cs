@@ -1,6 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Diagnostics;
+using System.IO;
 using System.Linq;
 using System.Net.Http;
 using System.Security.Cryptography;
@@ -9,8 +10,10 @@ using System.Text.RegularExpressions;
 using System.Threading;
 using System.Threading.Tasks;
 using HotLyric.Win32.Utils.LrcProviders;
+using HotLyric.Win32.Utils.LyricFiles;
 using Kfstorm.LrcParser;
 using Newtonsoft.Json.Linq;
+using Nito.AsyncEx;
 using Windows.Storage;
 
 namespace HotLyric.Win32.Utils
@@ -33,8 +36,8 @@ namespace HotLyric.Win32.Utils
             "此歌曲为没有填词的纯音乐，请您欣赏"
         };
 
-        public static readonly ILrcFile EmptyLyric = LrcFile.FromText("[00:00.00]暂无歌词");
-        public static readonly ILrcFile DownloadingLyric = LrcFile.FromText("[00:00.00]正在加载...");
+        public static readonly Lyric EmptyLyric = Lyric.CreateClassicLyric("[00:00.00]暂无歌词", null)!;
+        public static readonly Lyric DownloadingLyric = Lyric.CreateClassicLyric("[00:00.00]正在加载...", null)!;
 
         /// <summary>
         /// 读取播放器传递的本地歌词
@@ -42,23 +45,26 @@ namespace HotLyric.Win32.Utils
         /// <param name="filePath"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async Task<LyricModel?> GetLrcFileAsync(string filePath, CancellationToken cancellationToken)
+        public static async Task<Lyric?> GetLrcFileAsync(string filePath, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(filePath)) return null;
 
             try
             {
                 if (!System.IO.File.Exists(filePath)) return null;
-                var content = await System.IO.File.ReadAllTextAsync(filePath, cancellationToken);
 
-                var lrcFile = LrcFile.FromText(content);
+                string? content = null;
 
-                if (lrcFile?.Lyrics?.Any(c => absoluteMusicLyricFlags.Contains(c.Content)) == true)
+                using (var stream = new FileStream(filePath, FileMode.Open, FileAccess.Read, FileShare.Read))
+                using (var reader = new StreamReader(stream))
                 {
-                    return null;
+                    content = await reader.ReadLineAsync().WaitAsync(cancellationToken);
                 }
 
-                return new LyricModel(lrcFile, null, content, null);
+                if (!string.IsNullOrEmpty(content))
+                {
+                    return Lyric.CreateClassicLyric(content, null);
+                }
             }
             catch (Exception ex) when (!(ex is OperationCanceledException)) { }
             return null;
@@ -72,23 +78,12 @@ namespace HotLyric.Win32.Utils
         /// <param name="neteaseMusicId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        public static async Task<LyricModel?> GetLrcFileAsync(string? name, string[]? artists, string neteaseMusicId, string? defaultProviderName, bool convertToSimpleChinese, CancellationToken cancellationToken)
+        public static async Task<Lyric?> GetLrcFileAsync(string? name, string[]? artists, string neteaseMusicId, string? defaultProviderName, bool convertToSimpleChinese, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(name)) return null;
 
             var file = await LrcProviderHelper.GetLyricFromCacheAsync(name, artists, cancellationToken);
             if (file == null) file = await GetLyricFromNetworkAsync(name, artists, neteaseMusicId, defaultProviderName, convertToSimpleChinese, cancellationToken);
-
-            // 如果全是空行则认为歌词不存在
-            if (file?.Lyric != null && file.Lyric.Lyrics.All(c => string.IsNullOrWhiteSpace(c.Content)))
-            {
-                return null;
-            }
-
-            if (file?.Lyric?.Lyrics?.Any(c => absoluteMusicLyricFlags.Contains(c.Content)) == true)
-            {
-                return null;
-            }
 
             return file;
         }
@@ -101,7 +96,7 @@ namespace HotLyric.Win32.Utils
         /// <param name="neteaseMusicId"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        private static async Task<LyricModel?> GetLyricFromNetworkAsync(string? name, string[]? artists, string? neteaseMusicId, string? defaultProviderName, bool convertToSimpleChinese, CancellationToken cancellationToken)
+        private static async Task<Lyric?> GetLyricFromNetworkAsync(string? name, string[]? artists, string? neteaseMusicId, string? defaultProviderName, bool convertToSimpleChinese, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(name)) return null;
 
@@ -116,11 +111,6 @@ namespace HotLyric.Win32.Utils
                 if (lyric != null)
                 {
                     await LrcProviderHelper.SetLyricCacheAsync(LrcProviderHelper.BuildSearchKey(name, artists), lyric.LyricContent, lyric.TranslateContent, cancellationToken);
-
-                    if (lyric?.Lyric?.Lyrics?.Any(c => absoluteMusicLyricFlags.Contains(c.Content)) == true)
-                    {
-                        return null;
-                    }
 
                     return lyric;
                 }
@@ -158,11 +148,6 @@ namespace HotLyric.Win32.Utils
                         if (lyric != null)
                         {
                             await LrcProviderHelper.SetLyricCacheAsync(LrcProviderHelper.BuildSearchKey(name, artists), lyric.LyricContent, lyric.TranslateContent, cancellationToken);
-                            
-                            if (lyric?.Lyric?.Lyrics?.Any(c => absoluteMusicLyricFlags.Contains(c.Content)) == true)
-                            {
-                                return null;
-                            }
 
                             return lyric;
                         }

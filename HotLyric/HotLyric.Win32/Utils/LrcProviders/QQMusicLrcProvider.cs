@@ -1,4 +1,5 @@
-﻿using Kfstorm.LrcParser;
+﻿using HotLyric.Win32.Utils.LyricFiles;
+using Kfstorm.LrcParser;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
     {
         public string Name => "QQMusic";
 
-        public async Task<LyricModel?> GetByIdAsync(object id, CancellationToken cancellationToken)
+        public async Task<Lyric?> GetByIdAsync(object id, CancellationToken cancellationToken)
         {
             if (id is string _id && !string.IsNullOrEmpty(_id))
             {
@@ -58,33 +59,18 @@ namespace HotLyric.Win32.Utils.LrcProviders
                     }
                     catch { }
 
-                    var lrcFile = LrcFile.FromText(lrcContent);
-
-                    if (lrcFile != null)
+                    string? translatedContent = "";
+                    try
                     {
-                        string? translatedContent = "";
-                        ILrcFile? translated = null;
-                        try
+                        var translatedBase64 = (string?)jobj?["trans"];
+                        if (!string.IsNullOrEmpty(translatedBase64))
                         {
-                            var translatedBase64 = (string?)jobj?["trans"];
-                            if (!string.IsNullOrEmpty(translatedBase64))
-                            {
-                                translatedContent = Encoding.UTF8.GetString(Convert.FromBase64String(translatedBase64));
-                                if (!string.IsNullOrEmpty(translatedContent))
-                                {
-                                    translated = LrcFile.FromText(translatedContent);
-                                    if (translated.Lyrics.All(c => string.IsNullOrEmpty(c.Content)))
-                                    {
-                                        translated = null;
-                                        translatedContent = "";
-                                    }
-                                }
-                            }
+                            translatedContent = Encoding.UTF8.GetString(Convert.FromBase64String(translatedBase64));
                         }
-                        catch { }
-
-                        return new LyricModel(lrcFile, translated, lrcContent, translatedContent);
                     }
+                    catch { }
+
+                    return Lyric.CreateClassicLyric(lrcContent, translatedContent);
                 }
                 catch (Exception ex) when (!(ex is OperationCanceledException)) { }
             }

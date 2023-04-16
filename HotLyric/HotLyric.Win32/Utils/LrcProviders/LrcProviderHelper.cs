@@ -1,4 +1,5 @@
-﻿using Kfstorm.LrcParser;
+﻿using HotLyric.Win32.Utils.LyricFiles;
+using Kfstorm.LrcParser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -56,7 +57,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
                     {
                         try
                         {
-                            _c = TraditionalChineseHelper.ConvertToSimpleChinese(_c);
+                            _c = ChineseHelper.ConvertToSimpleChinese(_c);
                         }
                         catch { }
                     }
@@ -68,7 +69,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
             {
                 try
                 {
-                    name = TraditionalChineseHelper.ConvertToSimpleChinese(name);
+                    name = ChineseHelper.ConvertToSimpleChinese(name);
                 }
                 catch { }
             }
@@ -123,7 +124,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
         /// <param name="artist"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        internal static async Task<LyricModel?> GetLyricFromCacheAsync(string? name, string[]? artist, CancellationToken cancellationToken)
+        internal static async Task<Lyric?> GetLyricFromCacheAsync(string? name, string[]? artist, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(name)) return null;
 
@@ -136,29 +137,17 @@ namespace HotLyric.Win32.Utils.LrcProviders
                 {
                     var text = await FileIO.ReadTextAsync(file).AsTask(cancellationToken);
                     string? text2 = null;
-                    var lrcFile = LrcFile.FromText(text);
-
-                    ILrcFile? translated = null;
 
                     if (await folder.TryGetItemAsync($"{md5}_trans").AsTask(cancellationToken) is StorageFile file2)
                     {
                         try
                         {
                             text2 = await FileIO.ReadTextAsync(file2).AsTask(cancellationToken);
-                            if (!string.IsNullOrWhiteSpace(text2))
-                            {
-                                translated = LrcFile.FromText(text2);
-
-                                if (translated.Lyrics.All(c => string.IsNullOrEmpty(c.Content)))
-                                {
-                                    translated = null;
-                                }
-                            }
                         }
                         catch (Exception ex) when (!(ex is OperationCanceledException)) { }
                     }
 
-                    return new LyricModel(lrcFile, translated, text, text2);
+                    return Lyric.CreateClassicLyric(text, text2);
                 }
             }
             catch (Exception ex) when (!(ex is OperationCanceledException)) { }
@@ -174,7 +163,14 @@ namespace HotLyric.Win32.Utils.LrcProviders
 
         public static async Task<string> TryGetStringAsync(string uri, string referer, CancellationToken cancellationToken)
         {
-            if (client == null) client = new HttpClient();
+            if (client == null)
+            {
+                var handler = new HttpClientHandler()
+                {
+                    UseProxy = false
+                };
+                client = new HttpClient(handler);
+            }
 
             try
             {

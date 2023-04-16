@@ -1,10 +1,14 @@
 ﻿using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
+using System.ComponentModel;
 using System.Linq;
 using System.Text;
-using System.Windows.Media;
 using Windows.Storage;
+using Microsoft.UI;
+using Microsoft.UI.Xaml.Markup;
+using Microsoft.UI.Xaml.Media;
+using Windows.UI;
 
 namespace HotLyric.Win32.Models
 {
@@ -33,7 +37,7 @@ namespace HotLyric.Win32.Models
                 LyricThemes = new List<LyricThemeView>()
                 {
                     new LyricThemeView(
-                        name: "默认",
+                        name: "default",
                         borderBrush: CreateBrush("#548F8F8F"),
                         backgroundBrush: CreateBrush("#FF2C2C2C"),
                         lyricBrush: CreateBrush("#FFFFFFFF"),
@@ -127,11 +131,11 @@ namespace HotLyric.Win32.Models
         {
             if (brushJson == null) return null;
 
-            if (brushJson.StartsWith('#') && (brushJson.Length == 4 || brushJson.Length == 7 || brushJson.Length == 9))
+            if (brushJson.Length > 0 && brushJson[0] == '#' && (brushJson.Length == 4 || brushJson.Length == 7 || brushJson.Length == 9))
             {
                 try
                 {
-                    if (ColorConverter.ConvertFromString(brushJson) is Color color)
+                    if (XamlBindingHelper.ConvertValue(typeof(Color), brushJson) is Color color)
                     {
                         return new SolidColorBrush(color);
                     }

@@ -1,0 +1,176 @@
+﻿<Page x:Class="HotLyric.Win32.Views.ThemeSettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:local="using:HotLyric.Win32.Views" 
+      xmlns:utils="using:HotLyric.Win32.Utils" 
+      xmlns:control="using:HotLyric.Win32.Controls" 
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls"
+      xmlns:converter="using:HotLyric.Win32.Utils.Converters">
+
+    <Grid x:Name="LayoutRoot" DataContext="{Binding Path=SettingsWindowViewModel, Source={StaticResource Locator}}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="ContentCenter">
+                    <VisualState.StateTriggers>
+                        <utils:ControlSizeTrigger Control="{Binding ElementName=LayoutRoot,Mode=OneWay}" MinWidth="832" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ContentPanel.Width" Value="800" />
+                        <Setter Target="ContentPanel.HorizontalAlignment" Value="Center" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="ContentPanel" Orientation="Vertical" HorizontalAlignment="Stretch" Margin="16">
+
+                <muxc:Expander Style="{StaticResource ExpanderCardStyle}" MinHeight="66" HorizontalAlignment="Stretch" IsExpanded="True">
+                    <muxc:Expander.Header>
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE9D9;" Content="性能设置" Margin="-4,0,0,0" />
+                    </muxc:Expander.Header>
+                    <StackPanel Orientation="Vertical" Margin="38,0,16,0" Spacing="16">
+                        <CheckBox Margin="2,0,0,0" Padding="12,6,0,0" Content="边缘淡出" IsChecked="{Binding TextOpacityMask,Mode=TwoWay}" />
+
+                        <StackPanel Orientation="Horizontal">
+                            <Grid MinWidth="100" Margin="0,0,8,0">
+                                <StackPanel HorizontalAlignment="Right" Orientation="Horizontal"
+                                            ToolTipService.Placement="Top"
+                                            ToolTipService.ToolTip="热词致力于降低产品的能源使用（包括设备闲置时）对环境造成的影响。">
+                                    <Border Background="Transparent" IsTapEnabled="True" Tapped="Border_Tapped">
+                                        <PathIcon Data="F1 M 0 2.900391 C 0 2.672527 0.043945 2.459311 0.131836 2.260742 C 0.219727 2.062176 0.338542 1.888021 0.488281 1.738281 C 0.638021 1.588543 0.812174 1.469727 1.010742 1.381836 C 1.20931 1.293945 1.422526 1.25 1.650391 1.25 L 6.25 1.25 C 6.764323 1.25 7.267252 1.31185 7.758789 1.435547 C 8.250325 1.559246 8.719075 1.738281 9.165039 1.972656 C 9.611002 2.207031 10.022786 2.491863 10.400391 2.827148 C 10.777994 3.162436 11.113281 3.541668 11.40625 3.964844 C 11.686197 3.89323 11.9694 3.83952 12.255859 3.803711 C 12.542316 3.767904 12.83203 3.75 13.125 3.75 L 18.242188 3.75 C 18.483072 3.75 18.710938 3.795574 18.925781 3.886719 C 19.140625 3.977865 19.327799 4.10319 19.487305 4.262695 C 19.646809 4.422201 19.772135 4.609376 19.863281 4.824219 C 19.954426 5.039063 20 5.266928 20 5.507812 L 20 10.625 C 20 11.256511 19.918619 11.865234 19.755859 12.451172 C 19.593098 13.037109 19.361979 13.585612 19.0625 14.09668 C 18.76302 14.607748 18.404947 15.071615 17.988281 15.488281 C 17.571613 15.904948 17.107746 16.263021 16.59668 16.5625 C 16.085611 16.861979 15.537109 17.0931 14.951172 17.255859 C 14.365234 17.418619 13.75651 17.5 13.125 17.5 C 12.317708 17.5 11.538086 17.364908 10.786133 17.094727 C 10.03418 16.824545 9.348958 16.429037 8.730469 15.908203 L 6.054688 18.583984 C 5.930989 18.707682 5.78125 18.769531 5.605469 18.769531 C 5.436198 18.769531 5.289713 18.707682 5.166016 18.583984 C 5.042317 18.460287 4.980469 18.313803 4.980469 18.144531 C 4.980469 17.96875 5.042317 17.81901 5.166016 17.695312 L 7.841797 15.019531 C 7.672525 14.817709 7.516275 14.607748 7.373047 14.389648 C 7.229817 14.17155 7.099609 13.945312 6.982422 13.710938 C 6.858724 13.723959 6.736653 13.733725 6.616211 13.740234 C 6.495768 13.746745 6.373698 13.75 6.25 13.75 C 5.677083 13.75 5.123698 13.675131 4.589844 13.525391 C 4.055989 13.375651 3.557943 13.16569 3.095703 12.895508 C 2.633463 12.625326 2.211914 12.299805 1.831055 11.918945 C 1.450195 11.538086 1.124674 11.116537 0.854492 10.654297 C 0.58431 10.192058 0.374349 9.694011 0.224609 9.160156 C 0.07487 8.626303 0 8.072917 0 7.5 Z M 9.609375 15.019531 C 10.110677 15.416667 10.660807 15.721029 11.259766 15.932617 C 11.858723 16.144207 12.480468 16.25 13.125 16.25 C 13.899739 16.25 14.628906 16.101889 15.3125 15.805664 C 15.996094 15.50944 16.591797 15.107422 17.099609 14.599609 C 17.607422 14.091797 18.009439 13.496094 18.305664 12.8125 C 18.601887 12.128906 18.75 11.39974 18.75 10.625 L 18.75 5.507812 C 18.75 5.371094 18.699543 5.252279 18.598633 5.151367 C 18.497721 5.050457 18.378906 5.000001 18.242188 5 L 13.125 5 C 12.35026 5.000001 11.621094 5.148113 10.9375 5.444336 C 10.253906 5.740561 9.658203 6.142578 9.150391 6.650391 C 8.642578 7.158203 8.24056 7.753906 7.944336 8.4375 C 7.648111 9.121094 7.5 9.850261 7.5 10.625 C 7.5 11.269531 7.605794 11.891276 7.817383 12.490234 C 8.028971 13.089193 8.333333 13.639323 8.730469 14.140625 L 12.685547 10.185547 C 12.809244 10.06185 12.955729 10 13.125 10 C 13.294271 10 13.440755 10.06185 13.564453 10.185547 C 13.68815 10.309245 13.75 10.455729 13.75 10.625 C 13.75 10.794271 13.68815 10.940756 13.564453 11.064453 Z M 1.650391 2.5 C 1.539714 2.5 1.445312 2.539062 1.367188 2.617188 C 1.289062 2.695312 1.25 2.789715 1.25 2.900391 L 1.25 7.5 C 1.25 8.190104 1.380208 8.839519 1.640625 9.448242 C 1.901042 10.056967 2.257487 10.587565 2.709961 11.040039 C 3.162435 11.492514 3.693034 11.848959 4.301758 12.109375 C 4.910481 12.369792 5.559896 12.5 6.25 12.5 C 6.295573 12.5 6.337891 12.5 6.376953 12.5 C 6.416016 12.5 6.458333 12.496745 6.503906 12.490234 C 6.41276 12.184245 6.347656 11.875 6.308594 11.5625 C 6.269531 11.25 6.25 10.9375 6.25 10.625 C 6.25 9.960938 6.344401 9.306641 6.533203 8.662109 L 3.935547 6.064453 C 3.811849 5.940756 3.75 5.794271 3.75 5.625 C 3.75 5.455729 3.811849 5.309245 3.935547 5.185547 C 4.059245 5.06185 4.205729 5.000001 4.375 5 C 4.544271 5.000001 4.690755 5.06185 4.814453 5.185547 L 7.050781 7.412109 C 7.395833 6.754558 7.836914 6.16862 8.374023 5.654297 C 8.911133 5.139975 9.514974 4.726563 10.185547 4.414062 C 9.951172 4.114584 9.685872 3.846029 9.389648 3.608398 C 9.093424 3.37077 8.776041 3.170574 8.4375 3.007812 C 8.098958 2.845053 7.745768 2.719727 7.37793 2.631836 C 7.010091 2.543945 6.634114 2.5 6.25 2.5 Z " 
+                                                  VerticalAlignment="Center" HorizontalAlignment="Center" Foreground="#FF2C9310"/>
+                                    </Border>
+                                    <TextBlock Text="低功耗模式" VerticalAlignment="Center" HorizontalTextAlignment="Right" Margin="8,0,0,0" />
+                                </StackPanel>
+                            </Grid>
+                            <ComboBox Margin="8,0,0,0" VerticalAlignment="Center" 
+                                        ItemsSource="{Binding LowFrameRateMode.Items}" SelectedItem="{Binding LowFrameRateMode.SelectedItem,Mode=TwoWay}" />
+                        </StackPanel>
+
+                        <StackPanel Orientation="Horizontal">
+                            <TextBlock Text="滚动动画速度" VerticalAlignment="Center" HorizontalTextAlignment="Right" MinWidth="100" Margin="0,0,8,0" />
+                            <ComboBox Margin="8,0,0,0" VerticalAlignment="Center" 
+                                      ItemsSource="{Binding ScrollAnimationMode.Items}" SelectedItem="{Binding ScrollAnimationMode.SelectedItem,Mode=TwoWay}" />
+                        </StackPanel>
+                    </StackPanel>
+                </muxc:Expander>
+
+                <ContentControl Style="{StaticResource CardStyle}" Margin="0,4,0,0">
+                    <Grid HorizontalAlignment="Stretch">
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xEF1F;" Content="始终显示背景" />
+
+                        <Border MaxWidth="40" HorizontalAlignment="Right">
+                            <ToggleSwitch IsOn="{Binding AlwaysShowBackground,Mode=TwoWay}" />
+                        </Border>
+                    </Grid>
+                </ContentControl>
+
+                <!--<ContentControl Style="{StaticResource CardStyle}" Margin="0,4,0,0">
+                    <Grid HorizontalAlignment="Stretch">
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE740;" Content="出现全屏窗口时隐藏" />
+
+                        <Border MaxWidth="40" HorizontalAlignment="Right">
+                            <ToggleSwitch IsOn="{Binding HideWhenFullScreenAppOpen,Mode=TwoWay}" />
+                        </Border>
+                    </Grid>
+                </ContentControl>-->
+
+                <muxc:Expander Style="{StaticResource ExpanderCardStyle}" MinHeight="66" HorizontalAlignment="Stretch" Margin="0,4,0,0" IsExpanded="True">
+                    <muxc:Expander.Header>
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE185;" Content="文字设置" Margin="-4,0,0,0" />
+                    </muxc:Expander.Header>
+                    <Grid Margin="40,0,16,0" RowSpacing="16" ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="文字描边" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                        <ComboBox Grid.Column="1" HorizontalAlignment="Left" 
+                                  ItemsSource="{Binding TextStrokeTypes.Items}" SelectedItem="{Binding TextStrokeTypes.SelectedItem,Mode=TwoWay}" />
+
+                        <TextBlock Grid.Row="1" Text="不透明度" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="LyricOpacityComboBox" SelectedItem="{Binding LyricOpacity,Mode=TwoWay}">
+                            <ComboBox.Items>
+                                <x:Double>1</x:Double>
+                                <x:Double>0.8</x:Double>
+                                <x:Double>0.6</x:Double>
+                                <x:Double>0.4</x:Double>
+                                <x:Double>0.2</x:Double>
+                            </ComboBox.Items>
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate x:DataType="x:Double">
+                                    <TextBlock Text="{x:Bind converter:BindUtils.ToFormatString((x:Double), '{0:P0}')}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="2" Text="修改字体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <ComboBox Grid.Row="2" Grid.Column="1" x:Name="FontFamilyComboBox" ItemsSource="{Binding AllFontFamilies}" SelectedItem="{Binding LyricFontFamily,Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="3" Text="调整字号" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <Button Grid.Row="3" Grid.Column="1" Content="帮助" Command="{Binding FontSizeCmd}" />
+
+                    </Grid>
+                </muxc:Expander>
+                <muxc:Expander Style="{StaticResource ExpanderCardStyle}" MinHeight="66" HorizontalAlignment="Stretch" Margin="0,4,0,0" IsExpanded="True">
+                    <muxc:Expander.Header>
+                        <Grid HorizontalAlignment="Stretch" Margin="-4,0,0,0">
+                            <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE790;" Content="歌词样式" />
+                            <ComboBox x:Name="ThemeModeComboBox" HorizontalAlignment="Right" SelectedIndex="0" SelectionChanged="ThemeModeComboBox_SelectionChanged">
+                                <ComboBoxItem Content="预设" />
+                                <ComboBoxItem Content="自定义" />
+                            </ComboBox>
+                        </Grid>
+                    </muxc:Expander.Header>
+                    <Grid Margin="8,0">
+                        <GridView x:Name="ThemePresetsGridView" 
+                                  Visibility="{x:Bind converter:BindUtils.Visible(VM.ThemeIsPresetVisible),Mode=OneWay}"
+                                  ItemsSource="{Binding AllPresetThemes}" 
+                                  Margin="10" HorizontalAlignment="Center" 
+                                  SelectionMode="None" 
+                                  IsItemClickEnabled="True" 
+                                  ItemClick="ThemePresetsGridView_ItemClick">
+                            <GridView.ItemTemplate>
+                                <DataTemplate>
+                                    <control:TextThemePreviewControl Theme="{Binding}" />
+                                </DataTemplate>
+                            </GridView.ItemTemplate>
+                        </GridView>
+
+                        <Grid x:Name="CustomizeThemeContainer"
+                              Visibility="{x:Bind converter:BindUtils.NotVisible(VM.ThemeIsPresetVisible),Mode=OneWay}">
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="Auto" />
+                                <ColumnDefinition Width="*" />
+                            </Grid.ColumnDefinitions>
+
+                            <control:CustomThemeControl Theme="{x:Bind VM.CustomizeTheme,Mode=TwoWay}"/>
+
+                            <control:TextThemePreviewControl Theme="{x:Bind VM.CustomizeTheme,Mode=OneWay}"
+                                                             Grid.Column="1"
+                                                             HorizontalAlignment="Center"
+                                                             VerticalAlignment="Center"/>
+                        </Grid>
+                    </Grid>
+                </muxc:Expander>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+
+</Page>

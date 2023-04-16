@@ -1,4 +1,5 @@
-﻿using System;
+﻿using Nito.AsyncEx;
+using System;
 using System.Collections.Generic;
 using System.Diagnostics;
 using System.IO;
@@ -9,12 +10,13 @@ using System.Runtime.InteropServices;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
-using System.Windows.Media.Imaging;
 using System.Xml.Linq;
 using Windows.ApplicationModel;
 using Windows.Management.Deployment;
 using Windows.Services.Store;
 using Windows.Storage;
+using Windows.System;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace HotLyric.Win32.Utils
 {
@@ -175,21 +177,30 @@ namespace HotLyric.Win32.Utils
 
             BitmapImage? image = null;
 
-            var func = new Action(() =>
+            var func = new Func<Task>(async () =>
             {
                 image = new BitmapImage();
-                image.BeginInit();
-                image.StreamSource = stream;
-                image.EndInit();
+                stream.Seek(0, SeekOrigin.Begin);
+                await image.SetSourceAsync(stream.AsRandomAccessStream());
             });
 
-            if (DispatcherHelper.UIDispatcher != null && !DispatcherHelper.UIDispatcher.CheckAccess())
+            if (!App.DispatcherQueue.HasThreadAccess)
             {
-                await DispatcherHelper.UIDispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, func);
+                var tcs = new TaskCompletionSource<bool>();
+                App.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, async () =>
+                {
+                    try
+                    {
+                        await func.Invoke();
+                        tcs.SetResult(true);
+                    }
+                    catch (Exception ex) { tcs.SetException(ex); }
+                });
+                await tcs.Task;
             }
             else
             {
-                func.Invoke();
+                await func.Invoke();
             }
             return image;
         }
@@ -211,7 +222,7 @@ namespace HotLyric.Win32.Utils
                     {
                         using (var fileStream = File.OpenRead(path))
                         {
-                            await fileStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+                            await fileStream.CopyToAsync(stream).WaitAsync(cancellationToken).ConfigureAwait(false);
                             await stream.FlushAsync().ConfigureAwait(false);
                         }
                         return stream;
@@ -224,7 +235,7 @@ namespace HotLyric.Win32.Utils
                     var response = await client.GetAsync(logo, cancellationToken).ConfigureAwait(false);
                     using (var internetStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
                     {
-                        await internetStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+                        await internetStream.CopyToAsync(stream).WaitAsync(cancellationToken).ConfigureAwait(false);
                         await stream.FlushAsync().ConfigureAwait(false);
                     }
 
@@ -251,42 +262,6 @@ namespace HotLyric.Win32.Utils
             return false;
         }
 
-
-        public static async Task RestartApplicationAsync()
-        {
-            RestartRequested = true;
-            SingleInstance.TryReleaseMutex();
-
-            if (DispatcherHelper.UIDispatcher != null)
-            {
-                if (DispatcherHelper.UIDispatcher.CheckAccess())
-                {
-                    await Windows.System.Launcher.LaunchUriAsync(new Uri("hot-lyric:"));
-                }
-                else
-                {
-                    var tcs = new TaskCompletionSource<bool>();
-
-                    _ = DispatcherHelper.UIDispatcher.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(async () =>
-                    {
-                        try
-                        {
-                            await Windows.System.Launcher.LaunchUriAsync(new Uri("hot-lyric:///?restart=true"));
-                            tcs.SetResult(true);
-                        }
-                        catch
-                        {
-                            tcs.SetResult(false);
-                        }
-                    }));
-
-                    await tcs.Task;
-                }
-            }
-
-            System.Windows.Application.Current.Shutdown();
-        }
-
         public static async Task<ApplicationUpdateResult> CheckUpdateAsync()
         {
             try
@@ -294,8 +269,7 @@ namespace HotLyric.Win32.Utils
                 if (storeContext == null)
                 {
                     storeContext = StoreContext.GetDefault();
-                    var initWindow = (IInitializeWithWindow)(object)storeContext;
-                    initWindow.Initialize(System.Diagnostics.Process.GetCurrentProcess().MainWindowHandle);
+                    WinRT.Interop.InitializeWithWindow.Initialize(storeContext, Process.GetCurrentProcess().MainWindowHandle);
                 }
 
                 var updates = await storeContext.GetAppAndOptionalStorePackageUpdatesAsync();

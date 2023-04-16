@@ -2,86 +2,81 @@
 
 	<PropertyGroup>
 		<OutputType>WinExe</OutputType>
-		<TargetFramework>net6-windows10.0.18362.0</TargetFramework>
-		<!--<ImplicitUsings>enable</ImplicitUsings>-->
-		<Nullable>enable</Nullable>
-		<UseWPF>true</UseWPF>
-		<UseWindowsForms>true</UseWindowsForms>
-		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<TargetFramework>net7.0-windows10.0.19041.0</TargetFramework>
+		<TargetPlatformMinVersion>10.0.18362.0</TargetPlatformMinVersion>
+		<LangVersion>latest</LangVersion>
 		<Platforms>x86;x64;ARM64</Platforms>
+		<Configurations>Debug;Release</Configurations>
 		<RuntimeIdentifiers>win10-x86;win10-x64;win10-arm64</RuntimeIdentifiers>
-
-		<StartupObject>HotLyric.Win32.Program</StartupObject>
-
-		<NoWarn>$(NoWarn);WFAC01</NoWarn>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x86'">
-		<RuntimeIdentifier>win10-x86</RuntimeIdentifier>
-		<SelfContained>true</SelfContained>
-	</PropertyGroup>
-	
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)'=='Release|ARM64'">
-	  <RuntimeIdentifier>win10-arm64</RuntimeIdentifier>
-	  <SelfContained>true</SelfContained>
-	</PropertyGroup>
-
-	<PropertyGroup Condition="'$(Configuration)|$(Platform)' == 'Release|x64'">
-		<RuntimeIdentifier>win10-x64</RuntimeIdentifier>
-		<SelfContained>true</SelfContained>
+		<UseWinUI>true</UseWinUI>
+		<ApplicationManifest>app.manifest</ApplicationManifest>
+		<Nullable>enable</Nullable>
+		<AllowUnsafeBlocks>true</AllowUnsafeBlocks>
+		<RestoreAdditionalProjectSources>../nupkgs</RestoreAdditionalProjectSources>
+		<DefineConstants>$(DefineConstants);DISABLE_XAML_GENERATED_MAIN</DefineConstants>
+		<HotLyricExtensionLibraryEnabled>false</HotLyricExtensionLibraryEnabled>
 	</PropertyGroup>
 
 	<ItemGroup>
-		<Manifest Include="$(ApplicationManifest)" />
-		<Using Remove="System.Windows.Forms" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<ApplicationDefinition Remove="App.xaml" />
-		<None Remove="Assets\Foobar2kIcon.png" />
-		<None Remove="Assets\HotLyricIcon.png" />
-		<None Remove="Assets\HyPlayerIcon.png" />
-		<None Remove="Assets\LyricEaseIcon.png" />
-		<None Remove="Assets\NoiseAsset_256x256_PNG.png" />
-		<None Remove="Assets\SpotifyIcon.png" />
-		<None Remove="Assets\YesPlayerMusicIcon.png" />
-		<Page Include="App.xaml" Generator="MSBuild:Compile" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.0.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.1.0" />
+		<PackageReference Include="DirectNCore" Version="1.13.1" />
 		<PackageReference Include="Fastenshtein" Version="1.0.0.8" />
-		<PackageReference Include="HandyControl" Version="3.3.0" />
-		<PackageReference Include="Hardcodet.NotifyIcon.Wpf" Version="1.1.0" />
-		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="6.0.0" />
-		<PackageReference Include="Microsoft.VCRTForwarders.140" Version="1.0.7" />
-		<PackageReference Include="ModernWpfUI" Version="0.9.6" />
-		<PackageReference Include="Newtonsoft.Json" Version="13.0.1" />
-		<PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.3" />
-		<PackageReference Include="Vanara.PInvoke.Security" Version="3.4.3" />
-		<PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.3" />
-		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.3" />
+		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.108" />
+		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
+		<PackageReference Include="Microsoft.WindowsAppSDK" Version="1.3.230331000" />
+		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="10.0.22621.756" />
+		<PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
+		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
+		<PackageReference Include="NLog" Version="5.1.3" />
+		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
+		<PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.13" />
+		<PackageReference Include="Vanara.PInvoke.Security" Version="3.4.13" />
+		<PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.13" />
+		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.13" />
+		<PackageReference Include="Win2D.WinUI3.EnableCanvasAnimatedControl" Version="1.0.4-local" />
+		<PackageReference Include="WinUIEx" Version="2.1.0" />
+		<Manifest Include="$(ApplicationManifest)" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<ProjectReference Include="..\HotLyric.Input\HotLyric.Input.csproj" />
-		<ProjectReference Include="..\Win2d.uwp.Projection\Win2d.uwp.Projection.csproj" />
+		<None Remove="Extensions\**\HotLyric.Extensions.exp" />
+		<None Remove="Extensions\**\HotLyric.Extensions.lib" />
+		<None Remove="Extensions\**\HotLyric.Extensions.pdb" />
 	</ItemGroup>
 
 	<ItemGroup>
-		<Resource Include="Assets\Foobar2kIcon.png" />
-		<Resource Include="Assets\HotLyricIcon.png" />
-		<Resource Include="Assets\HyPlayerIcon.png" />
-		<Resource Include="Assets\LyricEaseIcon.png" />
-		<Resource Include="Assets\NoiseAsset_256x256_PNG.png" />
-		<Resource Include="Assets\SpotifyIcon.png" />
-		<Resource Include="Assets\YesPlayerMusicIcon.png" />
+		<Compile Remove="Base\BackgroundHelpers\AcrylicVisualProvider.cs" />
+		<Compile Remove="Base\BackgroundHelpers\CompositionSurfaceFactory.cs" />
+		<Compile Remove="Base\BackgroundHelpers\CompositionThread.cs" />
+		<Compile Remove="Base\BackgroundHelpers\DeviceHolder.cs" />
+		<Compile Remove="Base\BackgroundHelpers\Extensions.cs" />
+		<Compile Remove="Base\BackgroundHelpers\ShadowFactory.cs" />
+	</ItemGroup>
+
+	<ItemGroup>
+		<None Remove="Controls\CustomThemeControl.xaml" />
 	</ItemGroup>
 
 	<ItemGroup>
 		<None Update="Assets\defaultTheme.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<Page Update="Controls\CustomThemeControl.xaml">
+			<Generator>MSBuild:Compile</Generator>
+		</Page>
+		<None Update="NLog.config">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+	</ItemGroup>
+
+	<ItemGroup Condition="'$(HotLyricExtensionLibraryEnabled)' != 'false'">
+		<ContentWithTargetPath Include="Extensions\$(Platform)\$(Configuration)\HotLyric.Extensions.dll">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+			<TargetPath>HotLyric.Extensions.dll</TargetPath>
+		</ContentWithTargetPath>
+		<ProjectReference Include="..\HotLyric.Extensions\HotLyric.Extensions.vcxproj">
+			<ReferenceOutputAssembly>false</ReferenceOutputAssembly>
+		</ProjectReference>
 	</ItemGroup>
 
 </Project>

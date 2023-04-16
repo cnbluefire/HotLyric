@@ -1,0 +1,48 @@
+﻿<ResourceDictionary
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation" 
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:HotLyric.Win32.Controls">
+
+    <Style TargetType="local:ResizePanel" >
+        <Setter Property="Template">
+            <Setter.Value>
+                <ControlTemplate TargetType="local:ResizePanel">
+                    <Grid Background="{TemplateBinding Background}"
+                          BorderBrush="{TemplateBinding BorderBrush}"
+                          BorderThickness="{TemplateBinding BorderThickness}">
+                        <Grid.Resources>
+                            <Style x:Key="DraggerStyle" TargetType="Rectangle">
+                                <Setter Property="Fill" Value="Transparent" />
+                                <Setter Property="HorizontalAlignment" Value="Stretch" />
+                                <Setter Property="VerticalAlignment" Value="Stretch" />
+                            </Style>
+                            <GridLength x:Key="DraggerSize">16</GridLength>
+                        </Grid.Resources>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="{StaticResource DraggerSize}" />
+                            <ColumnDefinition Width="*" />
+                            <ColumnDefinition Width="{StaticResource DraggerSize}" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="{StaticResource DraggerSize}" />
+                            <RowDefinition Height="*" />
+                            <RowDefinition Height="{StaticResource DraggerSize}" />
+                        </Grid.RowDefinitions>
+
+                        <Rectangle x:Name="LeftDragger" Grid.Column="0" Grid.Row="1" Style="{StaticResource DraggerStyle}" />
+                        <Rectangle x:Name="RightDragger" Grid.Column="2" Grid.Row="1" Style="{StaticResource DraggerStyle}" />
+                        <Rectangle x:Name="TopDragger" Grid.Column="1" Grid.Row="0" Style="{StaticResource DraggerStyle}" />
+                        <Rectangle x:Name="TopLeftDragger" Grid.Column="0" Grid.Row="0" Style="{StaticResource DraggerStyle}" />
+                        <Rectangle x:Name="TopRightDragger" Grid.Column="2" Grid.Row="0" Style="{StaticResource DraggerStyle}" />
+                        <Rectangle x:Name="BottomDragger" Grid.Column="1" Grid.Row="2" Style="{StaticResource DraggerStyle}" />
+                        <Rectangle x:Name="BottomLeftDragger" Grid.Column="0" Grid.Row="2" Style="{StaticResource DraggerStyle}" />
+                        <Rectangle x:Name="BottomRightDragger" Grid.Column="2" Grid.Row="2" Style="{StaticResource DraggerStyle}" />
+
+                    </Grid>
+                </ControlTemplate>
+            </Setter.Value>
+        </Setter>
+    </Style>
+
+</ResourceDictionary>

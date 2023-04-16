@@ -1,7 +1,7 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Text;
-using System.Windows.Media;
+using Microsoft.UI.Xaml.Media;
 
 namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 {

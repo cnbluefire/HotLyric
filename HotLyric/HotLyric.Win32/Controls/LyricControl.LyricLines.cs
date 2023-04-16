@@ -1,0 +1,198 @@
+﻿using System;
+using System.Collections.Generic;
+using System.Linq;
+using System.Text;
+using System.Threading.Tasks;
+using HotLyric.Win32.Utils.LyricFiles;
+using Microsoft.UI.Xaml.Documents;
+using Windows.UI.StartScreen;
+
+namespace HotLyric.Win32.Controls
+{
+    partial class LyricControl
+    {
+        private class LyricLines
+        {
+            private TimeSpan position;
+            private Lyric? lyric;
+            private bool skipEmptyLine = true;
+            private bool isTranslateEnabled;
+
+            internal LyricLines()
+            {
+                DrawingLocker = new object();
+            }
+
+            public object DrawingLocker { get; }
+
+            public Lyric? Lyric
+            {
+                get => lyric;
+                set
+                {
+                    if (lyric != value)
+                    {
+                        lyric = null;
+                        UpdateLines();
+
+                        lyric = value;
+                        UpdateLines();
+                    }
+                }
+            }
+
+            public ILyricLine? MainLine { get; private set; }
+
+            public ILyricLine? SecondaryLine { get; private set; }
+
+            public ILyricLine? RemovingLine { get; private set; }
+
+            public bool SecondaryLineIsTranslate { get; private set; }
+
+            public bool SkipEmptyLine
+            {
+                get => skipEmptyLine;
+                set
+                {
+                    if (skipEmptyLine != value)
+                    {
+                        lock (DrawingLocker)
+                        {
+                            skipEmptyLine = value;
+                        }
+                    }
+                }
+            }
+
+            public bool IsTranslateEnabled
+            {
+                get => isTranslateEnabled;
+                set
+                {
+                    lock (DrawingLocker)
+                    {
+                        if (isTranslateEnabled != value)
+                        {
+                            isTranslateEnabled = value;
+
+                            MainLine = null;
+                            SecondaryLine = null;
+                            UpdateLines();
+                        }
+                    }
+                }
+            }
+
+            public bool Paused
+            {
+                get
+                {
+                    lock (DrawingLocker)
+                    {
+                        return MainLine == null && SecondaryLine == null && RemovingLine == null;
+                    }
+                }
+            }
+
+            public TimeSpan Position
+            {
+                get => position;
+                set
+                {
+                    if (Math.Abs((position - value).TotalSeconds) > 0.01)
+                    {
+                        position = value;
+                        UpdateLines();
+                    }
+                }
+            }
+
+            private void UpdateLines()
+            {
+                lock (DrawingLocker)
+                {
+                    if (lyric == null)
+                    {
+                        MainLine = null;
+                        SecondaryLine = null;
+                        RemovingLine = null;
+                        SecondaryLineIsTranslate = false;
+                    }
+                    else
+                    {
+                        var mainLine = MainLine;
+                        var secondaryLine = SecondaryLine;
+                        var removingLine = RemovingLine;
+                        var secondaryLineIsTranslate = SecondaryLineIsTranslate;
+                        var skipEmptyLine = SkipEmptyLine;
+
+                        var position = Position;
+
+                        bool updateMainLineFlag = false;
+
+                        if (mainLine != null)
+                        {
+                            if (position < mainLine.StartTime || position >= mainLine.EndTime)
+                            {
+                                updateMainLineFlag = true;
+                            }
+                        }
+                        else
+                        {
+                            updateMainLineFlag = true;
+                        }
+
+                        if (updateMainLineFlag)
+                        {
+                            mainLine = lyric.Content.GetCurrentLine(position, skipEmptyLine);
+
+                            if (mainLine != null)
+                            {
+                                (secondaryLine, secondaryLineIsTranslate) = GetNextLine(lyric, mainLine.StartTime, skipEmptyLine);
+
+                                if (secondaryLineIsTranslate)
+                                {
+                                    removingLine = null;
+                                }
+                                else
+                                {
+                                    removingLine = lyric.Content.GetPreviousLine(mainLine.StartTime, skipEmptyLine);
+                                }
+                            }
+                            else
+                            {
+                                secondaryLine = null;
+                                removingLine = null;
+                                secondaryLineIsTranslate = false;
+                            }
+
+                        }
+
+                        MainLine = mainLine;
+                        SecondaryLine = secondaryLine;
+                        RemovingLine = removingLine;
+                        SecondaryLineIsTranslate = secondaryLineIsTranslate;
+                    }
+                }
+
+
+            }
+
+            private (ILyricLine? line, bool isTranslate) GetNextLine(Lyric lyric, TimeSpan currentLineStartTime, bool skipEmpty)
+            {
+                if (lyric.Translate != null && IsTranslateEnabled)
+                {
+                    var line = lyric.Translate.GetCurrentLine(currentLineStartTime, false);
+                    if (line != null) return (line, true);
+                }
+                else
+                {
+                    var line = lyric.Content.GetNextLine(currentLineStartTime, skipEmpty);
+                    if (line != null) return (line, false);
+                }
+
+                return default;
+            }
+        }
+    }
+}

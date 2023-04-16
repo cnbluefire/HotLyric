@@ -3,12 +3,16 @@ using System;
 using System.Collections.Generic;
 using System.ComponentModel;
 using System.Text;
-using System.Windows.Media;
+using Microsoft.UI;
+using Microsoft.UI.Xaml.Media;
+using Windows.UI;
 
 namespace HotLyric.Win32.Models
 {
     public class LyricThemeView
     {
+        private static Brush TransparentBrush = new SolidColorBrush(Colors.Transparent);
+
         public LyricThemeView(Brush? borderBrush, Brush? backgroundBrush, Brush? lyricBrush, Brush? karaokeBrush, Brush? lyricStrokeBrush, Brush? karaokeStrokeBrush)
             : this("customize", borderBrush, backgroundBrush, lyricBrush, karaokeBrush, lyricStrokeBrush, karaokeStrokeBrush)
         {
@@ -26,7 +30,8 @@ namespace HotLyric.Win32.Models
             LyricStrokeBrush = NormalizeBrush(lyricStrokeBrush);
             KaraokeStrokeBrush = NormalizeBrush(karaokeStrokeBrush);
 
-            if (KaraokeStrokeBrush == Brushes.Transparent)
+            if (KaraokeStrokeBrush is SolidColorBrush _brush
+                && _brush.Opacity * _brush.Color.A == 0)
             {
                 KaraokeStrokeBrush = LyricStrokeBrush;
             }
@@ -61,19 +66,19 @@ namespace HotLyric.Win32.Models
 
         private static Brush NormalizeBrush(Brush? brush)
         {
-            if (brush == null) return Brushes.Transparent;
+            if (brush == null) return TransparentBrush;
             else if (brush is SolidColorBrush scb)
             {
                 if (scb.Opacity == 1) return brush;
-                else if (scb.Opacity == 0) return Brushes.Transparent;
+                else if (scb.Opacity == 0) return TransparentBrush;
                 else return new SolidColorBrush(
                     Color.FromArgb(
-                        (byte)Math.Clamp((int)(scb.Opacity * scb.Color.A), 0, 255),
+                        (byte)Math.Min(Math.Max((int)(scb.Opacity * scb.Color.A), 0), 255),
                         scb.Color.R,
                         scb.Color.G,
                         scb.Color.B));
             }
-            else return Brushes.Transparent;
+            else return TransparentBrush;
         }
     }
 }

@@ -2,9 +2,9 @@
 using System;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Windows.Media;
 using Windows.ApplicationModel;
 using Windows.Media.Control;
+using Microsoft.UI.Xaml.Media;
 
 namespace HotLyric.Win32.Utils.MediaSessions
 {

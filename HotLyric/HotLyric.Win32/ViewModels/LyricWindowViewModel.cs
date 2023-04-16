@@ -3,7 +3,6 @@ using HotLyric.Win32.Models;
 using HotLyric.Win32.Utils;
 using HotLyric.Win32.Utils.MediaSessions;
 using HotLyric.Win32.Utils.MediaSessions.SMTC;
-using HotLyric.Win32.Utils.WindowBackgrounds;
 using HotLyric.Win32.Views;
 using CommunityToolkit.Mvvm.ComponentModel;
 using CommunityToolkit.Mvvm.Input;
@@ -17,8 +16,9 @@ using System.Threading;
 using System.Threading.Tasks;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
-using Windows.System;
+using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
+using HotLyric.Win32.Controls.LyricControlDrawingData;
 
 namespace HotLyric.Win32.ViewModels
 {
@@ -28,6 +28,7 @@ namespace HotLyric.Win32.ViewModels
         private readonly SettingsWindowViewModel settingVm;
         private SMTCManager? smtcManager;
         private ISMTCSession[]? sessions;
+        private PowerModeHelper powerModeHelper;
 
         public LyricWindowViewModel(MediaSessionManagerFactory smtcFactory, SettingsWindowViewModel settingVm)
         {
@@ -51,19 +52,25 @@ namespace HotLyric.Win32.ViewModels
 
             InitSessions();
 
+            powerModeHelper = new PowerModeHelper();
+
             settingVm.SettingsChanged += SettingVm_SettingsChanged;
             UpdateSettings();
-        }
 
+            powerModeHelper.PropertiesChanged += PowerModeHelper_PropertiesChanged;
+        }
 
         private MediaSessionModel? selectedSession;
 
         private bool isTitleVisible;
         private bool alwaysShowBackground;
-        private HorizontalAlignment lyricHorizontalAlignment;
+        private LyricDrawingLineAlignment lyricAlignment;
+        private LyricControlLineMode lineMode;
+        private bool isLyricTranslateEnabled;
         private bool isTransparent;
-        private bool showShadow;
-        private bool textStrokeEnabled;
+        private LyricControlTextStrokeType textStrokeType;
+        private LyricControlScrollAnimationMode scrollAnimationMode = LyricControlScrollAnimationMode.Fast;
+
 
         private ObservableCollection<MediaSessionModel>? sessionModels;
 
@@ -74,47 +81,18 @@ namespace HotLyric.Win32.ViewModels
         private ICommand? openCurrentSessionAppCmd;
         private LyricThemeView? lyricTheme;
         private DelayValueHolder<bool> isBackgroundTransientVisible;
-        private WindowBackgroundHelper? backgroundHelper;
+        private bool isMouseOver;
 
         private bool isPlaying;
 
         private string lyricPlaceholderText = "";
         private string lyricNextLinePlaceholderText = "";
 
+        private bool lowFrameRateMode;
+
         private AsyncRelayCommand? onlyUseTimerHelpCmd;
 
         public SettingsWindowViewModel SettingViewModel => settingVm;
-
-        public WindowBackgroundHelper? BackgroundHelper
-        {
-            get => backgroundHelper;
-            set
-            {
-                var old = backgroundHelper;
-                if (SetProperty(ref backgroundHelper, value))
-                {
-                    if (old != null)
-                    {
-                        WeakEventManager<INotifyPropertyChanged, PropertyChangedEventArgs>.RemoveHandler(
-                            old, "PropertyChanged", OnBackgroundHelperPropertyChanged);
-                    }
-                    if (backgroundHelper != null)
-                    {
-                        WeakEventManager<INotifyPropertyChanged, PropertyChangedEventArgs>.AddHandler(
-                            backgroundHelper, "PropertyChanged", OnBackgroundHelperPropertyChanged);
-                    }
-                }
-            }
-        }
-
-        private void OnBackgroundHelperPropertyChanged(object? sender, PropertyChangedEventArgs e)
-        {
-            if (sender is WindowBackgroundHelper helper
-                && e.PropertyName == nameof(helper.IsHitTestVisible))
-            {
-                IsBackgroundTransientVisible = helper.IsHitTestVisible;
-            }
-        }
 
         public bool IsTitleVisible
         {
@@ -123,6 +101,23 @@ namespace HotLyric.Win32.ViewModels
         }
 
         public bool IsTitleButtonVisible => !IsTransparent;
+
+        public bool IsMouseOver
+        {
+            get => isMouseOver;
+            set
+            {
+                if (SetProperty(ref isMouseOver, value))
+                {
+                    if (!value)
+                    {
+                        IsBackgroundTransientVisible = false;
+                    }
+                    OnPropertyChanged(nameof(IsBackgroundVisible));
+                    OnPropertyChanged(nameof(LyricOpacity));
+                }
+            }
+        }
 
         public bool IsBackgroundTransientVisible
         {
@@ -137,13 +132,7 @@ namespace HotLyric.Win32.ViewModels
             {
                 if (SetProperty(ref alwaysShowBackground, value))
                 {
-                    if (backgroundHelper != null)
-                    {
-                        backgroundHelper.ForceVisible = value;
-                    }
-
                     OnPropertyChanged(nameof(IsBackgroundVisible));
-                    OnPropertyChanged(nameof(IsTitleButtonVisible));
                     OnPropertyChanged(nameof(LyricOpacity));
                 }
 
@@ -151,13 +140,25 @@ namespace HotLyric.Win32.ViewModels
             }
         }
 
-        public HorizontalAlignment LyricHorizontalAlignment
+        public LyricDrawingLineAlignment LyricAlignment
         {
-            get => lyricHorizontalAlignment;
-            private set => SetProperty(ref lyricHorizontalAlignment, value);
+            get => lyricAlignment;
+            private set => SetProperty(ref lyricAlignment, value);
         }
 
-        public bool IsBackgroundVisible => !ActualMinimized && (IsBackgroundTransientVisible || AlwaysShowBackground);
+        public LyricControlLineMode LineMode
+        {
+            get => lineMode;
+            private set => SetProperty(ref lineMode, value);
+        }
+
+        public bool IsLyricTranslateEnabled
+        {
+            get => isLyricTranslateEnabled;
+            private set => SetProperty(ref isLyricTranslateEnabled, value);
+        }
+
+        public bool IsBackgroundVisible => !ActualMinimized && (IsMouseOver || IsBackgroundTransientVisible || AlwaysShowBackground);
 
         public bool IsMinimized
         {
@@ -188,29 +189,29 @@ namespace HotLyric.Win32.ViewModels
                 if (SetProperty(ref isTransparent, value))
                 {
                     OnPropertyChanged(nameof(IsTitleButtonVisible));
+                    if (value)
+                    {
+                        IsMouseOver = false;
+                    }
                 }
             }
         }
 
-        public bool ShowShadow
+        public LyricControlTextStrokeType TextStrokeType
         {
-            get => showShadow;
-            private set
-            {
-                if (SetProperty(ref showShadow, value))
-                {
-                    ShowBackgroundTransient(TimeSpan.FromSeconds(2));
-                }
-            }
+            get => textStrokeType;
+            private set => SetProperty(ref textStrokeType, value);
         }
 
-        public bool TextStrokeEnabled
+        public LyricControlScrollAnimationMode ScrollAnimationMode
         {
-            get => textStrokeEnabled;
-            private set => SetProperty(ref textStrokeEnabled, value);
+            get => scrollAnimationMode;
+            private set => SetProperty(ref scrollAnimationMode, value);
         }
 
-        public bool ActualKaraokeEnabled => KaraokeEnabled && MediaModel?.HasLyric == true;
+        public LyricControlProgressAnimationMode ProgressAnimationMode =>
+            (KaraokeEnabled && MediaModel?.HasLyric == true) ? LyricControlProgressAnimationMode.Karaoke
+                : LyricControlProgressAnimationMode.Disabled;
 
         public bool KaraokeEnabled
         {
@@ -219,7 +220,7 @@ namespace HotLyric.Win32.ViewModels
             {
                 if (SetProperty(ref karaokeEnabled, value))
                 {
-                    OnPropertyChanged(nameof(ActualKaraokeEnabled));
+                    OnPropertyChanged(nameof(ProgressAnimationMode));
                 }
             }
         }
@@ -244,6 +245,8 @@ namespace HotLyric.Win32.ViewModels
             }
         }
 
+        private WeakEventListener<MediaModel, object, PropertyChangedEventArgs>? mediaModelPropertyChangedWeakEvent;
+
         public MediaModel? MediaModel
         {
             get => mediaModel;
@@ -254,30 +257,35 @@ namespace HotLyric.Win32.ViewModels
                 {
                     OnPropertyChanged(nameof(ActualMinimized));
                     OnPropertyChanged(nameof(IsBackgroundVisible));
-                    OnPropertyChanged(nameof(ActualKaraokeEnabled));
+                    OnPropertyChanged(nameof(ProgressAnimationMode));
                     OnPropertyChanged(nameof(LyricOpacity));
 
                     UpdateLyricPlaceholder();
 
-                    App.Current.NotifyIcon?.UpdateToolTipText();
+                    //App.Current.NotifyIcon?.UpdateToolTipText();
 
-                    if (oldModel != null)
+                    if (mediaModelPropertyChangedWeakEvent != null)
                     {
-                        WeakEventManager<MediaModel, PropertyChangedEventArgs>.RemoveHandler(oldModel, "PropertyChanged", new EventHandler<PropertyChangedEventArgs>(MediaModel_PropertyChanged));
+                        mediaModelPropertyChangedWeakEvent.Detach();
+                        mediaModelPropertyChangedWeakEvent = null;
                     }
 
                     if (mediaModel != null)
                     {
-                        WeakEventManager<MediaModel, PropertyChangedEventArgs>.AddHandler(mediaModel, "PropertyChanged", new EventHandler<PropertyChangedEventArgs>(MediaModel_PropertyChanged));
+                        mediaModelPropertyChangedWeakEvent = new WeakEventListener<MediaModel, object, PropertyChangedEventArgs>(mediaModel);
+                        mediaModelPropertyChangedWeakEvent.OnEventAction = (i, s, a) => MediaModel_PropertyChanged(s, a);
+                        mediaModelPropertyChangedWeakEvent.OnDetachAction =
+                            e => mediaModel.PropertyChanged -= mediaModelPropertyChangedWeakEvent.OnEvent;
+                        mediaModel.PropertyChanged += mediaModelPropertyChangedWeakEvent.OnEvent;
                     }
                 }
             }
         }
 
-        private void MediaModel_PropertyChanged(object? sender, PropertyChangedEventArgs e)
+        private void MediaModel_PropertyChanged(object? sender, PropertyChangedEventArgs? e)
         {
             UpdateLyricPlaceholder();
-            OnPropertyChanged(nameof(ActualKaraokeEnabled));
+            OnPropertyChanged(nameof(ProgressAnimationMode));
             App.Current.NotifyIcon?.UpdateToolTipText();
         }
 
@@ -330,7 +338,7 @@ namespace HotLyric.Win32.ViewModels
                 OnPropertyChanged(nameof(LyricOpacity));
                 OnlyUseTimerHelpCmd.NotifyCanExecuteChanged();
                 OnPropertyChanged(nameof(OnlyUseTimerHelpButtonVisible));
-                App.Current.NotifyIcon?.UpdateToolTipText();
+                //App.Current.NotifyIcon?.UpdateToolTipText();
             }
         }
 
@@ -342,12 +350,12 @@ namespace HotLyric.Win32.ViewModels
                 var curSessionAUMID = (SelectedSession?.Session as ISMTCSession)?.Session?.SourceAppUserModelId;
                 if (string.IsNullOrEmpty(curSessionAUMID)) return;
 
-                var package = await ApplicationHelper.TryGetPackageFromAppUserModelIdAsync(curSessionAUMID);
+                var package = await ApplicationHelper.TryGetPackageFromAppUserModelIdAsync(curSessionAUMID!);
                 var pfn = package?.Id?.FamilyName;
 
                 if (!string.IsNullOrEmpty(pfn))
                 {
-                    await ApplicationHelper.TryLaunchAppAsync(pfn);
+                    await ApplicationHelper.TryLaunchAppAsync(pfn!);
                 }
             }
         }));
@@ -376,13 +384,12 @@ namespace HotLyric.Win32.ViewModels
             {
                 sessions = smtcManager.Sessions.ToArray();
 
-                CommandLineArgsHelper.ActivateMainInstanceEventReceived += CommandLineArgsHelper_ActivateMainInstanceEventReceived;
+                ActivationArgumentsHelper.ActivateMainInstanceEventReceived += CommandLineArgsHelper_ActivateMainInstanceEventReceived;
 
                 UpdateSessions();
                 smtcManager.SessionsChanged += SmtcManager_SessionsChanged;
             }
         }
-
 
         private void CommandLineArgsHelper_ActivateMainInstanceEventReceived(object? sender, EventArgs e)
         {
@@ -433,7 +440,7 @@ namespace HotLyric.Win32.ViewModels
 
         private void SmtcManager_SessionsChanged(object? sender, EventArgs e)
         {
-            DispatcherHelper.UIDispatcher!.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+            App.DispatcherQueue.TryEnqueue(() =>
             {
                 if (smtcManager != null)
                 {
@@ -441,7 +448,7 @@ namespace HotLyric.Win32.ViewModels
 
                     UpdateSessions();
                 }
-            }));
+            });
         }
 
         private ISMTCSession? GetNamedSession(string? appId)
@@ -467,9 +474,9 @@ namespace HotLyric.Win32.ViewModels
         private async void UpdateSessions()
         {
             string? from = "";
-            if (CommandLineArgsHelper.HasLaunchParameters)
+            if (ActivationArgumentsHelper.HasLaunchParameters)
             {
-                from = CommandLineArgsHelper.LaunchFromPackageFamilyName;
+                from = ActivationArgumentsHelper.LaunchFromPackageFamilyName;
 
                 // 从参数启动时不弹出启动app的窗口
             }
@@ -482,7 +489,7 @@ namespace HotLyric.Win32.ViewModels
                 if (curSession != null)
                 {
                     // 启动参数已消费
-                    CommandLineArgsHelper.LaunchFromPackageFamilyName = null;
+                    ActivationArgumentsHelper.LaunchFromPackageFamilyName = null;
                 }
                 else
                 {
@@ -495,11 +502,8 @@ namespace HotLyric.Win32.ViewModels
 
                 var models = await Task.WhenAll(_sessions.Select(async c => await MediaSessionModel.CreateAsync(c)));
 
-                DispatcherHelper.UIDispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Background, new Action(() =>
+                App.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
                 {
-                    SelectedSession = models?.FirstOrDefault(c => (c?.Session as ISMTCSession)?.Session?.SourceAppUserModelId == lastSelectedAppId)
-                        ?? models?.FirstOrDefault();
-
                     var oldSessionModels = SessionModels?.ToArray();
 
                     if (models != null)
@@ -511,6 +515,10 @@ namespace HotLyric.Win32.ViewModels
                         SessionModels = null;
                     }
 
+                    SelectedSession = models?.FirstOrDefault(c => (c?.Session as ISMTCSession)?.Session?.SourceAppUserModelId == lastSelectedAppId)
+                        ?? models?.FirstOrDefault();
+
+
                     if (oldSessionModels != null)
                     {
                         foreach (var model in oldSessionModels)
@@ -520,7 +528,7 @@ namespace HotLyric.Win32.ViewModels
                     }
 
                     OnPropertyChanged(nameof(HasMoreSession));
-                }));
+                });
             }
         }
 
@@ -549,30 +557,128 @@ namespace HotLyric.Win32.ViewModels
             LyricNextLinePlaceholderText = MediaModel?.Artist ?? "";
         }
 
+        public bool LowFrameRateMode
+        {
+            get => lowFrameRateMode;
+            private set => SetProperty(ref lowFrameRateMode, value);
+        }
+
         public AsyncRelayCommand OnlyUseTimerHelpCmd => onlyUseTimerHelpCmd ?? (onlyUseTimerHelpCmd = new AsyncRelayCommand(async () =>
         {
             var uri = new Uri("https://github.com/cnbluefire/HotLyric#%E5%AF%B9%E9%83%A8%E5%88%86%E8%BD%AF%E4%BB%B6%E6%8F%90%E4%BE%9B%E6%9C%89%E9%99%90%E6%94%AF%E6%8C%81");
-            await Launcher.LaunchUriAsync(uri);
+            await Windows.System.Launcher.LaunchUriAsync(uri);
         }, () => SelectedSession?.Session is SMTCSession session && session.PositionMode == SMTCAppPositionMode.OnlyUseTimer && !OnlyUseTimerHelpCmd.IsRunning));
 
         public bool OnlyUseTimerHelpButtonVisible => OnlyUseTimerHelpCmd.CanExecute(null);
 
+        private void PowerModeHelper_PropertiesChanged(object? sender, EventArgs e)
+        {
+            App.DispatcherQueue.TryEnqueue(UpdatePowerMode);
+        }
+
+        public void UpdatePowerMode()
+        {
+            var lowFrameRateMode = settingVm.LowFrameRateMode.SelectedValue ?? ViewModels.LowFrameRateMode.Auto;
+            bool enableEfficiencyMode = false;
+            bool enableLowFrameRateMode = false;
+
+            if (lowFrameRateMode == ViewModels.LowFrameRateMode.Enabled)
+            {
+                enableLowFrameRateMode = true;
+                enableEfficiencyMode = true;
+            }
+            else
+            {
+                var powerMode = powerModeHelper.EffectivePowerMode;
+                var batteryStatus = powerModeHelper.BatteryStatus;
+
+                switch (powerMode)
+                {
+                    case Microsoft.Windows.System.Power.EffectivePowerMode.BatterySaver:
+                    case Microsoft.Windows.System.Power.EffectivePowerMode.BetterBattery:
+                        enableLowFrameRateMode = true;
+                        enableEfficiencyMode = true;
+                        break;
+
+                    case Microsoft.Windows.System.Power.EffectivePowerMode.Balanced:
+                        if (batteryStatus == Microsoft.Windows.System.Power.BatteryStatus.Discharging)
+                        {
+                            enableEfficiencyMode = true;
+                        }
+                        break;
+
+                    case Microsoft.Windows.System.Power.EffectivePowerMode.HighPerformance:
+                    case Microsoft.Windows.System.Power.EffectivePowerMode.MaxPerformance:
+                    case Microsoft.Windows.System.Power.EffectivePowerMode.GameMode:
+                    case Microsoft.Windows.System.Power.EffectivePowerMode.MixedReality:
+                    default:
+
+                        break;
+                }
+
+                if (lowFrameRateMode == ViewModels.LowFrameRateMode.Disabled)
+                {
+                    enableLowFrameRateMode = false;
+                }
+            }
+
+            PowerModeHelper.SetEfficiencyMode(enableEfficiencyMode);
+            LowFrameRateMode = enableLowFrameRateMode;
+
+            if (lowFrameRateMode == ViewModels.LowFrameRateMode.Disabled)
+            {
+                ForegroundWindowHelper.Uninitialize();
+
+            }
+            else
+            {
+                ForegroundWindowHelper.Initialize();
+            }
+
+        }
+
         private void UpdateSettings()
         {
             IsTransparent = settingVm.WindowTransparent;
-            //SecondRowType = settingVm.SecondRowType;
+
+            switch (settingVm.SecondRowTypes.SelectedValue)
+            {
+                case SecondRowType.Collapsed:
+                    LineMode = LyricControlLineMode.SingleLine;
+                    break;
+
+                case SecondRowType.TranslationOrNextLyric:
+                    LineMode = LyricControlLineMode.DoubleLine;
+                    IsLyricTranslateEnabled = true;
+                    break;
+
+                case SecondRowType.NextLyricOnly:
+                    LineMode = LyricControlLineMode.DoubleLine;
+                    IsLyricTranslateEnabled = false;
+                    break;
+            }
+
             KaraokeEnabled = settingVm.KaraokeEnabled;
-            LyricHorizontalAlignment = settingVm.LyricHorizontalAlignment;
+            LyricAlignment = settingVm.LyricAlignments.SelectedValue ?? LyricDrawingLineAlignment.Left;
 
             AlwaysShowBackground = settingVm.AlwaysShowBackground;
-            ShowShadow = settingVm.ShowShadow;
-            TextStrokeEnabled = settingVm.TextStrokeEnabled;
+            TextStrokeType = settingVm.TextStrokeTypes.SelectedValue ?? LyricControlTextStrokeType.Auto;
 
             LyricTheme = settingVm.CurrentTheme;
+
+            ScrollAnimationMode = settingVm.ScrollAnimationMode.SelectedValue ?? LyricControlScrollAnimationMode.Fast;
 
             UpdateMinimizedByPause();
 
             OnPropertyChanged(nameof(LyricOpacity));
+
+            UpdatePowerMode();
+
+            if (App.Current.LyricView != null)
+            {
+                App.Current.LyricView.TopmostHelper.HideWhenFullScreenAppOpen = settingVm.HideWhenFullScreenAppOpen;
+                App.Current.LyricView.TopmostHelper.Enabled = settingVm.LowFrameRateMode.SelectedValue != ViewModels.LowFrameRateMode.Disabled;
+            }
         }
 
         public void ShowBackgroundTransient(TimeSpan time)

@@ -10,9 +10,9 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using System.Windows;
-using System.Windows.Media;
-using System.Windows.Media.Imaging;
 using Windows.Media.Control;
+using Microsoft.UI.Xaml.Media;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace HotLyric.Win32.Models
 {
@@ -95,20 +95,20 @@ namespace HotLyric.Win32.Models
         {
             mediaProperties = await Session.GetMediaPropertiesAsync();
 
-            await DispatcherHelper.UIDispatcher!.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+            App.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
             {
                 OnPropertyChanged(mediaTitleChangedArgs);
                 OnPropertyChanged(mediaArtistChangedArgs);
                 OnPropertyChanged(neteaseMusicIdChangedArgs);
 
                 MediaChanged?.Invoke(this, EventArgs.Empty);
-            }));
+            });
         }
 
 
         private void Session_PlaybackInfoChanged(object? sender, EventArgs e)
         {
-            _ = DispatcherHelper.UIDispatcher!.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(() =>
+            App.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
             {
                 OnPropertyChanged(positionChangedArgs);
                 OnPropertyChanged(isPlayingChangedArgs);
@@ -117,7 +117,7 @@ namespace HotLyric.Win32.Models
                 RaiseCommandButtonVisibleChanged();
 
                 PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
-            }));
+            });
         }
 
         private void RaiseCommandButtonVisibleChanged()

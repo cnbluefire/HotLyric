@@ -29,6 +29,7 @@
 * Windows 10 中关闭所有播放器时热词可能不会自动隐藏。
 * 安装 StartAllBack 后热词渲染可能不正确，具体表现如歌词文字重叠，自定义颜色控件背景丢失等，卸载 StartAllBack 即可解决。
 * 11 代 Intel 核心显卡使用 WDDM 版本为 2.7 的显卡驱动时，热词可能渲染不正确，升级核显驱动可以解决此问题，或开启热词的强制软件渲染进行缓解。
+* 如果遇到打不开或打开闪退的情况，请尝试安装 Microsoft.VCLibs.14.00.Desktop.appx [x86下载](https://aka.ms/Microsoft.VCLibs.x86.14.00.Desktop.appx) [x64下载](https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx) [arm64下载](https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx)
 
 ## 如何打开
 

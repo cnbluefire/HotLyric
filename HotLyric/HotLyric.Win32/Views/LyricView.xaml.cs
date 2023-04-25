@@ -237,7 +237,7 @@ namespace HotLyric.Win32.Views
             }
         }
 
-        private void ContentRoot_PointerExited(object sender, global::Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
+        private async void ContentRoot_PointerExited(object sender, global::Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
             var p = e.GetCurrentPoint(ContentRoot);
 
@@ -247,45 +247,23 @@ namespace HotLyric.Win32.Views
             }
             else if (!VM.IsTransparent)
             {
-                if (p.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Mouse)
-                {
-                    DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, async () =>
-                    {
-                        await Task.Delay(100);
-
-                        if (AppWindow.IsVisible
-                            && User32.GetWindowRect(this.GetWindowHandle(), out var rect)
-                            && User32.GetCursorPos(out var point))
-                        {
-                            var rect2 = (System.Drawing.Rectangle)rect;
-                            var point2 = (System.Drawing.Point)point;
-
-                            VM.IsMouseOver = rect2.Contains(point2);
-
-                            Debug.WriteLine($"{rect2}   {point2}");
-                        }
-                    });
-                }
-                else
-                {
-                    VM.IsMouseOver = false;
-                }
+                await UpdateMouseExitedState(e);
             }
 
-            if (!VM.IsMouseOver)
+            if (!VM.IsMouseOver && e.Pointer.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Mouse)
             {
                 VM.IsBackgroundTransientVisible = false;
             }
         }
 
-        private void ContentRoot_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        private async void ContentRoot_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
         {
-            VM.IsMouseOver = false;
+            await UpdateMouseExitedState(e);
         }
 
-        private void ContentRoot_PointerCanceled(object sender, PointerRoutedEventArgs e)
+        private async void ContentRoot_PointerCanceled(object sender, PointerRoutedEventArgs e)
         {
-            VM.IsMouseOver = false;
+            await UpdateMouseExitedState(e);
         }
 
         private void ContentRoot_PointerPressed(object sender, PointerRoutedEventArgs e)
@@ -293,6 +271,48 @@ namespace HotLyric.Win32.Views
             e.Handled = true;
 
             _ = this.DragMoveAsync(e);
+        }
+
+        private async Task UpdateMouseExitedState(PointerRoutedEventArgs e)
+        {
+            var p = e.GetCurrentPoint(ContentRoot);
+            if (p.PointerDeviceType == Microsoft.UI.Input.PointerDeviceType.Mouse)
+            {
+                var tcs = new TaskCompletionSource();
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, async () =>
+                {
+                    try
+                    {
+                        await Task.Delay(100);
+
+                        VM.IsMouseOver = IsMouseInsideWindow();
+                    }
+                    catch { }
+                    tcs.SetResult();
+                });
+
+                await tcs.Task;
+            }
+            else
+            {
+                VM.IsMouseOver = false;
+                VM.ShowBackgroundTransient(TimeSpan.FromSeconds(1));
+            }
+        }
+
+        private bool IsMouseInsideWindow()
+        {
+            if (AppWindow.IsVisible
+                && User32.GetWindowRect(this.GetWindowHandle(), out var rect)
+                && User32.GetCursorPos(out var point))
+            {
+                var rect2 = (System.Drawing.Rectangle)rect;
+                var point2 = (System.Drawing.Point)point;
+
+                return rect2.Contains(point2);
+            }
+
+            return false;
         }
 
         public void Button_Click(object sender, RoutedEventArgs args)

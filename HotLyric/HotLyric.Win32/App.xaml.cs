@@ -39,7 +39,7 @@ namespace HotLyric.Win32
 
             CreateMainWindow();
 
-            //_ = CheckUpdateAsync();
+            _ = CheckUpdateAsync();
 
             ViewModelLocator.Instance.SettingsWindowViewModel.TryShowReadMeOnStartup();
         }

@@ -99,15 +99,15 @@ namespace HotLyric.Win32.Models
 
             try
             {
-                Lyric = LrcHelper.DownloadingLyric;
+                Lyric = Lyric.CreateDownloadingLyric(Name, Artist);
 
-                var lyric = await LrcHelper.GetLrcFileAsync(LocalLrcPath, tmpCts.Token);
+                var lyric = await LrcHelper.GetLrcFileAsync(Name, Artist, LocalLrcPath, tmpCts.Token);
 
                 if (lyric == null)
                 {
                     lyric = await LrcHelper.GetLrcFileAsync(
                         Name,
-                        !string.IsNullOrEmpty(Artist) ? new[] { Artist! } : Array.Empty<string>(),
+                        Artist,
                         !string.IsNullOrWhiteSpace(NeteaseMusicId) ? NeteaseMusicId! : "",
                         DefaultProvider,
                         ConvertToSimpleChinese,
@@ -121,7 +121,7 @@ namespace HotLyric.Win32.Models
                 }
                 else
                 {
-                    Lyric = LrcHelper.EmptyLyric;
+                    Lyric = Lyric.CreateEmptyLyric(Name, Artist);
                 }
             }
             catch
@@ -201,7 +201,7 @@ namespace HotLyric.Win32.Models
         {
             return new MediaModel("", "", "", "", TimeSpan.Zero, "", false)
             {
-                Lyric = LrcHelper.EmptyLyric,
+                Lyric = Lyric.CreateEmptyLyric(null, null),
                 isEmptyLyric = true
             };
         }

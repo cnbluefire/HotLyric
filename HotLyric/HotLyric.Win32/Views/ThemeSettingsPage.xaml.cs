@@ -46,7 +46,7 @@ namespace HotLyric.Win32.Views
             {
                 await Launcher.LaunchUriAsync(new Uri("https://go.microsoft.com/fwlink/?linkid=2185388"));
             }
-            catch { }
+            catch { }  
         }
     }
 }

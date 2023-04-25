@@ -3,7 +3,7 @@ using System.Linq;
 
 namespace HotLyric.Win32.Utils.LyricFiles
 {
-    public record Lyric(ILyricDocument Content, string LyricContent, ILyricDocument? Translate, string? TranslateContent)
+    public record Lyric(ILyricDocument Content, string LyricContent, ILyricDocument? Translate, string? TranslateContent, bool IsEmpty, string? SongName, string? Artists)
     {
         private static readonly HashSet<string> absoluteMusicLyricFlags = new HashSet<string>()
         {
@@ -11,7 +11,21 @@ namespace HotLyric.Win32.Utils.LyricFiles
             "此歌曲为没有填词的纯音乐，请您欣赏"
         };
 
-        public static Lyric? CreateClassicLyric(string lyricContent, string? translateContent)
+        internal static Lyric? CreateDownloadingLyric(string? songName, string? artists)
+        {
+            var content = ClassicLyricDocument.Create("[00:00.00]正在加载...");
+
+            return new Lyric(content!, "[00:00.00]正在加载...", null, null, true, songName, artists);
+        }
+
+        internal static Lyric? CreateEmptyLyric(string? songName, string? artists)
+        {
+            var content = ClassicLyricDocument.Create("[00:00.00]暂无歌词");
+
+            return new Lyric(content!, "[00:00.00]暂无歌词", null, null, true, songName, artists);
+        }
+
+        public static Lyric? CreateClassicLyric(string lyricContent, string? translateContent, string? songName, string? artists)
         {
             ILyricDocument? content = null;
             ILyricDocument? translate = null;
@@ -49,7 +63,7 @@ namespace HotLyric.Win32.Utils.LyricFiles
                     catch { }
                 }
 
-                return new Lyric(content, lyricContent, translate, translateContent);
+                return new Lyric(content, lyricContent, translate, translateContent, content == null, songName, artists);
             }
 
             return null;

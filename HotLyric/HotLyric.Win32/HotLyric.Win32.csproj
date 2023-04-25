@@ -45,25 +45,9 @@
 	</ItemGroup>
 
 	<ItemGroup>
-		<Compile Remove="Base\BackgroundHelpers\AcrylicVisualProvider.cs" />
-		<Compile Remove="Base\BackgroundHelpers\CompositionSurfaceFactory.cs" />
-		<Compile Remove="Base\BackgroundHelpers\CompositionThread.cs" />
-		<Compile Remove="Base\BackgroundHelpers\DeviceHolder.cs" />
-		<Compile Remove="Base\BackgroundHelpers\Extensions.cs" />
-		<Compile Remove="Base\BackgroundHelpers\ShadowFactory.cs" />
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Remove="Controls\CustomThemeControl.xaml" />
-	</ItemGroup>
-
-	<ItemGroup>
 		<None Update="Assets\defaultTheme.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-		<Page Update="Controls\CustomThemeControl.xaml">
-			<Generator>MSBuild:Compile</Generator>
-		</Page>
 		<None Update="NLog.config">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

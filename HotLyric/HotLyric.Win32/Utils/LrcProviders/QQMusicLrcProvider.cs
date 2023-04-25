@@ -14,7 +14,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
     {
         public string Name => "QQMusic";
 
-        public async Task<Lyric?> GetByIdAsync(object id, CancellationToken cancellationToken)
+        public async Task<Lyric?> GetByIdAsync(string songName, string? artists, object id, CancellationToken cancellationToken)
         {
             if (id is string _id && !string.IsNullOrEmpty(_id))
             {
@@ -70,14 +70,14 @@ namespace HotLyric.Win32.Utils.LrcProviders
                     }
                     catch { }
 
-                    return Lyric.CreateClassicLyric(lrcContent, translatedContent);
+                    return Lyric.CreateClassicLyric(lrcContent, translatedContent, songName, artists);
                 }
                 catch (Exception ex) when (!(ex is OperationCanceledException)) { }
             }
             return null;
         }
 
-        public async Task<object?> GetIdAsync(string name, string[]? artists, CancellationToken cancellationToken)
+        public async Task<object?> GetIdAsync(string name, string? artists, CancellationToken cancellationToken)
         {
             const int pageSize = 20;
 

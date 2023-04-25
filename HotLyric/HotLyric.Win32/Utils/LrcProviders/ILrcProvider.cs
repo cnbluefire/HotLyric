@@ -11,8 +11,8 @@ namespace HotLyric.Win32.Utils.LrcProviders
     {
         string Name { get; }
 
-        Task<Lyric?> GetByIdAsync(object id, CancellationToken cancellationToken);
+        Task<Lyric?> GetByIdAsync(string songName, string? artists, object id, CancellationToken cancellationToken);
 
-        Task<object?> GetIdAsync(string name, string[]? artists, CancellationToken cancellationToken);
+        Task<object?> GetIdAsync(string name, string? artists, CancellationToken cancellationToken);
     }
 }

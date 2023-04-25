@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Windowing;
+﻿using Microsoft.UI.Dispatching;
+using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
@@ -19,8 +20,9 @@ namespace HotLyric.Win32.Utils
         private bool disposedValue;
         private Window window;
         private IntPtr hwnd;
-        private DispatcherTimer timer = null!;
+        private DispatcherTimer? timer;
         private System.Timers.Timer? trayWndHandleTimer;
+        private DispatcherQueue? dispatcherQueue;
         private volatile HashSet<IntPtr> systemWindowList;
         private IntPtr fwHwnd;
         private bool hideWhenFullScreenAppOpen;
@@ -68,6 +70,8 @@ namespace HotLyric.Win32.Utils
         private void Init()
         {
             hwnd = window.GetWindowHandle();
+
+            dispatcherQueue = DispatcherQueue.GetForCurrentThread();
 
             timer = new DispatcherTimer()
             {
@@ -126,7 +130,7 @@ namespace HotLyric.Win32.Utils
 
             if (!isSystemWindow)
             {
-                timer.Stop();
+                timer?.Stop();
             }
 
             if (isFullScreen && !isSystemWindow)
@@ -153,8 +157,21 @@ namespace HotLyric.Win32.Utils
 
         private void Update()
         {
-            timer.Stop();
-            timer.Start();
+            if (dispatcherQueue == null || timer == null) return;
+
+            if (dispatcherQueue.HasThreadAccess)
+            {
+                timer.Stop();
+                timer.Start();
+            }
+            else
+            {
+                dispatcherQueue.TryEnqueue(() =>
+                {
+                    timer.Stop();
+                    timer.Start();
+                });
+            }
         }
 
         protected virtual void Dispose(bool disposing)

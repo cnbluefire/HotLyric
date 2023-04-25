@@ -107,6 +107,8 @@ namespace HotLyric.Win32.Controls
                 }
             }
 
+            public bool IsEmpty => lyric?.IsEmpty ?? false;
+
             private void UpdateLines()
             {
                 lock (DrawingLocker)
@@ -120,61 +122,80 @@ namespace HotLyric.Win32.Controls
                     }
                     else
                     {
-                        var mainLine = MainLine;
-                        var secondaryLine = SecondaryLine;
-                        var removingLine = RemovingLine;
-                        var secondaryLineIsTranslate = SecondaryLineIsTranslate;
-                        var skipEmptyLine = SkipEmptyLine;
-
-                        var position = Position;
-
-                        bool updateMainLineFlag = false;
-
-                        if (mainLine != null)
+                        if (lyric.IsEmpty)
                         {
-                            if (position < mainLine.StartTime || position >= mainLine.EndTime)
+                            if (!string.IsNullOrEmpty(lyric.SongName))
                             {
-                                updateMainLineFlag = true;
+                                MainLine = new SongInfoLyricLine(lyric.SongName);
+                                SecondaryLine = new SongInfoLyricLine(lyric.Artists ?? "");
+                                SecondaryLineIsTranslate = false;
+                                RemovingLine = null;
+                            }
+                            else
+                            {
+                                MainLine = lyric.Content.GetCurrentOrNextLine(TimeSpan.Zero, true);
+                                SecondaryLine = null;
+                                SecondaryLineIsTranslate = false;
+                                RemovingLine = null;
                             }
                         }
                         else
                         {
-                            updateMainLineFlag = true;
-                        }
+                            var mainLine = MainLine;
+                            var secondaryLine = SecondaryLine;
+                            var removingLine = RemovingLine;
+                            var secondaryLineIsTranslate = SecondaryLineIsTranslate;
+                            var skipEmptyLine = SkipEmptyLine;
 
-                        if (updateMainLineFlag)
-                        {
-                            mainLine = lyric.Content.GetCurrentLine(position, skipEmptyLine);
+                            var position = Position;
+
+                            bool updateMainLineFlag = false;
 
                             if (mainLine != null)
                             {
-                                (secondaryLine, secondaryLineIsTranslate) = GetNextLine(lyric, mainLine.StartTime, skipEmptyLine);
-
-                                if (secondaryLineIsTranslate)
+                                if (position < mainLine.StartTime || position >= mainLine.EndTime)
                                 {
-                                    removingLine = null;
-                                }
-                                else
-                                {
-                                    removingLine = lyric.Content.GetPreviousLine(mainLine.StartTime, skipEmptyLine);
+                                    updateMainLineFlag = true;
                                 }
                             }
                             else
                             {
-                                secondaryLine = null;
-                                removingLine = null;
-                                secondaryLineIsTranslate = false;
+                                updateMainLineFlag = true;
                             }
 
-                        }
+                            if (updateMainLineFlag)
+                            {
+                                mainLine = lyric.Content.GetCurrentLine(position, skipEmptyLine);
 
-                        MainLine = mainLine;
-                        SecondaryLine = secondaryLine;
-                        RemovingLine = removingLine;
-                        SecondaryLineIsTranslate = secondaryLineIsTranslate;
+                                if (mainLine != null)
+                                {
+                                    (secondaryLine, secondaryLineIsTranslate) = GetNextLine(lyric, mainLine.StartTime, skipEmptyLine);
+
+                                    if (secondaryLineIsTranslate)
+                                    {
+                                        removingLine = null;
+                                    }
+                                    else
+                                    {
+                                        removingLine = lyric.Content.GetPreviousLine(mainLine.StartTime, skipEmptyLine);
+                                    }
+                                }
+                                else
+                                {
+                                    secondaryLine = null;
+                                    removingLine = null;
+                                    secondaryLineIsTranslate = false;
+                                }
+
+                            }
+
+                            MainLine = mainLine;
+                            SecondaryLine = secondaryLine;
+                            RemovingLine = removingLine;
+                            SecondaryLineIsTranslate = secondaryLineIsTranslate;
+                        }
                     }
                 }
-
 
             }
 
@@ -192,6 +213,68 @@ namespace HotLyric.Win32.Controls
                 }
 
                 return default;
+            }
+
+            private class SongInfoLyricLine : ILyricLine
+            {
+                public SongInfoLyricLine(string text)
+                {
+                    StartTime = TimeSpan.Zero;
+                    EndTime = TimeSpan.Zero;
+                    IsEndLine = false;
+                    Text = text;
+                    AllSpans = new[] { new SongInfoLyricSpan(text) };
+                }
+
+                public TimeSpan StartTime { get; }
+
+                public TimeSpan EndTime { get; }
+
+                public bool IsEndLine { get; }
+
+                public string Text { get; }
+
+                public IReadOnlyList<ILyricLineSpan> AllSpans { get; }
+
+                public ILyricLineSpan? GetCurrentOrNextSpan(TimeSpan time)
+                {
+                    return AllSpans[0];
+                }
+
+                public ILyricLineSpan? GetCurrentSpan(TimeSpan time)
+                {
+                    return AllSpans[0];
+                }
+
+                public ILyricLineSpan? GetNextSpan(TimeSpan time)
+                {
+                    return AllSpans[0];
+                }
+            }
+
+            private class SongInfoLyricSpan : ILyricLineSpan
+            {
+                public SongInfoLyricSpan(string text)
+                {
+                    StartTime = TimeSpan.Zero;
+                    EndTime = TimeSpan.Zero;
+                    Text = text;
+                    IsEndSpan = true;
+                    CharacterIndex = 0;
+                    CharacterLength = text.Length;
+                }
+
+                public TimeSpan StartTime { get; }
+
+                public TimeSpan EndTime { get; }
+
+                public string Text { get; }
+
+                public bool IsEndSpan { get; }
+
+                public int CharacterIndex { get; }
+
+                public int CharacterLength { get; }
             }
         }
     }

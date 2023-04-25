@@ -36,7 +36,7 @@ namespace HotLyric.Win32.Controls
         private LyricDrawingLine? drawingSecondaryLine;
         private LyricDrawingTextColors themeColors;
         private LyricDrawingTextColors? colors;
-        private CircleEase easingFunc;
+        private EaseFunctionBase easingFunc;
 
         private LyricLines lyricLines;
 
@@ -110,10 +110,10 @@ namespace HotLyric.Win32.Controls
                 Refresh();
             });
 
-
-            easingFunc = new CircleEase()
+            easingFunc = new ExponentialEase()
             {
                 EasingMode = EasingMode.EaseOut,
+                Exponent = 4.5,
             };
 
             CanvasControl.IsFixedTimeStep = true;
@@ -608,8 +608,6 @@ namespace HotLyric.Win32.Controls
                 curTime = UpdateTotalTimeAndGetCurrentTime(args.Timing.TotalTime);
             }
 
-            bool karaokeFlag = progressAnimationMode == LyricControlProgressAnimationMode.Karaoke;
-
             if (drawingLine != null)
             {
                 CanvasActiveLayer? layer = null;
@@ -663,13 +661,19 @@ namespace HotLyric.Win32.Controls
                             endTime = mediaDuration;
                         }
 
-                        GetProgress(curTime,
-                            drawingLine.LyricLine.StartTime,
-                            endTime,
-                            drawingRemovingLine?.LyricLine.EndTime,
-                            scrollAnimationMode,
-                            out var playProgress,
-                            out var scaleProgress);
+                        var playProgress = 0d;
+                        var scaleProgress = 1d;
+
+                        if (!lyricLines.IsEmpty)
+                        {
+                            GetProgress(curTime,
+                                drawingLine.LyricLine.StartTime,
+                                endTime,
+                                drawingRemovingLine?.LyricLine.EndTime,
+                                scrollAnimationMode,
+                                out playProgress,
+                                out scaleProgress);
+                        }
 
                         var originalScaleProgress = scaleProgress;
 
@@ -809,7 +813,7 @@ namespace HotLyric.Win32.Controls
                     else
                     {
                         var duration = endTime - prevLineEndTime.Value;
-                        var scaleRatio = duration.TotalSeconds > scaleSeconds ? scaleSeconds / duration.TotalSeconds : 0;
+                        var scaleRatio = duration.TotalSeconds > scaleSeconds ? scaleSeconds / duration.TotalSeconds : 1;
 
                         var progress = (time.TotalSeconds - prevLineEndTime.Value.TotalSeconds) / duration.TotalSeconds;
 
@@ -843,7 +847,7 @@ namespace HotLyric.Win32.Controls
             else
             {
                 var duration = endTime - startTime;
-                var scaleRatio = duration.TotalSeconds > scaleSeconds ? scaleSeconds / duration.TotalSeconds : 0;
+                var scaleRatio = duration.TotalSeconds > scaleSeconds ? scaleSeconds / duration.TotalSeconds : 1;
 
                 var progress = (time.TotalSeconds - startTime.TotalSeconds) / duration.TotalSeconds;
 
@@ -888,35 +892,6 @@ namespace HotLyric.Win32.Controls
                 NLog.LogManager.GetCurrentClassLogger().Error(ex, "GetDefaultFontFamilyName");
             }
             return (defaultFontFamilyName = "Segoe UI");
-        }
-
-        private class CircleEase
-        {
-            public EasingMode EasingMode { get; set; }
-
-            private double EaseInCore(double normalizedTime)
-            {
-                normalizedTime = Math.Max(0.0, Math.Min(1.0, normalizedTime));
-                return 1.0 - Math.Sqrt(1.0 - normalizedTime * normalizedTime);
-            }
-
-            public double Ease(double normalizedTime)
-            {
-                switch (EasingMode)
-                {
-                    case EasingMode.EaseIn:
-                        return EaseInCore(normalizedTime);
-                    case EasingMode.EaseOut:
-                        // EaseOut is the same as EaseIn, except time is reversed & the result is flipped.
-                        return 1.0 - EaseInCore(1.0 - normalizedTime);
-                    case EasingMode.EaseInOut:
-                    default:
-                        // EaseInOut is a combination of EaseIn & EaseOut fit to the 0-1, 0-1 range.
-                        return (normalizedTime < 0.5) ?
-                                   EaseInCore(normalizedTime * 2.0) * 0.5 :
-                            (1.0 - EaseInCore((1.0 - normalizedTime) * 2.0)) * 0.5 + 0.5;
-                }
-            }
         }
     }
 

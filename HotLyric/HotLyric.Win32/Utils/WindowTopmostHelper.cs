@@ -130,7 +130,22 @@ namespace HotLyric.Win32.Utils
 
             if (!isSystemWindow)
             {
-                timer?.Stop();
+                if (User32.GetCursorPos(out var mousePos))
+                {
+                    var monitor = User32.MonitorFromPoint(mousePos, User32.MonitorFlags.MONITOR_DEFAULTTOPRIMARY);
+
+                    var monitorInfo = User32.MONITORINFO.Default;
+                    if (User32.GetMonitorInfo(monitor, ref monitorInfo))
+                    {
+                        var rect = (System.Drawing.Rectangle)monitorInfo.rcWork;
+                        var point = (System.Drawing.Point)mousePos;
+
+                        if (rect.Contains(point))
+                        {
+                            timer?.Stop();
+                        }
+                    }
+                }
             }
 
             if (isFullScreen && !isSystemWindow)

@@ -213,7 +213,7 @@ namespace HotLyric.Win32.Views
 
         private void ResetWindowBounds()
         {
-            if (AppWindow.IsVisible)
+            if (VM.SettingViewModel.AutoResetWindowPos && AppWindow.IsVisible)
             {
                 var handle = this.GetWindowHandle();
 
@@ -239,8 +239,29 @@ namespace HotLyric.Win32.Views
 
         private async void ContentRoot_PointerExited(object sender, global::Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
-            var p = e.GetCurrentPoint(ContentRoot);
+            await OnPointerExited(e);
+        }
 
+        private async void ContentRoot_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
+        {
+            await OnPointerExited(e);
+        }
+
+        private async void ContentRoot_PointerCanceled(object sender, PointerRoutedEventArgs e)
+        {
+            await OnPointerExited(e);
+        }
+
+        private void ContentRoot_PointerPressed(object sender, PointerRoutedEventArgs e)
+        {
+            e.Handled = true;
+
+            _ = this.DragMoveAsync(e);
+        }
+
+
+        private async Task OnPointerExited(PointerRoutedEventArgs e)
+        {
             if (ContentRoot.ActualWidth < 10 || ContentRoot.ActualHeight < 10)
             {
                 VM.IsMouseOver = false;
@@ -254,23 +275,6 @@ namespace HotLyric.Win32.Views
             {
                 VM.IsBackgroundTransientVisible = false;
             }
-        }
-
-        private async void ContentRoot_PointerCaptureLost(object sender, PointerRoutedEventArgs e)
-        {
-            await UpdateMouseExitedState(e);
-        }
-
-        private async void ContentRoot_PointerCanceled(object sender, PointerRoutedEventArgs e)
-        {
-            await UpdateMouseExitedState(e);
-        }
-
-        private void ContentRoot_PointerPressed(object sender, PointerRoutedEventArgs e)
-        {
-            e.Handled = true;
-
-            _ = this.DragMoveAsync(e);
         }
 
         private async Task UpdateMouseExitedState(PointerRoutedEventArgs e)

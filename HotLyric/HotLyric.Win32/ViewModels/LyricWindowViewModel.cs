@@ -578,6 +578,8 @@ namespace HotLyric.Win32.ViewModels
 
         public void UpdatePowerMode()
         {
+            NLog.LogManager.GetCurrentClassLogger().Info($"{powerModeHelper.EffectivePowerMode} {powerModeHelper.BatteryStatus}");
+
             var lowFrameRateMode = settingVm.LowFrameRateMode.SelectedValue ?? ViewModels.LowFrameRateMode.Auto;
             bool enableEfficiencyMode = false;
             bool enableLowFrameRateMode = false;
@@ -587,7 +589,7 @@ namespace HotLyric.Win32.ViewModels
                 enableLowFrameRateMode = true;
                 enableEfficiencyMode = true;
             }
-            else
+            else if (lowFrameRateMode == ViewModels.LowFrameRateMode.Auto)
             {
                 var powerMode = powerModeHelper.EffectivePowerMode;
                 var batteryStatus = powerModeHelper.BatteryStatus;
@@ -614,11 +616,6 @@ namespace HotLyric.Win32.ViewModels
                     default:
 
                         break;
-                }
-
-                if (lowFrameRateMode == ViewModels.LowFrameRateMode.Disabled)
-                {
-                    enableLowFrameRateMode = false;
                 }
             }
 

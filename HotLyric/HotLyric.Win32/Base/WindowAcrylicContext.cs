@@ -129,6 +129,12 @@ namespace HotLyric.Win32.Base
             set => blurAndShadowContainer.Opacity = (float)value;
         }
 
+        public bool Visible
+        {
+            get => rootVisual.IsVisible;
+            set => rootVisual.IsVisible = value;
+        }
+
         public void UpdateShadowProperties()
         {
             if (backgroundShadow != null)

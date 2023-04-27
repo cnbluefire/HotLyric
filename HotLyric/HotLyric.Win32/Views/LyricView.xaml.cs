@@ -58,18 +58,6 @@ namespace HotLyric.Win32.Views
             ContentRoot.PointerEntered += ContentRoot_PointerEntered;
             ContentRoot.PointerExited += ContentRoot_PointerExited;
 
-            VM.PropertyChanged += VM_PropertyChanged;
-
-            if (!VM.ActualMinimized)
-            {
-                this.Hide();
-            }
-
-            InitBorderAndTitleOpacityAnimation();
-
-            var manager = WindowManager.Get(this);
-            manager.WindowMessageReceived += Manager_WindowMessageReceived;
-
             AcrylicController.Window = this;
 
             this.IsAlwaysOnTop = true;
@@ -85,10 +73,18 @@ namespace HotLyric.Win32.Views
             }
             else
             {
-                WindowBoundsHelper.ResetWindowBounds(handle);
+                ResetWindowBounds(true);
             }
 
+            InitBorderAndTitleOpacityAnimation();
+
+            VM.PropertyChanged += VM_PropertyChanged;
+
+            var manager = WindowManager.Get(this);
+            manager.WindowMessageReceived += Manager_WindowMessageReceived;
+
             this.AppWindow.Closing += AppWindow_Closing;
+            this.Closed += LyricView_Closed;
 
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
@@ -98,17 +94,27 @@ namespace HotLyric.Win32.Views
 
                     if (WindowBoundsHelper.IsWindowOutsideScreen(handle))
                     {
-                        ResetWindowBounds();
+                        ResetWindowBounds(false);
                     }
 
                     this.AppWindow.Changed += AppWindow_Changed;
                 }
+
+                if (!VM.ActualMinimized)
+                {
+                    this.Hide();
+                }
+
+                AcrylicController.Visible = true;
+                LayoutRoot.Opacity = 1;
             });
         }
 
-        public WindowTopmostHelper TopmostHelper { get; private set; }
+        public WindowTopmostHelper? TopmostHelper { get; private set; }
 
         public LyricWindowViewModel VM => (LyricWindowViewModel)LayoutRoot.DataContext;
+
+        #region View Model Property Changed
 
         private void VM_PropertyChanged(object? sender, System.ComponentModel.PropertyChangedEventArgs? e)
         {
@@ -129,7 +135,7 @@ namespace HotLyric.Win32.Views
 
                             if (WindowBoundsHelper.IsWindowOutsideScreen(handle))
                             {
-                                ResetWindowBounds();
+                                ResetWindowBounds(false);
                             }
                         }
                     });
@@ -141,20 +147,16 @@ namespace HotLyric.Win32.Views
                 WindowHelper.SetTransparent(this, VM.IsTransparent);
             }
         }
+
+        #endregion View Model Property Changed
+
+        #region Window Close Events
+
         private void AppWindow_Closing(AppWindow sender, AppWindowClosingEventArgs args)
         {
             if (App.Current.Exiting)
             {
-                VM.PropertyChanged -= VM_PropertyChanged;
-
-                var manager = WindowManager.Get(this);
-                manager.WindowMessageReceived -= Manager_WindowMessageReceived;
-
-                this.AppWindow.Changed -= AppWindow_Changed;
-
-                AcrylicController.Window = null;
-                TopmostHelper?.Dispose();
-                TopmostHelper = null!;
+                ReleaseResources();
             }
             else
             {
@@ -162,32 +164,29 @@ namespace HotLyric.Win32.Views
             }
         }
 
-        private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
+
+        private void LyricView_Closed(object sender, WindowEventArgs args)
         {
-            if (args.DidSizeChange || args.DidPositionChange)
-            {
-                User32.GetWindowRect(this.GetWindowHandle(), out var rect);
-                WindowBoundsHelper.SetWindowBounds("lyric", rect.Left, rect.Top, rect.Width, rect.Height);
-            }
+            ReleaseResources();
         }
 
-        private void OnDisplayChanged()
+        private void ReleaseResources()
         {
-            if (!AppWindow.IsVisible) return;
-            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, async () =>
-            {
-                await Task.Delay(1000);
+            VM.PropertyChanged -= VM_PropertyChanged;
 
-                if (AppWindow.IsVisible)
-                {
-                    var handle = this.GetWindowHandle();
-                    if (WindowBoundsHelper.IsWindowOutsideScreen(handle))
-                    {
-                        ResetWindowBounds();
-                    }
-                }
-            });
+            var manager = WindowManager.Get(this);
+            manager.WindowMessageReceived -= Manager_WindowMessageReceived;
+
+            this.AppWindow.Changed -= AppWindow_Changed;
+
+            AcrylicController.Window = null;
+            TopmostHelper?.Dispose();
+            TopmostHelper = null!;
         }
+
+        #endregion Window Close Events
+
+        #region Window Bounds Helper
 
         private void RefreshWindowSize()
         {
@@ -211,9 +210,9 @@ namespace HotLyric.Win32.Views
             AppWindow.Resize(size);
         }
 
-        private void ResetWindowBounds()
+        private void ResetWindowBounds(bool force)
         {
-            if (VM.SettingViewModel.AutoResetWindowPos && AppWindow.IsVisible)
+            if (force || (VM.SettingViewModel.AutoResetWindowPos && AppWindow.IsVisible))
             {
                 var handle = this.GetWindowHandle();
 
@@ -228,6 +227,86 @@ namespace HotLyric.Win32.Views
                 VM.SettingViewModel.ActivateInstance();
             }
         }
+
+        #endregion Window Bounds Helper
+
+        #region Window Proc
+
+        private void AppWindow_Changed(AppWindow sender, AppWindowChangedEventArgs args)
+        {
+            if (args.DidSizeChange || args.DidPositionChange)
+            {
+                User32.GetWindowRect(this.GetWindowHandle(), out var rect);
+                WindowBoundsHelper.SetWindowBounds("lyric", rect.Left, rect.Top, rect.Width, rect.Height);
+            }
+        }
+
+        private void OnDisplayChanged()
+        {
+            if (!AppWindow.IsVisible) return;
+            DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, async () =>
+            {
+                await Task.Delay(1000);
+
+                if (AppWindow.IsVisible)
+                {
+                    var handle = this.GetWindowHandle();
+                    if (WindowBoundsHelper.IsWindowOutsideScreen(handle))
+                    {
+                        ResetWindowBounds(false);
+                    }
+                }
+            });
+        }
+
+        private unsafe void Manager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
+        {
+            if (e.Message.MessageId == (uint)User32.WindowMessage.WM_STYLECHANGING)
+            {
+                var style = ((STYLESTRUCT*)e.Message.LParam.ToPointer())->styleNew;
+                var tmp = 0u;
+
+                if (e.Message.WParam.ToUInt64() == unchecked((ulong)User32.WindowLongFlags.GWL_STYLE))
+                {
+                    UpdateStyleValue(ref style, ref tmp);
+                }
+                else
+                {
+                    UpdateStyleValue(ref tmp, ref style);
+                }
+
+                ((STYLESTRUCT*)e.Message.LParam.ToPointer())->styleNew = style;
+
+                e.Handled = true;
+            }
+            else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_DISPLAYCHANGE)
+            {
+                OnDisplayChanged();
+            }
+        }
+
+        [StructLayout(LayoutKind.Sequential)]
+        private struct STYLESTRUCT
+        {
+            public uint styleOld;
+            public uint styleNew;
+        }
+
+        private static void UpdateStyleValue(ref uint style, ref uint exStyle)
+        {
+            style &= ~(uint)(User32.WindowStyles.WS_OVERLAPPEDWINDOW);
+            style |= (uint)(User32.WindowStyles.WS_POPUP);
+
+            exStyle &= ~(uint)(User32.WindowStylesEx.WS_EX_APPWINDOW);
+            exStyle |= (uint)(User32.WindowStylesEx.WS_EX_TOOLWINDOW
+                | User32.WindowStylesEx.WS_EX_LAYERED
+                | User32.WindowStylesEx.WS_EX_NOACTIVATE);
+        }
+
+
+        #endregion Window Proc
+
+        #region Pointer Events
 
         private void ContentRoot_PointerEntered(object sender, global::Microsoft.UI.Xaml.Input.PointerRoutedEventArgs e)
         {
@@ -319,10 +398,9 @@ namespace HotLyric.Win32.Views
             return false;
         }
 
-        public void Button_Click(object sender, RoutedEventArgs args)
-        {
-            GC.Collect();
-        }
+        #endregion Pointer Events
+
+        #region Element Events
 
         private void ResizePanel_DraggerPointerPressed(Controls.ResizePanel sender, Controls.ResizePanelDraggerPressedEventArgs args)
         {
@@ -331,56 +409,7 @@ namespace HotLyric.Win32.Views
 
         private void ContentRoot_SizeChanged(object sender, SizeChangedEventArgs e)
         {
-            //InitializeLayoutRootShadow();
-            //UpdateShadowSize();
-
             VM.ShowBackgroundTransient(TimeSpan.FromSeconds(10));
-        }
-
-        [System.Diagnostics.DebuggerNonUserCode]
-        private unsafe void Manager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
-        {
-            if (e.Message.MessageId == (uint)User32.WindowMessage.WM_STYLECHANGING)
-            {
-                var style = ((STYLESTRUCT*)e.Message.LParam.ToPointer())->styleNew;
-                var tmp = 0u;
-
-                if (e.Message.WParam.ToUInt64() == unchecked((ulong)User32.WindowLongFlags.GWL_STYLE))
-                {
-                    UpdateStyleValue(ref style, ref tmp);
-                }
-                else
-                {
-                    UpdateStyleValue(ref tmp, ref style);
-                }
-
-                ((STYLESTRUCT*)e.Message.LParam.ToPointer())->styleNew = style;
-
-                e.Handled = true;
-            }
-            else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_DISPLAYCHANGE)
-            {
-                OnDisplayChanged();
-            }
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct STYLESTRUCT
-        {
-            public uint styleOld;
-            public uint styleNew;
-        }
-
-
-        private static void UpdateStyleValue(ref uint style, ref uint exStyle)
-        {
-            style &= ~(uint)(User32.WindowStyles.WS_OVERLAPPEDWINDOW);
-            style |= (uint)(User32.WindowStyles.WS_POPUP);
-
-            exStyle &= ~(uint)(User32.WindowStylesEx.WS_EX_APPWINDOW);
-            exStyle |= (uint)(User32.WindowStylesEx.WS_EX_TOOLWINDOW
-                | User32.WindowStylesEx.WS_EX_LAYERED
-                | User32.WindowStylesEx.WS_EX_NOACTIVATE);
         }
 
         private void LockButton_Click(object sender, RoutedEventArgs e)
@@ -396,26 +425,6 @@ namespace HotLyric.Win32.Views
         private void MinimizeButton_Click(object sender, RoutedEventArgs args)
         {
             VM.IsMinimized = true;
-        }
-
-        private void InitBorderAndTitleOpacityAnimation()
-        {
-            var visual = ElementCompositionPreview.GetElementVisual(BackgroundAndShadowHost);
-            var visual2 = ElementCompositionPreview.GetElementVisual(TitleContainer);
-
-            var compositor = visual.Compositor;
-
-            var imp = compositor.CreateImplicitAnimationCollection();
-
-            var animation = compositor.CreateScalarKeyFrameAnimation();
-            animation.InsertExpressionKeyFrame(1, "this.FinalValue");
-            animation.Duration = TimeSpan.FromSeconds(0.2);
-            animation.Target = "Opacity";
-
-            imp[animation.Target] = animation;
-
-            visual.ImplicitAnimations = imp;
-            visual2.ImplicitAnimations = imp;
         }
 
         private void ListView_ItemClick(object sender, Microsoft.UI.Xaml.Controls.ItemClickEventArgs e)
@@ -443,6 +452,28 @@ namespace HotLyric.Win32.Views
 
                 flyout.ShowAt(ele);
             }
+        }
+
+        #endregion Element Events
+
+        private void InitBorderAndTitleOpacityAnimation()
+        {
+            var visual = ElementCompositionPreview.GetElementVisual(BackgroundAndShadowHost);
+            var visual2 = ElementCompositionPreview.GetElementVisual(TitleContainer);
+
+            var compositor = visual.Compositor;
+
+            var imp = compositor.CreateImplicitAnimationCollection();
+
+            var animation = compositor.CreateScalarKeyFrameAnimation();
+            animation.InsertExpressionKeyFrame(1, "this.FinalValue");
+            animation.Duration = TimeSpan.FromSeconds(0.2);
+            animation.Target = "Opacity";
+
+            imp[animation.Target] = animation;
+
+            visual.ImplicitAnimations = imp;
+            visual2.ImplicitAnimations = imp;
         }
 
     }

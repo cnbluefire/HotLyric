@@ -15,9 +15,9 @@
     MinWidth="360" MinHeight="100"
     IsResizable="False" IsMaximizable="False" IsMinimizable="False">
 
-    <Grid x:Name="LayoutRoot" Background="Transparent" DataContext="{Binding Path=LyricWindowViewModel,Source={StaticResource Locator}}">
+    <Grid x:Name="LayoutRoot" Background="Transparent" DataContext="{Binding Path=LyricWindowViewModel,Source={StaticResource Locator}}" Opacity="0">
         <Grid.Resources>
-            <base:WindowAcrylicController x:Name="AcrylicController" 
+            <base:WindowAcrylicController x:Name="AcrylicController" Visible="False"
                                           VisualOpacity="{x:Bind converter:BindUtils.OpacityVisible(VM.IsBackgroundVisible),Mode=OneWay}">
                 <base:WindowAcrylicController.AcrylicBrush>
                     <AcrylicBrush TintColor="{x:Bind VM.LyricTheme.BackgroundBrush.(SolidColorBrush.Color),Mode=OneWay}"

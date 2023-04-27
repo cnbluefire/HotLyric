@@ -45,7 +45,8 @@ namespace HotLyric.Win32.Base
                         {
                             sender.context = new WindowAcrylicContext(sender)
                             {
-                                Opacity = sender.VisualOpacity
+                                Opacity = sender.VisualOpacity,
+                                Visible = sender.Visible
                             };
                         }
                         sender.context.Window = window;
@@ -152,6 +153,26 @@ namespace HotLyric.Win32.Base
                     if (sender.context != null)
                     {
                         sender.context.Opacity = (double)a.NewValue;
+                    }
+                }
+            }));
+
+
+
+        public bool Visible
+        {
+            get { return (bool)GetValue(VisibleProperty); }
+            set { SetValue(VisibleProperty, value); }
+        }
+
+        public static readonly DependencyProperty VisibleProperty =
+            DependencyProperty.Register("Visible", typeof(bool), typeof(WindowAcrylicController), new PropertyMetadata(true, (s, a) =>
+            {
+                if (s is WindowAcrylicController sender && !Equals(a.NewValue, a.OldValue))
+                {
+                    if (sender.context != null)
+                    {
+                        sender.context.Visible = a.NewValue is true;
                     }
                 }
             }));

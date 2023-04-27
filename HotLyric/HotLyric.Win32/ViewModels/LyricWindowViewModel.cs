@@ -635,6 +635,10 @@ namespace HotLyric.Win32.ViewModels
                 ForegroundWindowHelper.Initialize();
             }
 
+            if (App.Current.LyricView?.TopmostHelper != null)
+            {
+                App.Current.LyricView.TopmostHelper.PowerMode = powerModeHelper.EffectivePowerMode;
+            }
         }
 
         private void UpdateSettings()
@@ -674,7 +678,7 @@ namespace HotLyric.Win32.ViewModels
 
             UpdatePowerMode();
 
-            if (App.Current.LyricView != null)
+            if (App.Current.LyricView?.TopmostHelper != null)
             {
                 App.Current.LyricView.TopmostHelper.HideWhenFullScreenAppOpen = settingVm.HideWhenFullScreenAppOpen;
                 App.Current.LyricView.TopmostHelper.Enabled = settingVm.LowFrameRateMode.SelectedValue != ViewModels.LowFrameRateMode.Disabled;

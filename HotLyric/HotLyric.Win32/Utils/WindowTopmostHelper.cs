@@ -27,6 +27,9 @@ namespace HotLyric.Win32.Utils
         private IntPtr fwHwnd;
         private bool hideWhenFullScreenAppOpen;
         private bool enabled = true;
+        private User32.MONITORINFO? monitorInfo;
+        private System.Drawing.Rectangle? windowBounds;
+        private Microsoft.Windows.System.Power.EffectivePowerMode powerMode;
 
         public WindowTopmostHelper(Window window)
         {
@@ -67,6 +70,19 @@ namespace HotLyric.Win32.Utils
             }
         }
 
+        public Microsoft.Windows.System.Power.EffectivePowerMode PowerMode
+        {
+            get => powerMode;
+            set
+            {
+                if (powerMode != value)
+                {
+                    powerMode = value;
+                    Update();
+                }
+            }
+        }
+
         private void Init()
         {
             hwnd = window.GetWindowHandle();
@@ -85,6 +101,37 @@ namespace HotLyric.Win32.Utils
             trayWndHandleTimer.Start();
 
             ForegroundWindowHelper.ForegroundWindowChanged += ForegroundWindowHelper_ForegroundWindowChanged;
+
+            var manager = WindowManager.Get(window);
+            manager.WindowMessageReceived += Manager_WindowMessageReceived;
+        }
+
+        unsafe private void Manager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
+        {
+            var msg = (User32.WindowMessage)e.Message.MessageId;
+
+            if (msg == User32.WindowMessage.WM_MOVE
+                || msg == User32.WindowMessage.WM_SIZE)
+            {
+                windowBounds = null;
+                Update();
+            }
+            else if (msg == User32.WindowMessage.WM_DISPLAYCHANGE
+                || msg == User32.WindowMessage.WM_DPICHANGED)
+            {
+                windowBounds = null;
+                monitorInfo = null;
+                Update();
+            }
+            else if (msg == User32.WindowMessage.WM_WINDOWPOSCHANGED)
+            {
+                var pWindowPos = (User32.WINDOWPOS*)e.Message.LParam;
+                if ((pWindowPos->flags & (User32.SetWindowPosFlags.SWP_NOMOVE | User32.SetWindowPosFlags.SWP_NOSIZE)) == 0)
+                {
+                    windowBounds = null;
+                    Update();
+                }
+            }
         }
 
         private void Timer_Tick(object? sender, object e)
@@ -130,22 +177,59 @@ namespace HotLyric.Win32.Utils
 
             if (!isSystemWindow)
             {
-                if (User32.GetCursorPos(out var mousePos))
+                System.Drawing.Rectangle windowBounds = default;
+
+                if (this.windowBounds.HasValue)
                 {
-                    var monitor = User32.MonitorFromPoint(mousePos, User32.MonitorFlags.MONITOR_DEFAULTTOPRIMARY);
+                    windowBounds = this.windowBounds.Value;
+                }
+                else
+                {
+                    User32.GetWindowRect(hwnd, out var _windowRect);
+                    windowBounds = (System.Drawing.Rectangle)_windowRect;
+                    this.windowBounds = windowBounds;
+                }
+                var windowCenterPoint = new System.Drawing.Point(windowBounds.X + windowBounds.Width / 2, windowBounds.Y + windowBounds.Height / 2);
 
-                    var monitorInfo = User32.MONITORINFO.Default;
-                    if (User32.GetMonitorInfo(monitor, ref monitorInfo))
+                var monitorInfo = User32.MONITORINFO.Default;
+                if (this.monitorInfo.HasValue)
+                {
+                    monitorInfo = this.monitorInfo.Value;
+                    var tmpRect = (System.Drawing.Rectangle)monitorInfo.rcMonitor;
+                    if (!tmpRect.Contains(windowCenterPoint))
                     {
-                        var rect = (System.Drawing.Rectangle)monitorInfo.rcWork;
-                        var point = (System.Drawing.Point)mousePos;
-
-                        if (rect.Contains(point))
-                        {
-                            timer?.Stop();
-                        }
+                        this.monitorInfo = null;
                     }
                 }
+
+                if (!this.monitorInfo.HasValue)
+                {
+                    var monitor = User32.MonitorFromPoint(windowCenterPoint, User32.MonitorFlags.MONITOR_DEFAULTTONULL);
+                    if (!monitor.IsNull)
+                    {
+                        User32.GetMonitorInfo(monitor, ref monitorInfo);
+                        this.monitorInfo = monitorInfo;
+                    }
+                }
+
+                if (this.monitorInfo.HasValue)
+                {
+                    var workArea = (System.Drawing.Rectangle)monitorInfo.rcWork;
+                    var windowInMonitorRect = windowBounds;
+
+                    windowInMonitorRect.Intersect((System.Drawing.Rectangle)monitorInfo.rcMonitor);
+
+                    if (workArea.Contains(windowInMonitorRect))
+                    {
+                        timer?.Stop();
+                    }
+                }
+            }
+
+            if (PowerMode == Microsoft.Windows.System.Power.EffectivePowerMode.BetterBattery
+                || PowerMode == Microsoft.Windows.System.Power.EffectivePowerMode.BatterySaver)
+            {
+                timer?.Stop();
             }
 
             if (isFullScreen && !isSystemWindow)
@@ -196,6 +280,9 @@ namespace HotLyric.Win32.Utils
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
+
+                    var manager = WindowManager.Get(window);
+                    manager.WindowMessageReceived -= Manager_WindowMessageReceived;
 
                     timer?.Stop();
                     timer = null!;

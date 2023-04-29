@@ -99,7 +99,7 @@ namespace HotLyric.Win32.ViewModels
             textOpacityMask = LoadSetting(TextOpacityMaskSettingKey, !DeviceHelper.IsLowPerformanceDevice);
             hideWhenFullScreenAppOpen = LoadSetting(HideWhenFullScreenAppOpenSettingKey, true);
 
-            ScrollAnimationMode.SelectedValue = LoadSetting(ScrollAnimationModeKey, LyricControlScrollAnimationMode.Fast);
+            ScrollAnimationMode.SelectedValue = LoadSetting(ScrollAnimationModeKey, LyricControlScrollAnimationMode.Slow);
 
             var lowFrameRateMode = LoadSetting(LowFrameRateModeSettingKey, (LowFrameRateMode?)null);
             var oldLowFrameRateMode = LoadSetting(LowFrameRateModeSettingKeyOld, (bool?)null);

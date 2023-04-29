@@ -24,18 +24,23 @@ namespace HotLyric.Win32.Views
             ExtendsContentIntoTitleBar = true;
             SetTitleBar(Titlebar);
 
-            if (Environment.OSVersion.Version >= new Version(10, 0, 22000, 0))
+            if (Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported())
             {
                 Backdrop = new MicaSystemBackdrop();
-                //IsMicaEnabled = true;
             }
             else
             {
                 Backdrop = new AcrylicSystemBackdrop()
                 {
-                    LightTintOpacity = 0.6,
-                    DarkTintOpacity = 0.6
+                    LightTintColor = Windows.UI.Color.FromArgb(0xff, 0xd3, 0xd3, 0xd3),
+                    LightFallbackColor = Windows.UI.Color.FromArgb(0xff, 0xd3, 0xd3, 0xd3),
+                    LightLuminosityOpacity = 0.95,
+                    DarkTintColor = Windows.UI.Color.FromArgb(0xff, 0x54, 0x54, 0x54),
+                    DarkFallbackColor = Windows.UI.Color.FromArgb(0xff, 0x54, 0x54, 0x54),
+                    DarkLuminosityOpacity = 0.95,
                 };
+
+                AcrylicBackground.Opacity = 0.4;
             }
 
             AppWindow.Closing += AppWindow_Closing;

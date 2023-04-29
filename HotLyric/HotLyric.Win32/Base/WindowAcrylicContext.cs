@@ -192,7 +192,6 @@ namespace HotLyric.Win32.Base
                 desktopWindowTarget.Root = rootVisual;
 
                 UpdateRootVisualScale();
-                UpdateRootVisualSize();
 
                 var brushHolder = window.As<Microsoft.UI.Composition.ICompositionSupportsSystemBackdrop>();
                 brushHolder.SystemBackdrop = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0, 255, 255, 255));
@@ -350,6 +349,13 @@ namespace HotLyric.Win32.Base
                 {
                     window.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateRootVisualSize);
                 }
+                else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_SHOWWINDOW)
+                {
+                    if (window.Visible)
+                    {
+                        window.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateRootVisualScale);
+                    }
+                }
             }
         }
 
@@ -366,6 +372,8 @@ namespace HotLyric.Win32.Base
                     acrylicHelper.NoiseScaleRatio = scale;
                 }
             }
+
+            UpdateRootVisualSize();
         }
 
         private void UpdateRootVisualSize()

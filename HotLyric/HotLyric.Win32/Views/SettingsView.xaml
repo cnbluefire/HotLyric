@@ -20,9 +20,6 @@
             <RowDefinition Height="Auto" />
             <RowDefinition Height="*" />
         </Grid.RowDefinitions>
-        <Border x:Name="FallbackBackground" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                Background="{ThemeResource SystemControlAcrylicWindowBrush}" Visibility="Collapsed" 
-                Grid.RowSpan="2"/>
         <Grid x:Name="Titlebar" Height="32" Background="{ThemeResource NavigationViewExpandedPaneBackground}">
             <TextBlock x:Name="AppTitleTextBlock" Text="热词 - 设置"
                TextWrapping="NoWrap"

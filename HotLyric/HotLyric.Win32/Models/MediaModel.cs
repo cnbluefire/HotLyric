@@ -7,6 +7,7 @@ using System.Linq;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using HotLyric.Win32.Utils.LyricFiles;
 
 namespace HotLyric.Win32.Models
 {
@@ -14,8 +15,7 @@ namespace HotLyric.Win32.Models
     {
         private CancellationTokenSource? cts;
 
-        private ILrcFile? lrcFile;
-        private ILrcFile? translatedLrcFile;
+        private Lyric? lyric;
         private bool isEmptyLyric;
         private bool disposedValue;
         private bool hasLyric;
@@ -52,31 +52,19 @@ namespace HotLyric.Win32.Models
 
         public bool ConvertToSimpleChinese { get; }
 
-        public ILrcFile? LrcFile
+        public Lyric? Lyric
         {
-            get => lrcFile;
+            get => lyric;
             private set
             {
-                if (SetProperty(ref lrcFile, value))
+                if (SetProperty(ref lyric, value))
                 {
                     OnPropertyChanged(nameof(HasLyric));
                 }
             }
         }
 
-        public ILrcFile? TranslatedLrcFile
-        {
-            get => translatedLrcFile;
-            private set
-            {
-                if (SetProperty(ref translatedLrcFile, value))
-                {
-                    OnPropertyChanged(nameof(HasTranslatedLyric));
-                }
-            }
-        }
-
-        public bool HasTranslatedLyric => TranslatedLrcFile != null;
+        public bool HasTranslatedLyric => Lyric?.Translate != null;
 
         public bool HasLyric
         {
@@ -98,11 +86,11 @@ namespace HotLyric.Win32.Models
 
         public async void StartLoad()
         {
-            if (cts != null || LrcFile != null) return;
+            if (cts != null || Lyric != null) return;
 
             if (string.IsNullOrEmpty(Name) && string.IsNullOrEmpty(NeteaseMusicId))
             {
-                LrcFile = null;
+                Lyric = null;
                 return;
             }
 
@@ -111,36 +99,34 @@ namespace HotLyric.Win32.Models
 
             try
             {
-                LrcFile = LrcHelper.DownloadingLyric;
+                Lyric = Lyric.CreateDownloadingLyric(Name, Artist);
 
-                var file = await LrcHelper.GetLrcFileAsync(LocalLrcPath, tmpCts.Token);
+                var lyric = await LrcHelper.GetLrcFileAsync(Name, Artist, LocalLrcPath, tmpCts.Token);
 
-                if (file == null)
+                if (lyric == null)
                 {
-                    file = await LrcHelper.GetLrcFileAsync(
+                    lyric = await LrcHelper.GetLrcFileAsync(
                         Name,
-                        !string.IsNullOrEmpty(Artist) ? new[] { Artist } : Array.Empty<string>(),
-                        !string.IsNullOrWhiteSpace(NeteaseMusicId) ? NeteaseMusicId : "",
+                        Artist,
+                        !string.IsNullOrWhiteSpace(NeteaseMusicId) ? NeteaseMusicId! : "",
                         DefaultProvider,
                         ConvertToSimpleChinese,
                         tmpCts.Token);
                 }
 
-                if (file != null)
+                if (lyric != null)
                 {
-                    LrcFile = file.Lyric;
-                    TranslatedLrcFile = file.Translated;
+                    Lyric = lyric;
                     HasLyric = true;
                 }
                 else
                 {
-                    LrcFile = null;
-                    TranslatedLrcFile = null;
+                    Lyric = Lyric.CreateEmptyLyric(Name, Artist);
                 }
             }
             catch
             {
-                LrcFile = null;
+                Lyric = null;
             }
         }
 
@@ -215,7 +201,7 @@ namespace HotLyric.Win32.Models
         {
             return new MediaModel("", "", "", "", TimeSpan.Zero, "", false)
             {
-                LrcFile = LrcHelper.EmptyLyric,
+                Lyric = Lyric.CreateEmptyLyric(null, null),
                 isEmptyLyric = true
             };
         }

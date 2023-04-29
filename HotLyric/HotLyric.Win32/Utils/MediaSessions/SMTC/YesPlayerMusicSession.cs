@@ -11,9 +11,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
-using System.Windows.Media;
 using Windows.ApplicationModel;
 using Windows.Media.Control;
+using Microsoft.UI.Xaml.Media;
 
 namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 {
@@ -99,7 +99,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                             "",
                             Array.Empty<string>(),
                             "",
-                            model.currentTrack.name,
+                            model.currentTrack.name ?? "",
                             1);
 
                         mediaChanged = mediaProperties?.NeteaseMusicId != properties?.NeteaseMusicId;

@@ -1,0 +1,81 @@
+﻿<Page x:Class="HotLyric.Win32.Views.MiscSettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:local="using:HotLyric.Win32.Views" 
+      xmlns:utils="using:HotLyric.Win32.Utils" 
+      xmlns:control="using:HotLyric.Win32.Controls" 
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <Grid x:Name="LayoutRoot" DataContext="{Binding Path=SettingsWindowViewModel, Source={StaticResource Locator}}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="ContentCenter">
+                    <VisualState.StateTriggers>
+                        <utils:ControlSizeTrigger Control="{Binding ElementName=LayoutRoot,Mode=OneWay}" MinWidth="832" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ContentPanel.Width" Value="800" />
+                        <Setter Target="ContentPanel.HorizontalAlignment" Value="Center" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="ContentPanel" Orientation="Vertical" HorizontalAlignment="Stretch" Margin="16">
+
+                <ContentControl Style="{StaticResource CardStyle}">
+                    <Grid HorizontalAlignment="Stretch">
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xEA99;" Content="清除缓存" />
+
+                        <Button x:Name="ClearCacheButton" Content="清除" Command="{Binding ClearCacheCmd}" HorizontalAlignment="Right" />
+                    </Grid>
+                </ContentControl>
+
+                <muxc:Expander Style="{StaticResource ExpanderCardStyle}" MinHeight="66" HorizontalAlignment="Stretch" Margin="0,4,0,0" IsExpanded="True">
+                    <muxc:Expander.Header>
+                        <Grid HorizontalAlignment="Stretch">
+                            <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE777;" Content="重置窗口位置" Margin="-4,0,0,0" />
+                            <Button x:Name="ResetWindowBoundsButton" HorizontalAlignment="Right" Content="重置" Click="ResetWindowBoundsButton_Click"/>
+                        </Grid>
+                    </muxc:Expander.Header>
+                    <StackPanel Orientation="Vertical" Margin="40,0,16,0" Spacing="16">
+                        <CheckBox Padding="12,6,0,0" Content="屏幕设置变动时自动重置窗口位置" 
+                                  IsChecked="{Binding AutoResetWindowPos,Mode=TwoWay}" />
+                    </StackPanel>
+                </muxc:Expander>
+
+                <muxc:Expander Style="{StaticResource ExpanderCardStyle}" MinHeight="66" HorizontalAlignment="Stretch" Margin="0,4,0,0" IsExpanded="True">
+                    <muxc:Expander.Header>
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xEC49;" Content="启动设置" Margin="-4,0,0,0" />
+                    </muxc:Expander.Header>
+                    <StackPanel Orientation="Vertical" Margin="40,0,16,0" Spacing="16">
+                        <CheckBox Padding="12,6,0,0" Content="开机启动" 
+                                  IsChecked="{Binding StartupTaskHelper.IsStartupTaskEnabled,Mode=OneWay}" 
+                                  IsEnabled="{Binding StartupTaskHelper.IsStartupTaskCanEnable,Mode=OneWay}"
+                                  Command="{Binding StartupTaskHelper.ToggleStartupTaskCommand}"/>
+
+                        <CheckBox Padding="12,6,0,0" Content="启用引导窗口" Visibility="Collapsed"
+                                  IsChecked="{Binding ShowLauncherWindowOnStartup,Mode=TwoWay}"
+                                  IsEnabled="{Binding ShowLauncherWindowOnStartupEnabled,Mode=OneWay}"/>
+                    </StackPanel>
+                </muxc:Expander>
+
+                <ContentControl Style="{StaticResource CardStyle}" Margin="0,4,0,0">
+                    <Grid HorizontalAlignment="Stretch" Margin="0,12">
+                        <StackPanel Orientation="Vertical" Spacing="8">
+                            <TextBlock Text="设置Spotify为简体中文" />
+                            <TextBlock Grid.Row="2" Opacity="0.8" FontSize="12" Text="设置为简体中文可以提高中文歌词匹配准确性" />
+                        </StackPanel>
+
+                        <Button x:Name="SpotifySetLanguageButton" Content="设置" HorizontalAlignment="Right" Command="{Binding SpotifySetLanguage}" />
+                    </Grid>
+                </ContentControl>
+
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+
+</Page>

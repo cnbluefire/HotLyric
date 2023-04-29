@@ -2,7 +2,6 @@
 using System.ComponentModel;
 using System.Threading.Tasks;
 using System.Windows.Input;
-using System.Windows.Threading;
 
 namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 {
@@ -68,11 +67,11 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         internal void NotifyCanExecuteChanged()
         {
-            _ = DispatcherHelper.UIDispatcher?.BeginInvoke(DispatcherPriority.Normal, new Action(() =>
+            App.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, () =>
             {
                 CanExecuteChanged?.Invoke(this, EventArgs.Empty);
                 PropertyChanged?.Invoke(this, CanExecutePropertyChangedEventArgs);
-            }));
+            });
         }
     }
 }

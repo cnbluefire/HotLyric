@@ -1,4 +1,5 @@
-﻿using Kfstorm.LrcParser;
+﻿using HotLyric.Win32.Utils.LyricFiles;
+using Kfstorm.LrcParser;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -13,7 +14,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
     {
         public string Name => "NetEase";
 
-        public async Task<LyricModel?> GetByIdAsync(object id, CancellationToken cancellationToken)
+        public async Task<Lyric?> GetByIdAsync(string songName, string? artists, object id, CancellationToken cancellationToken)
         {
             if (id is string _id && !string.IsNullOrEmpty(_id))
             {
@@ -26,36 +27,22 @@ namespace HotLyric.Win32.Utils.LrcProviders
                     var lrcContent = (string?)jobj?["lrc"]?["lyric"];
 
                     if (string.IsNullOrEmpty(lrcContent)) return null;
-                    var lrcFile = LrcFile.FromText(lrcContent);
 
-                    if (lrcFile != null)
+                    string? translatedContent = "";
+                    try
                     {
-                        string? translatedContent = "";
-                        ILrcFile? translated = null;
-                        try
-                        {
-                            translatedContent = (string?)jobj?["tlyric"]?["lyric"];
-                            if (!string.IsNullOrEmpty(translatedContent))
-                            {
-                                translated = LrcFile.FromText(translatedContent);
-                                if (translated.Lyrics.All(c => string.IsNullOrEmpty(c.Content)))
-                                {
-                                    translated = null;
-                                    translatedContent = "";
-                                }
-                            }
-                        }
-                        catch { }
-
-                        return new LyricModel(lrcFile, translated, lrcContent, translatedContent);
+                        translatedContent = (string?)jobj?["tlyric"]?["lyric"];
                     }
+                    catch { }
+
+                    return Lyric.CreateClassicLyric(lrcContent!, translatedContent, songName, artists);
                 }
                 catch (Exception ex) when (!(ex is OperationCanceledException)) { }
             }
             return null;
         }
 
-        public async Task<object?> GetIdAsync(string name, string[]? artists, CancellationToken cancellationToken)
+        public async Task<object?> GetIdAsync(string name, string? artists, CancellationToken cancellationToken)
         {
             try
             {

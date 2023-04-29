@@ -1,0 +1,198 @@
+﻿<winuiex:WindowEx
+    xmlns:winuiex="using:WinUIEx"
+    x:Class="HotLyric.Win32.Views.LyricView"
+    x:Name="RootWindow"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    xmlns:base="using:HotLyric.Win32.Base"
+    xmlns:canvas="using:Microsoft.Graphics.Canvas.UI.Xaml"
+    xmlns:control="using:HotLyric.Win32.Controls" 
+    xmlns:converter="using:HotLyric.Win32.Utils.Converters" xmlns:model="using:HotLyric.Win32.Models"
+    mc:Ignorable="d"
+    Width="500" Height="150"
+    MinWidth="360" MinHeight="100"
+    IsResizable="False" IsMaximizable="False" IsMinimizable="False">
+
+    <Grid x:Name="LayoutRoot" Background="Transparent" DataContext="{Binding Path=LyricWindowViewModel,Source={StaticResource Locator}}" Opacity="0"
+          RequestedTheme="Dark">
+        <Grid.Resources>
+            <base:WindowAcrylicController x:Name="AcrylicController" Visible="False"
+                                          VisualOpacity="{x:Bind converter:BindUtils.OpacityVisible(VM.IsBackgroundVisible),Mode=OneWay}">
+                <base:WindowAcrylicController.AcrylicBrush>
+                    <AcrylicBrush TintColor="{x:Bind VM.LyricTheme.BackgroundBrush.(SolidColorBrush.Color),Mode=OneWay}"
+                                  TintOpacity="0.4"
+                                  FallbackColor="{x:Bind VM.LyricTheme.BackgroundBrush.(SolidColorBrush.Color)}" />
+                </base:WindowAcrylicController.AcrylicBrush>
+            </base:WindowAcrylicController>
+        </Grid.Resources>
+        <Grid x:Name="ContentRoot"
+              HorizontalAlignment="Stretch"
+              VerticalAlignment="Stretch"
+              Margin="10,10,10,14" Background="Transparent"
+              SizeChanged="ContentRoot_SizeChanged">
+            <Grid.RowDefinitions>
+                <RowDefinition Height="Auto" />
+                <RowDefinition Height="*" />
+            </Grid.RowDefinitions>
+            <Rectangle x:Name="BackgroundAndShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
+                       RadiusX="8" RadiusY="8" UseLayoutRounding="False" 
+                       StrokeThickness="0.66" Stroke="{Binding LyricTheme.BorderBrush}"
+                       Grid.RowSpan="2" Canvas.ZIndex="1" 
+                       Opacity="{Binding IsBackgroundVisible, Converter={StaticResource BooleanToOpacityConverter}}" />
+            <Grid x:Name="TitleContainer" Height="44" Canvas.ZIndex="1" Opacity="{Binding IsBackgroundVisible, Converter={StaticResource BooleanToOpacityConverter}}">
+                <Grid.Resources>
+                    <Style x:Key="TitleButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">
+                        <Setter Property="Width" Value="28" />
+                        <Setter Property="Height" Value="28" />
+                        <Setter Property="Padding" Value="4" />
+                        <Setter Property="Background" Value="Transparent" />
+                        <Setter Property="BorderBrush" Value="Transparent" />
+                        <Setter Property="VerticalAlignment" Value="Center" />
+                        <Setter Property="HorizontalContentAlignment" Value="Stretch" />
+                        <Setter Property="VerticalContentAlignment" Value="Stretch" />
+                    </Style>
+                </Grid.Resources>
+                <Grid.ColumnDefinitions>
+                    <ColumnDefinition Width="*" />
+                    <ColumnDefinition Width="Auto" />
+                    <ColumnDefinition Width="*" />
+                </Grid.ColumnDefinitions>
+                <Grid>
+                    <Grid.ColumnDefinitions>
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="Auto" />
+                        <ColumnDefinition Width="*" />
+                    </Grid.ColumnDefinitions>
+                    <Button Style="{StaticResource TitleButtonStyle}" Margin="8,0,0,0" Padding="2"
+							Command="{Binding OpenCurrentSessionAppCmd}">
+                        <Border CornerRadius="4">
+                            <Image Source="{Binding SelectedSession.AppIcon}" ToolTipService.ToolTip="{Binding SelectedSession.AppTitle}"
+                                   HorizontalAlignment="Stretch" VerticalAlignment="Stretch"/>
+                        </Border>
+                    </Button>
+                    <Button x:Name="MoreSessionButton" Grid.Column="1" Style="{StaticResource TitleButtonStyle}" Margin="4,0,0,0"
+                            ToolTipService.ToolTip="更多播放器"
+                            Visibility="{Binding HasMoreSession}"
+                            Click="MoreSessionButton_Click">
+                        <Button.Resources>
+                            <Flyout x:Key="MoreSessionListFlyout" Placement="RightEdgeAlignedTop">
+                                <Flyout.FlyoutPresenterStyle>
+                                    <Style TargetType="FlyoutPresenter" BasedOn="{StaticResource DefaultFlyoutPresenterStyle}">
+                                        <Setter Property="Padding" Value="0,2" />
+                                    </Style>
+                                </Flyout.FlyoutPresenterStyle>
+                                <ListView ItemsSource="{x:Bind VM.SessionModels,Mode=OneWay}"
+                                          SelectedItem="{x:Bind VM.SelectedSession,Mode=TwoWay}" 
+                                          SingleSelectionFollowsFocus="False" 
+                                          IsItemClickEnabled="True"
+                                          ItemClick="ListView_ItemClick">
+                                    <ListView.ItemTemplate>
+                                        <DataTemplate x:DataType="model:MediaSessionModel">
+                                            <Grid>
+                                                <Grid.ColumnDefinitions>
+                                                    <ColumnDefinition Width="Auto" />
+                                                    <ColumnDefinition Width="*" />
+                                                </Grid.ColumnDefinitions>
+                                                <Border CornerRadius="4" Margin="0,0,4,0" VerticalAlignment="Center">
+                                                    <Image Width="24" Height="24" Source="{x:Bind AppIcon}"/>
+                                                </Border>
+                                                <TextBlock Grid.Column="1" Text="{x:Bind AppTitle}" VerticalAlignment="Center" />
+                                            </Grid>
+                                        </DataTemplate>
+                                    </ListView.ItemTemplate>
+                                </ListView>
+                            </Flyout>
+                        </Button.Resources>
+                        <FontIcon FontSize="12" Glyph="&#xE10C;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
+                    </Button>
+                    <control:AutoScrollText Grid.Column="2" VerticalAlignment="Center" Visibility="{Binding IsBackgroundVisible}"
+											ToolTipService.ToolTip="{Binding MediaModel.DisplayText}">
+                        <TextBlock Text="{Binding MediaModel.DisplayText}" TextAlignment="Center" Margin="2,0"
+                                   Foreground="{Binding LyricTheme.ForegroundBrush}" />
+                    </control:AutoScrollText>
+                </Grid>
+
+                <StackPanel Orientation="Horizontal" Grid.Column="1"
+                            Visibility="{Binding IsTitleButtonVisible}">
+                    <Button Style="{StaticResource TitleButtonStyle}" Margin="0,0,2,0" 
+                            Command="{Binding SelectedSession.Session.SkipPreviousCommand}" 
+                            Visibility="{Binding SelectedSession.IsPreviousButtonVisible}"
+                            ToolTipService.ToolTip="上一曲">
+                        <FontIcon FontSize="14" Glyph="&#xE100;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
+                    </Button>
+                    <Button Style="{StaticResource TitleButtonStyle}" Margin="2,0"
+                            Command="{Binding SelectedSession.Session.PlayCommand}" 
+                            Visibility="{Binding SelectedSession.IsPlayButtonVisible}"
+                            ToolTipService.ToolTip="播放">
+                        <FontIcon FontSize="14" Glyph="&#xE102;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
+                    </Button>
+                    <Button Style="{StaticResource TitleButtonStyle}" Margin="2,0"
+                            Command="{Binding SelectedSession.Session.PauseCommand}" 
+                            Visibility="{Binding SelectedSession.IsPauseButtonVisible}"
+                            ToolTipService.ToolTip="暂停">
+                        <FontIcon FontSize="14" Glyph="&#xE103;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
+                    </Button>
+                    <Button Style="{StaticResource TitleButtonStyle}" Margin="2,0,0,0"
+                            Command="{Binding SelectedSession.Session.SkipNextCommand}" 
+                            Visibility="{Binding SelectedSession.IsNextButtonVisible}"
+                            ToolTipService.ToolTip="下一曲">
+                        <FontIcon FontSize="14" Glyph="&#xE101;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
+                    </Button>
+                </StackPanel>
+
+                <StackPanel Orientation="Horizontal" Grid.Column="2" HorizontalAlignment="Right" Margin="0,0,6,0"
+                            Visibility="{Binding IsTitleButtonVisible}">
+                    <Button x:Name="OnlyUseTimerHelpButton" Style="{StaticResource TitleButtonStyle}" Margin="2,0"
+                            Command="{Binding OnlyUseTimerHelpCmd}" 
+                            Visibility="{Binding OnlyUseTimerHelpButtonVisible}"
+                            ToolTipService.ToolTip="注意">
+                        <FontIcon FontSize="12" Glyph="&#xE11B;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
+                    </Button>
+                    <Button x:Name="LockButton" Style="{StaticResource TitleButtonStyle}" Margin="2,0"
+                            ToolTipService.ToolTip="锁定歌词"
+                            Click="LockButton_Click">
+                        <FontIcon FontSize="12" Glyph="&#xE72E;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
+                    </Button>
+                    <Button x:Name="SettingsButton" Style="{StaticResource TitleButtonStyle}" Margin="2,0"
+                            ToolTipService.ToolTip="设置"
+                            Click="SettingsButton_Click">
+                        <FontIcon FontSize="12" Glyph="&#xE115;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
+                    </Button>
+                    <Button x:Name="MinimizeButton" Style="{StaticResource TitleButtonStyle}" Margin="2,0"
+                            ToolTipService.ToolTip="隐藏"
+							Click="MinimizeButton_Click">
+                        <FontIcon FontSize="12" Glyph="&#xE921;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
+                    </Button>
+                </StackPanel>
+
+            </Grid>
+            <control:LyricControl x:Name="LyricControl" Padding="10,38,10,8" LineSpace="0"
+                                  ClipToPadding="{x:Bind VM.IsBackgroundVisible,Mode=OneWay}"
+								  
+                                  Paused="{x:Bind converter:BindUtils.BooleanReverse(VM.IsPlaying),Mode=OneWay}"
+								  Position="{x:Bind VM.SelectedSession.Position,Mode=OneWay}"
+								  MediaDuration="{x:Bind VM.MediaModel.MediaDuration,Mode=OneWay}"
+                                  
+                                  Lyric="{x:Bind VM.MediaModel.Lyric,Mode=OneWay}"
+                                  
+								  LineAlignment="{x:Bind VM.LyricAlignment,Mode=OneWay}"
+                                  LineMode="{x:Bind VM.LineMode,Mode=OneWay}"
+                                  IsLyricTranslateEnabled="{x:Bind VM.IsLyricTranslateEnabled,Mode=OneWay}"
+                                  
+                                  TextStrokeType="{x:Bind VM.TextStrokeType,Mode=OneWay}"
+                                  LyricFontFamily="{x:Bind VM.SettingViewModel.LyricFontFamily.Source,Mode=OneWay}"
+                                  Theme="{x:Bind VM.LyricTheme,Mode=OneWay}"
+                                  Opacity="{x:Bind VM.LyricOpacity,Mode=OneWay}"
+                                  
+                                  LowFrameRateMode="{x:Bind VM.LowFrameRateMode,Mode=OneWay}"
+                                  TextOpacityMask="{x:Bind VM.SettingViewModel.TextOpacityMask,Mode=OneWay}"
+                                  ScrollAnimationMode="{x:Bind VM.ScrollAnimationMode,Mode=OneWay}"
+                                  ProgressAnimationMode="{x:Bind VM.ProgressAnimationMode,Mode=OneWay}"
+                                  
+                                  Grid.RowSpan="2" Canvas.ZIndex="0"/>
+        </Grid>
+        <control:ResizePanel HorizontalAlignment="Stretch" Margin="0,0,0,4" VerticalAlignment="Stretch" DraggerPointerPressed="ResizePanel_DraggerPointerPressed"/>
+    </Grid>
+</winuiex:WindowEx>

@@ -4,8 +4,12 @@
 
 下载地址: [https://www.microsoft.com/store/productId/9MXFFHVQVBV9](https://www.microsoft.com/store/productId/9MXFFHVQVBV9)
 
+交流与反馈: [QQ群 1145646224](https://jq.qq.com/?_wv=1027&k=K4Ixe2Gw)
+
+v1.3.0 后从 wpf 移植到 winui3 框架。由于winui3框架还远远谈不上稳定，新版本的问题相比旧版本会更多，如果遇到问题麻烦及时反馈。
+
 ## 软件截图
-![app](https://github.com/cnbluefire/HotLyric/blob/main/assets/app.png)
+![app](assets/app.png)
 
 ## 支持的播放器   
 |播放器|支持程度|
@@ -26,26 +30,26 @@
 4. <span id="ref4">可能无法获取到QQ音乐UWP的播放信息，先开启QQ音乐UWP再启动热词可以缓解。</span>
 
 ## 已知问题
+* 移除了倍速播放的支持。
+* 出现全屏窗口时自动隐藏的功能还在开发中，暂时隐藏设置中的选项。
+* Windows 10 中先开启热词再开启播放器，热词可能无法正常显示，调查中。
 * Windows 10 中关闭所有播放器时热词可能不会自动隐藏。
-* 安装 StartAllBack 后热词渲染可能不正确，具体表现如歌词文字重叠，自定义颜色控件背景丢失等，卸载 StartAllBack 即可解决。
-* 11 代 Intel 核心显卡使用 WDDM 版本为 2.7 的显卡驱动时，热词可能渲染不正确，升级核显驱动可以解决此问题，或开启热词的强制软件渲染进行缓解。
-* 如果遇到打不开或打开闪退的情况，请尝试安装 Microsoft.VCLibs.14.00.Desktop.appx [x86下载](https://aka.ms/Microsoft.VCLibs.x86.14.00.Desktop.appx) [x64下载](https://aka.ms/Microsoft.VCLibs.x64.14.00.Desktop.appx) [arm64下载](https://aka.ms/Microsoft.VCLibs.arm64.14.00.Desktop.appx)
 
 ## 如何打开
 
 ### HyPlayer
 安装热词后，在主界面中点击桌面歌词按钮。
 
-![hyplayer](https://github.com/cnbluefire/HotLyric/blob/main/assets/hyplayer.png)
+![hyplayer](assets/hyplayer.png)
 
 ### LyricEase
 安装热词后，在设置中启用桌面歌词选项。  
 
-![lyricease](https://github.com/cnbluefire/HotLyric/blob/main/assets/lyricease.png)
+![lyricease](assets/lyricease.png)
 
 ### Spotify
 Spotify 需要在设置中开启 **在使用媒体键时显示桌面重叠**
-![spotify](https://github.com/cnbluefire/HotLyric/blob/main/assets/spotify.png)
+![spotify](assets/spotify.png)
 
 ## 使用说明
 
@@ -55,21 +59,23 @@ Spotify 需要在设置中开启 **在使用媒体键时显示桌面重叠**
 
 ### 性能设置
 
-如果感觉热词占用资源过多，可以打开 **低帧率模式** 和关闭 **边缘淡出** 以降低CPU占用。
+如果感觉热词占用资源过多，可以打开 **低功耗模式** 以降低资源占用。
 
-如果歌词界面渲染错误，如文字重叠等，可以尝试打开 **强制使用软件渲染**。如果无法解决可以提Issues或在设置界面中点击 **反馈问题** 按钮联系我。
+**低功耗模式** 设置为 **自动** 时，移动设备在未充电状态，如果系统中开启了 *节电模式* 或 *能效优先* ，则会自动开启低功耗模式。
+
+如果歌词界面渲染错误，请加交流群，或提交Issues，或在设置界面中点击 **反馈问题** 按钮联系我。
 
 ### 歌词样式
 
 如果不喜欢预设的歌词样式，可以在右侧切换到自定义模式，调整界面上的每种颜色。
-![custom-theme](https://github.com/cnbluefire/HotLyric/blob/main/assets/custom-theme.png)
+![custom-theme](assets/custom-theme.png)
 
 ### 开机启动
 当在任务管理器中 **启用** 了热词的开机启动项时，应用内的开机启动选项才能设置。
 
 ### 重置窗口位置
 如果窗口被拖动到显示器区域外，可以使用此选项恢复窗口的默认位置。
-![reset-window-location](https://github.com/cnbluefire/HotLyric/blob/main/assets/reset-window-location.png)
+![reset-window-location](assets/reset-window-location.png)
 
 ## 第三方通知
-[第三方通知](https://github.com/cnbluefire/HotLyric/blob/main/HotLyric/HotLyric.Package/ThirdPartyNotices.txt)
+[第三方通知](HotLyric/HotLyric.Package/ThirdPartyNotices.txt)

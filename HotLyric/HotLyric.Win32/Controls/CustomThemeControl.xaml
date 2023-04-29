@@ -1,0 +1,60 @@
+<?xml version="1.0" encoding="utf-8"?>
+<UserControl
+    x:Class="HotLyric.Win32.Controls.CustomThemeControl"
+    xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+    xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+    xmlns:local="using:HotLyric.Win32.Controls"
+    xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+    xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+    mc:Ignorable="d">
+
+    <StackPanel Spacing="8">
+        <StackPanel.Resources>
+            <Style x:Key="HeaderedControlStyle" TargetType="ContentControl">
+                <Setter Property="HorizontalAlignment" Value="Left" />
+                <Setter Property="VerticalAlignment" Value="Top" />
+                <Setter Property="Template">
+                    <Setter.Value>
+                        <ControlTemplate TargetType="ContentControl">
+                            <Grid ColumnSpacing="16">
+                                <Grid.ColumnDefinitions>
+                                    <ColumnDefinition Width="Auto" MinWidth="150" />
+                                    <ColumnDefinition Width="Auto"/>
+                                </Grid.ColumnDefinitions>
+                                <ContentPresenter HorizontalContentAlignment="Right" VerticalContentAlignment="Center"
+                                                  Content="{TemplateBinding Tag}" />
+                                <ContentPresenter Grid.Column="1" HorizontalContentAlignment="Left" VerticalAlignment="Center"
+                                                  Content="{TemplateBinding Content}" />
+                            </Grid>
+                        </ControlTemplate>
+                    </Setter.Value>
+                </Setter>
+            </Style>
+
+        </StackPanel.Resources>
+
+        <ContentControl Style="{StaticResource HeaderedControlStyle}" Tag="窗口边框颜色">
+            <local:ColorPickerButton x:Name="WindowBorderColorPicker" SelectedColorChanged="ColorPicker_SelectedColorChanged" />
+        </ContentControl>
+
+        <ContentControl Style="{StaticResource HeaderedControlStyle}" Tag="窗口背景颜色">
+            <local:ColorPickerButton x:Name="WindowBackgroundColorPicker" SelectedColorChanged="ColorPicker_SelectedColorChanged" />
+        </ContentControl>
+
+        <ContentControl Style="{StaticResource HeaderedControlStyle}" Tag="歌词文字颜色">
+            <local:ColorPickerButton x:Name="LyricTextColorPicker" SelectedColorChanged="ColorPicker_SelectedColorChanged" />
+        </ContentControl>
+
+        <ContentControl Style="{StaticResource HeaderedControlStyle}" Tag="卡拉OK文字颜色">
+            <local:ColorPickerButton x:Name="KaraokeTextColorPicker" SelectedColorChanged="ColorPicker_SelectedColorChanged" />
+        </ContentControl>
+
+        <ContentControl Style="{StaticResource HeaderedControlStyle}" Tag="歌词描边颜色">
+            <local:ColorPickerButton x:Name="LyricStrokeColorPicker" SelectedColorChanged="ColorPicker_SelectedColorChanged" />
+        </ContentControl>
+
+        <ContentControl Style="{StaticResource HeaderedControlStyle}" Tag="卡拉OK描边颜色">
+            <local:ColorPickerButton x:Name="KaraokeStrokeColorPicker" SelectedColorChanged="ColorPicker_SelectedColorChanged" />
+        </ContentControl>
+    </StackPanel>
+</UserControl>

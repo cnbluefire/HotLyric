@@ -15,23 +15,29 @@ using System.Text;
 using System.Text.RegularExpressions;
 using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using Windows.ApplicationModel;
 using Windows.Devices.Enumeration;
 using Windows.Services.Store;
 using Windows.Storage;
 using Windows.System;
+using Windows.UI.Xaml;
+using Microsoft.UI.Xaml;
+using HotLyric.Win32.Controls.LyricControlDrawingData;
+using Newtonsoft.Json.Linq;
+using WinRT;
+using WinUIEx;
+using Microsoft.UI.Xaml.Controls;
 
 namespace HotLyric.Win32.ViewModels
 {
     public class SettingsWindowViewModel : ObservableObject
     {
-        //private const string IsTranslationVisibleSettingKey = "Settings_TranslationVisible";
         private const string KaraokeEnabledSettingKey = "Settings_KaraokeEnabled";
         private const string LyricHorizontalAlignmentSettingKey = "Settings_LyricHorizontalAlignment";
         private const string AlwaysShowBackgroundSettingKey = "Settings_AlwaysShowBackground";
         private const string ShowShadowSettingKey = "Settings_ShowShadow";
         private const string TextStrokeEnabledSettingKey = "Settings_TextStrokeEnabled";
+        private const string TextStrokeTypeSettingKey = "Settings_TextStrokeType";
         private const string LyricFontFamilySettingKey = "Settings_LyricFontFamily";
         private const string SecondRowSettingKey = "Settings_SecondRow";
         private const string SkipEmptyLyricLineSettingKey = "Settings_SkipEmptyLyricLine";
@@ -39,8 +45,9 @@ namespace HotLyric.Win32.ViewModels
         private const string HideWhenFullScreenAppOpenSettingKey = "Settings_HideWhenFullScreenAppOpen";
         private const string WindowTransparentSettingKey = "Settings_WindowTransparent";
         private const string KeepWindowTransparentSettingKey = "Settings_KeepWindowTransparent";
-        private const string LowFrameRateModeSettingKey = "Settings_LowFrameRateMode";
-        private const string RenderSoftwareOnlySettingKey = "Settings_RenderSoftwareOnly";
+        private const string ScrollAnimationModeKey = "Settings_ScrollAnimationMode";
+        private const string LowFrameRateModeSettingKeyOld = "Settings_LowFrameRateMode";
+        private const string LowFrameRateModeSettingKey = "Settings_LowFrameRateMode2";
         private const string LyricOpacitySettingKey = "Settings_LyricOpacity";
         private const string ShowLauncherWindowOnStartupSettingKey = "Settings_ShowLauncherWindowOnStartup";
         private const string HideOnPausedSettingKey = "Settings_HideOnPaused";
@@ -55,16 +62,21 @@ namespace HotLyric.Win32.ViewModels
                 windowTransparent = LoadSetting(WindowTransparentSettingKey, false);
             }
 
-            var translationVisible = LoadSetting<bool?>("Settings_TranslationVisible", null);
-            secondRowType = LoadSetting(SecondRowSettingKey, translationVisible == false ? SecondRowType.Collapsed : SecondRowType.TranslationOrNextLyric);
-            if (secondRowType == SecondRowType.TranslationOnly) secondRowType = SecondRowType.TranslationOrNextLyric;
+            var secondRowType = LoadSetting(SecondRowSettingKey, SecondRowType.TranslationOrNextLyric);
+            SecondRowTypes.SelectedValue = secondRowType;
 
             karaokeEnabled = LoadSetting(KaraokeEnabledSettingKey, true);
-            lyricHorizontalAlignment = LoadSetting(LyricHorizontalAlignmentSettingKey, HorizontalAlignment.Center);
+            LyricAlignments.SelectedValue = LoadSetting(LyricHorizontalAlignmentSettingKey, LyricDrawingLineAlignment.Center);
 
             alwaysShowBackground = LoadSetting(AlwaysShowBackgroundSettingKey, false);
-            showShadow = LoadSetting(ShowShadowSettingKey, true);
-            textStrokeEnabled = LoadSetting(TextStrokeEnabledSettingKey, true);
+
+            var textStrokeType = LoadSetting<LyricControlTextStrokeType?>(TextStrokeTypeSettingKey, default);
+            if (!textStrokeType.HasValue)
+            {
+                var textStrokeEnabled = LoadSetting(TextStrokeEnabledSettingKey, true);
+                textStrokeType = textStrokeEnabled ? LyricControlTextStrokeType.Auto : LyricControlTextStrokeType.Disabled;
+            }
+            TextStrokeTypes.SelectedValue = textStrokeType.Value;
 
             currentTheme = LyricThemeManager.CurrentThemeView ?? LyricThemeManager.LyricThemes[0];
             AllPresetThemes = LyricThemeManager.LyricThemes.ToArray();
@@ -72,31 +84,44 @@ namespace HotLyric.Win32.ViewModels
             themeIsPresetVisible = currentTheme.Name != "customize";
             customizeTheme = currentTheme;
 
-            allFontfamilies = Fonts.SystemFontFamilies
-                .Select(c => new FontFamilyDisplayModel(c))
-                .OrderBy(c => c.Order)
-                .ToList();
+            allFontfamilies = FontFamilyDisplayModel.AllFamilies;
 
             lyricFontFamilySource = LoadSetting(LyricFontFamilySettingKey, "");
-            if (string.IsNullOrEmpty(lyricFontFamilySource) || allFontfamilies.All(c => c.Source != lyricFontFamilySource))
-            {
-                lyricFontFamilySource = "Global User Interface";
-            }
-
             lyricFontFamily = allFontfamilies.FirstOrDefault(c => c.Source == lyricFontFamilySource);
+
+            if (lyricFontFamily == null)
+            {
+                lyricFontFamily = allFontfamilies[0];
+                lyricFontFamilySource = lyricFontFamily.Source;
+            }
 
             skipEmptyLyricLine = LoadSetting(SkipEmptyLyricLineSettingKey, true);
             textOpacityMask = LoadSetting(TextOpacityMaskSettingKey, !DeviceHelper.IsLowPerformanceDevice);
             hideWhenFullScreenAppOpen = LoadSetting(HideWhenFullScreenAppOpenSettingKey, true);
-            lowFrameRateMode = LoadSetting(LowFrameRateModeSettingKey, DeviceHelper.IsLowPerformanceDevice);
 
-            renderSoftwareOnly = LoadSetting(RenderSoftwareOnlySettingKey, false);
-            if (renderSoftwareOnly)
+            ScrollAnimationMode.SelectedValue = LoadSetting(ScrollAnimationModeKey, LyricControlScrollAnimationMode.Slow);
+
+            var lowFrameRateMode = LoadSetting(LowFrameRateModeSettingKey, (LowFrameRateMode?)null);
+            var oldLowFrameRateMode = LoadSetting(LowFrameRateModeSettingKeyOld, (bool?)null);
+
+            if (lowFrameRateMode.HasValue)
             {
-                RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
+                LowFrameRateMode.SelectedValue = lowFrameRateMode.Value;
+            }
+            else
+            {
+                LowFrameRateMode.SelectedValue = ViewModels.LowFrameRateMode.Auto;
+                if (oldLowFrameRateMode.HasValue)
+                {
+                    LowFrameRateMode.SelectedValue = oldLowFrameRateMode.Value ? ViewModels.LowFrameRateMode.Enabled : ViewModels.LowFrameRateMode.Disabled;
+                }
+                else if (DeviceHelper.IsLowPerformanceDevice)
+                {
+                    LowFrameRateMode.SelectedValue = ViewModels.LowFrameRateMode.Disabled;
+                }
             }
 
-            lyricOpacity = Math.Clamp(LoadSetting(LyricOpacitySettingKey, 1d), 0.1d, 1d);
+            lyricOpacity = Math.Min(Math.Max(LoadSetting(LyricOpacitySettingKey, 1d), 0.1d), 1d);
 
             showLauncherWindowOnStartup = LoadSetting(ShowLauncherWindowOnStartupSettingKey, true);
 
@@ -110,19 +135,19 @@ namespace HotLyric.Win32.ViewModels
 
         private bool windowTransparent;
         private bool keepWindowTransparent;
-        private SecondRowType secondRowType;
+        private EnumBindingModel<SecondRowType>? secondRowTypes;
         private bool karaokeEnabled;
-        private HorizontalAlignment lyricHorizontalAlignment;
+
+        private EnumBindingModel<LyricDrawingLineAlignment>? lyricAlignments;
 
         private bool alwaysShowBackground;
-        private bool showShadow;
-        private bool textStrokeEnabled;
+        private EnumBindingModel<LyricControlTextStrokeType>? textStrokeTypes;
         private LyricThemeView currentTheme;
         private LyricThemeView customizeTheme;
         private bool themeIsPresetVisible;
         private string? lyricFontFamilySource;
         private FontFamilyDisplayModel? lyricFontFamily;
-        private List<FontFamilyDisplayModel> allFontfamilies;
+        private IReadOnlyList<FontFamilyDisplayModel> allFontfamilies;
         private AsyncRelayCommand? clearCacheCmd;
         private AsyncRelayCommand? openStorePageCmd;
         private AsyncRelayCommand? feedbackCmd;
@@ -133,8 +158,8 @@ namespace HotLyric.Win32.ViewModels
         private bool skipEmptyLyricLine;
         private bool textOpacityMask;
         private bool hideWhenFullScreenAppOpen;
-        private bool lowFrameRateMode;
-        private bool renderSoftwareOnly;
+        private EnumBindingModel<LyricControlScrollAnimationMode>? scrollAnimationMode;
+        private EnumBindingModel<LowFrameRateMode>? lowFrameRateMode;
         private double lyricOpacity;
         private bool showLauncherWindowOnStartup;
         private bool hideOnPaused;
@@ -155,11 +180,20 @@ namespace HotLyric.Win32.ViewModels
             set => ChangeSettings(ref keepWindowTransparent, value, KeepWindowTransparentSettingKey);
         }
 
-        public SecondRowType SecondRowType
-        {
-            get => secondRowType;
-            set => ChangeSettings(ref secondRowType, value, SecondRowSettingKey);
-        }
+        public EnumBindingModel<SecondRowType> SecondRowTypes => secondRowTypes ?? (secondRowTypes = new EnumBindingModel<SecondRowType>(
+            new[]
+            {
+                new EnumDisplayModel<SecondRowType>("显示翻译或下一行歌词", SecondRowType.TranslationOrNextLyric),
+                new EnumDisplayModel<SecondRowType>("仅显示下一行歌词", SecondRowType.NextLyricOnly),
+                new EnumDisplayModel<SecondRowType>("隐藏", SecondRowType.Collapsed),
+            }, value =>
+            {
+                if (value.HasValue)
+                {
+                    this.SetSettings(SecondRowSettingKey, value.Value);
+                }
+                NotifySettingsChanged();
+            }));
 
         public bool KaraokeEnabled
         {
@@ -167,11 +201,20 @@ namespace HotLyric.Win32.ViewModels
             set => ChangeSettings(ref karaokeEnabled, value, KaraokeEnabledSettingKey);
         }
 
-        public HorizontalAlignment LyricHorizontalAlignment
-        {
-            get => lyricHorizontalAlignment;
-            set => ChangeSettings(ref lyricHorizontalAlignment, value, LyricHorizontalAlignmentSettingKey);
-        }
+        public EnumBindingModel<LyricDrawingLineAlignment> LyricAlignments => lyricAlignments ?? (lyricAlignments = new EnumBindingModel<LyricDrawingLineAlignment>(
+            new[]
+            {
+                new EnumDisplayModel<LyricDrawingLineAlignment>("左对齐", LyricDrawingLineAlignment.Left),
+                new EnumDisplayModel<LyricDrawingLineAlignment>("居中", LyricDrawingLineAlignment.Center),
+                new EnumDisplayModel<LyricDrawingLineAlignment>("右对齐", LyricDrawingLineAlignment.Right),
+            }, value =>
+            {
+                if (value.HasValue)
+                {
+                    this.SetSettings(LyricHorizontalAlignmentSettingKey, value.Value);
+                }
+                NotifySettingsChanged();
+            }));
 
         public bool AlwaysShowBackground
         {
@@ -179,17 +222,20 @@ namespace HotLyric.Win32.ViewModels
             set => ChangeSettings(ref alwaysShowBackground, value, AlwaysShowBackgroundSettingKey);
         }
 
-        public bool ShowShadow
-        {
-            get => showShadow;
-            set => ChangeSettings(ref showShadow, value, ShowShadowSettingKey);
-        }
-
-        public bool TextStrokeEnabled
-        {
-            get => textStrokeEnabled;
-            set => ChangeSettings(ref textStrokeEnabled, value, TextStrokeEnabledSettingKey);
-        }
+        public EnumBindingModel<LyricControlTextStrokeType> TextStrokeTypes => textStrokeTypes ?? (textStrokeTypes = new EnumBindingModel<LyricControlTextStrokeType>(
+            new[]
+            {
+                new EnumDisplayModel<LyricControlTextStrokeType>("自动", LyricControlTextStrokeType.Auto),
+                new EnumDisplayModel<LyricControlTextStrokeType>("启用", LyricControlTextStrokeType.Enabled),
+                new EnumDisplayModel<LyricControlTextStrokeType>("禁用", LyricControlTextStrokeType.Disabled),
+            }, value =>
+            {
+                if (value.HasValue)
+                {
+                    this.SetSettings(TextStrokeTypeSettingKey, value.Value);
+                }
+                NotifySettingsChanged();
+            }));
 
         public LyricThemeView[] AllPresetThemes { get; }
 
@@ -234,10 +280,9 @@ namespace HotLyric.Win32.ViewModels
             get => lyricFontFamily;
             set
             {
-                lyricFontFamily = value;
-                if (ChangeSettings(ref lyricFontFamilySource, value?.Source ?? "", LyricFontFamilySettingKey))
+                if (SetProperty(ref lyricFontFamily, value))
                 {
-                    OnPropertyChanged(nameof(LyricFontFamilyWrapper));
+                    ChangeSettings(ref lyricFontFamilySource, value?.Source ?? "", LyricFontFamilySettingKey);
                 }
             }
         }
@@ -260,11 +305,35 @@ namespace HotLyric.Win32.ViewModels
             set => ChangeSettings(ref hideWhenFullScreenAppOpen, value, HideWhenFullScreenAppOpenSettingKey);
         }
 
-        public bool LowFrameRateMode
-        {
-            get => lowFrameRateMode;
-            set => ChangeSettings(ref lowFrameRateMode, value, LowFrameRateModeSettingKey);
-        }
+        public EnumBindingModel<LyricControlScrollAnimationMode> ScrollAnimationMode => scrollAnimationMode ?? (scrollAnimationMode = new EnumBindingModel<LyricControlScrollAnimationMode>(
+            new[]
+            {
+                new EnumDisplayModel<LyricControlScrollAnimationMode>("快速", LyricControlScrollAnimationMode.Fast),
+                new EnumDisplayModel<LyricControlScrollAnimationMode>("慢速", LyricControlScrollAnimationMode.Slow),
+                new EnumDisplayModel<LyricControlScrollAnimationMode>("禁用", LyricControlScrollAnimationMode.Disabled),
+            }, value =>
+            {
+                if (value.HasValue)
+                {
+                    this.SetSettings(ScrollAnimationModeKey, value.Value);
+                }
+                NotifySettingsChanged();
+            }));
+
+        public EnumBindingModel<LowFrameRateMode> LowFrameRateMode => lowFrameRateMode ?? (lowFrameRateMode = new EnumBindingModel<LowFrameRateMode>(
+            new[]
+            {
+                new EnumDisplayModel<LowFrameRateMode>("自动", ViewModels.LowFrameRateMode.Auto),
+                new EnumDisplayModel<LowFrameRateMode>("启用", ViewModels.LowFrameRateMode.Enabled),
+                new EnumDisplayModel<LowFrameRateMode>("禁用", ViewModels.LowFrameRateMode.Disabled),
+            }, value =>
+            {
+                if (value.HasValue)
+                {
+                    this.SetSettings(LowFrameRateModeSettingKey, value.Value);
+                }
+                NotifySettingsChanged();
+            }));
 
         public bool HideOnPaused
         {
@@ -276,50 +345,6 @@ namespace HotLyric.Win32.ViewModels
         {
             get => autoResetWindowPos;
             set => ChangeSettings(ref autoResetWindowPos, value, AutoResetWindowPosSettingsKey);
-        }
-
-        public FontFamily LyricFontFamilyWrapper => LyricFontFamily?.FontFamily ?? new FontFamily("Global User Interface");
-
-        public bool RenderSoftwareOnly
-        {
-            get => renderSoftwareOnly;
-            set
-            {
-                if (ChangeSettings(ref renderSoftwareOnly, value, RenderSoftwareOnlySettingKey))
-                {
-                    if (value)
-                    {
-                        RenderOptions.ProcessRenderMode = System.Windows.Interop.RenderMode.SoftwareOnly;
-                    }
-                    else
-                    {
-                        DispatcherHelper.UIDispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(async () =>
-                        {
-                            var ownerWindow = App.Current.Windows.OfType<SettingsWindow>().FirstOrDefault();
-                            if (ownerWindow == null) return;
-
-                            var contentDialog = new ModernWpf.Controls.ContentDialog()
-                            {
-                                Title = "热词",
-                                Content = "关闭强制软件渲染需要重启应用才能生效",
-                                IsPrimaryButtonEnabled = true,
-                                IsSecondaryButtonEnabled = false,
-                                PrimaryButtonText = "立即重启",
-                                CloseButtonText = "稍后重启",
-                                CornerRadius = new CornerRadius(8)
-                            };
-
-                            contentDialog.Owner = ownerWindow;
-
-                            var result = await contentDialog.ShowAsync();
-                            if (result == ModernWpf.Controls.ContentDialogResult.Primary)
-                            {
-                                await ApplicationHelper.RestartApplicationAsync();
-                            }
-                        }));
-                    }
-                }
-            }
         }
 
         public double LyricOpacity
@@ -404,28 +429,31 @@ namespace HotLyric.Win32.ViewModels
         {
             try
             {
-                var ownerWindow = App.Current.Windows.OfType<SettingsWindow>().FirstOrDefault();
-                if (ownerWindow == null) return;
+                var ownerWindow = App.Current.SettingsView;
+                if (ownerWindow?.Visible != true) return;
 
                 var updateResult = await ApplicationHelper.CheckUpdateAsync();
 
+                ownerWindow = App.Current.SettingsView;
+                if (ownerWindow?.Visible != true) return;
+
                 if (updateResult.HasUpdate)
                 {
-                    var contentDialog = new ModernWpf.Controls.ContentDialog()
+                    var contentDialog = new ContentDialog()
                     {
                         Title = "热词",
                         Content = "发现新版本，是否跳转到商店下载？",
+                        Margin = new Thickness(0, 32, 0, 12),
                         IsPrimaryButtonEnabled = true,
                         IsSecondaryButtonEnabled = false,
                         PrimaryButtonText = "是",
                         CloseButtonText = "否",
-                        CornerRadius = new CornerRadius(8)
+                        CornerRadius = new CornerRadius(8),
+                        XamlRoot = ownerWindow.Content.XamlRoot
                     };
 
-                    contentDialog.Owner = ownerWindow;
-
                     var result = await contentDialog.ShowAsync();
-                    if (result == ModernWpf.Controls.ContentDialogResult.Primary)
+                    if (result == ContentDialogResult.Primary)
                     {
                         _ = updateResult.TryStartUpdateAsync();
                         OpenStorePageCmd.Execute(null);
@@ -433,17 +461,18 @@ namespace HotLyric.Win32.ViewModels
                 }
                 else
                 {
-                    var contentDialog = new ModernWpf.Controls.ContentDialog()
+                    var contentDialog = new ContentDialog()
                     {
                         Title = "热词",
                         Content = "未发现新版本",
+                        Margin = new Thickness(0, 32, 0, 12),
                         IsPrimaryButtonEnabled = true,
                         IsSecondaryButtonEnabled = false,
                         PrimaryButtonText = "确定",
                         CornerRadius = new CornerRadius(8),
+                        XamlRoot = ownerWindow.Content.XamlRoot
                     };
 
-                    contentDialog.Owner = ownerWindow;
                     await contentDialog.ShowAsync();
                 }
             }
@@ -461,27 +490,30 @@ namespace HotLyric.Win32.ViewModels
                     var allText = await System.IO.File.ReadAllTextAsync(path);
                     if (!string.IsNullOrEmpty(allText))
                     {
-                        var ownerWindow = App.Current.Windows.OfType<SettingsWindow>().FirstOrDefault();
+                        var ownerWindow = App.Current.SettingsView;
 
-                        var contentDialog = new ModernWpf.Controls.ContentDialog()
+                        if (ownerWindow?.Visible != true) return;
+
+                        var contentDialog = new ContentDialog()
                         {
                             Title = "第三方通知",
-                            Content = new ModernWpf.Controls.ScrollViewerEx()
+                            Content = new ScrollViewer()
                             {
-                                Content = new System.Windows.Controls.TextBlock()
+                                Content = new TextBlock()
                                 {
                                     Text = allText,
                                     TextWrapping = TextWrapping.Wrap,
                                     FontSize = 12
                                 }
                             },
+                            Margin = new Thickness(0, 32, 0, 12),
                             IsPrimaryButtonEnabled = true,
                             IsSecondaryButtonEnabled = false,
                             PrimaryButtonText = "确定",
                             CornerRadius = new CornerRadius(8),
+                            XamlRoot = ownerWindow.Content.XamlRoot
                         };
 
-                        contentDialog.Owner = ownerWindow;
                         await contentDialog.ShowAsync();
                     }
                 }
@@ -497,20 +529,20 @@ namespace HotLyric.Win32.ViewModels
 
         public AsyncRelayCommand FontSizeCmd => fontSizeCmd ?? (fontSizeCmd = new AsyncRelayCommand(async () =>
         {
-            var ownerWindow = App.Current.Windows.OfType<SettingsWindow>().FirstOrDefault();
+            var ownerWindow = App.Current.SettingsView;
 
-            var contentDialog = new ModernWpf.Controls.ContentDialog()
+            if (ownerWindow?.Visible != true) return;
+
+            var contentDialog = new ContentDialog()
             {
                 Title = "字号帮助",
-                Content = new ModernWpf.Controls.ScrollViewerEx()
+                Content = new TextBlock()
                 {
-                    Content = new System.Windows.Controls.TextBlock()
-                    {
-                        Text = "拖拽歌词窗口尺寸即可改变文字大小",
-                        TextWrapping = TextWrapping.Wrap,
-                        FontSize = 14
-                    }
+                    Text = "拖拽歌词窗口尺寸即可改变文字大小",
+                    TextWrapping = TextWrapping.Wrap,
+                    FontSize = 14
                 },
+                Margin = new Thickness(0, 32, 0, 12),
                 IsPrimaryButtonEnabled = true,
                 IsSecondaryButtonEnabled = true,
                 PrimaryButtonText = "查看更多帮助",
@@ -518,10 +550,10 @@ namespace HotLyric.Win32.ViewModels
                 CornerRadius = new CornerRadius(8),
             };
 
-            contentDialog.Owner = ownerWindow;
+            contentDialog.XamlRoot = ownerWindow.Content.XamlRoot;
             var res = await contentDialog.ShowAsync();
 
-            if (res == ModernWpf.Controls.ContentDialogResult.Primary)
+            if (res == ContentDialogResult.Primary)
             {
                 ShowReadMe();
             }
@@ -576,7 +608,7 @@ namespace HotLyric.Win32.ViewModels
                     using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
                     {
                         string content = "";
-                        using (var reader = new StreamReader(fileStream, leaveOpen: true))
+                        using (var reader = new StreamReader(fileStream, Encoding.UTF8, true, 1024, leaveOpen: true))
                         {
                             content = await reader.ReadToEndAsync();
                         }
@@ -604,7 +636,7 @@ namespace HotLyric.Win32.ViewModels
                         if (flag)
                         {
                             fileStream.Seek(0, SeekOrigin.Begin);
-                            using (var writer = new StreamWriter(fileStream, Encoding.UTF8, leaveOpen: true))
+                            using (var writer = new StreamWriter(fileStream, Encoding.UTF8, 1024, leaveOpen: true))
                             {
                                 await writer.WriteAsync(content);
                                 await writer.FlushAsync();
@@ -620,17 +652,18 @@ namespace HotLyric.Win32.ViewModels
                 }
             }
 
-            var ownerWindow = App.Current.Windows.OfType<SettingsWindow>().FirstOrDefault();
-            if (ownerWindow != null)
+            var ownerWindow = App.Current.SettingsView;
+            if (ownerWindow?.Visible == true)
             {
-                var contentDialog = new ModernWpf.Controls.ContentDialog()
+                var contentDialog = new ContentDialog()
                 {
                     Title = "热词",
+                    Margin = new Thickness(0, 32, 0, 12),
                     IsPrimaryButtonEnabled = false,
                     IsSecondaryButtonEnabled = false,
                     CloseButtonText = "确定",
                     CornerRadius = new CornerRadius(8),
-                    Owner = ownerWindow
+                    XamlRoot = ownerWindow.Content.XamlRoot
                 };
 
 
@@ -720,42 +753,41 @@ namespace HotLyric.Win32.ViewModels
 
         public void ShowSettingsWindow()
         {
-            var settingsWindow = App.Current.Windows.OfType<SettingsWindow>().FirstOrDefault();
-            if (settingsWindow == null)
+            if (App.Current.SettingsView == null)
             {
-                settingsWindow = new SettingsWindow();
+                App.Current.SettingsView = new();
             }
 
             try
             {
-                settingsWindow.Show();
-                settingsWindow.Activate();
+                App.Current.SettingsView.Activate();
+                App.Current.SettingsView.SetForegroundWindow();
             }
             catch { }
         }
 
-        public void ShowLauncherWindow()
-        {
-            var launcherWindow = App.Current.Windows.OfType<LauncherWindow>().FirstOrDefault();
-            if (launcherWindow == null)
-            {
-                launcherWindow = new LauncherWindow();
-            }
+        //public void ShowLauncherWindow()
+        //{
+        //    var launcherWindow = App.Current.Windows.OfType<LauncherWindow>().FirstOrDefault();
+        //    if (launcherWindow == null)
+        //    {
+        //        launcherWindow = new LauncherWindow();
+        //    }
 
-            try
-            {
-                launcherWindow.Show();
-                launcherWindow.Activate();
-            }
-            catch { }
-        }
+        //    try
+        //    {
+        //        launcherWindow.Show();
+        //        launcherWindow.Activate();
+        //    }
+        //    catch { }
+        //}
 
         public void ShowReadMe()
         {
-            DispatcherHelper.UIDispatcher?.BeginInvoke(System.Windows.Threading.DispatcherPriority.Normal, new Action(async () =>
+            App.DispatcherQueue.TryEnqueue(async () =>
             {
                 await Launcher.LaunchUriAsync(new Uri("https://github.com/cnbluefire/HotLyric/blob/main/README.md"));
-            }));
+            });
         }
 
         public void TryShowReadMeOnStartup()
@@ -770,7 +802,7 @@ namespace HotLyric.Win32.ViewModels
         public void ActivateInstance()
         {
             if (ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession != null
-                || CommandLineArgsHelper.HasLaunchParameters)
+                || ActivationArgumentsHelper.HasLaunchParameters)
             {
                 if (ViewModelLocator.Instance.LyricWindowViewModel.IsMinimized)
                 {
@@ -784,4 +816,10 @@ namespace HotLyric.Win32.ViewModels
         }
     }
 
+    public enum LowFrameRateMode
+    {
+        Auto,
+        Enabled,
+        Disabled
+    }
 }

@@ -1,4 +1,5 @@
-﻿using Kfstorm.LrcParser;
+﻿using HotLyric.Win32.Utils.LyricFiles;
+using Kfstorm.LrcParser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -38,37 +39,20 @@ namespace HotLyric.Win32.Utils.LrcProviders
         /// <param name="artists"></param>
         /// <param name="convertToSimpleChinese"></param>
         /// <returns></returns>
-        public static (string? name, string[]? artists) ConvertNameAndArtists(string? name, string[]? artists, bool convertToSimpleChinese)
+        public static (string? name, string? artists) ConvertNameAndArtists(string? name, string? artists, bool convertToSimpleChinese)
         {
-            var _artists = artists
-                ?.Where(c => !string.IsNullOrWhiteSpace(c))
-                ?.Select(c =>
-                {
-                    var _c = c.Trim();
-                    if (artistMap.TryGetValue(_c, out var val)) return val;
+            var _artists = ChineseHelper.ConvertToSimpleChinese(artists);
 
-                    foreach (var item in artistMap)
-                    {
-                        _c = _c.Replace(item.Key, item.Value);
-                    }
-
-                    if (convertToSimpleChinese)
-                    {
-                        try
-                        {
-                            _c = TraditionalChineseHelper.ConvertToSimpleChinese(_c);
-                        }
-                        catch { }
-                    }
-
-                    return _c;
-                })?.ToArray();
+            foreach (var (k, v) in artistMap)
+            {
+                _artists = _artists.Replace(k, v);
+            }
 
             if (convertToSimpleChinese && !string.IsNullOrEmpty(name))
             {
                 try
                 {
-                    name = TraditionalChineseHelper.ConvertToSimpleChinese(name);
+                    name = ChineseHelper.ConvertToSimpleChinese(name);
                 }
                 catch { }
             }
@@ -123,11 +107,11 @@ namespace HotLyric.Win32.Utils.LrcProviders
         /// <param name="artist"></param>
         /// <param name="cancellationToken"></param>
         /// <returns></returns>
-        internal static async Task<LyricModel?> GetLyricFromCacheAsync(string? name, string[]? artist, CancellationToken cancellationToken)
+        internal static async Task<Lyric?> GetLyricFromCacheAsync(string? name, string? artists, CancellationToken cancellationToken)
         {
             if (string.IsNullOrEmpty(name)) return null;
 
-            var md5 = GetMD5(BuildSearchKey(name, artist));
+            var md5 = GetMD5(BuildSearchKey(name, artists));
 
             try
             {
@@ -136,29 +120,17 @@ namespace HotLyric.Win32.Utils.LrcProviders
                 {
                     var text = await FileIO.ReadTextAsync(file).AsTask(cancellationToken);
                     string? text2 = null;
-                    var lrcFile = LrcFile.FromText(text);
-
-                    ILrcFile? translated = null;
 
                     if (await folder.TryGetItemAsync($"{md5}_trans").AsTask(cancellationToken) is StorageFile file2)
                     {
                         try
                         {
                             text2 = await FileIO.ReadTextAsync(file2).AsTask(cancellationToken);
-                            if (!string.IsNullOrWhiteSpace(text2))
-                            {
-                                translated = LrcFile.FromText(text2);
-
-                                if (translated.Lyrics.All(c => string.IsNullOrEmpty(c.Content)))
-                                {
-                                    translated = null;
-                                }
-                            }
                         }
                         catch (Exception ex) when (!(ex is OperationCanceledException)) { }
                     }
 
-                    return new LyricModel(lrcFile, translated, text, text2);
+                    return Lyric.CreateClassicLyric(text, text2, name, artists);
                 }
             }
             catch (Exception ex) when (!(ex is OperationCanceledException)) { }
@@ -174,7 +146,14 @@ namespace HotLyric.Win32.Utils.LrcProviders
 
         public static async Task<string> TryGetStringAsync(string uri, string referer, CancellationToken cancellationToken)
         {
-            if (client == null) client = new HttpClient();
+            if (client == null)
+            {
+                var handler = new HttpClientHandler()
+                {
+                    UseProxy = false
+                };
+                client = new HttpClient(handler);
+            }
 
             try
             {
@@ -203,9 +182,14 @@ namespace HotLyric.Win32.Utils.LrcProviders
             }
         }
 
+        internal static string? CombineArtists(string[]? artists)
+        {
+            return artists != null ? string.Join(" ", artists.Where(c => !string.IsNullOrEmpty(c))) : null;
+        }
+
         internal static string BuildSearchKey(string? name, string[]? artists)
         {
-            return BuildSearchKey(name, artists != null ? string.Join(" ", artists.Where(c => !string.IsNullOrEmpty(c))) : null);
+            return BuildSearchKey(name, CombineArtists(artists));
         }
 
 

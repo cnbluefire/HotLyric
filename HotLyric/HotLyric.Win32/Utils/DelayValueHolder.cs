@@ -3,7 +3,7 @@ using System.Collections.Generic;
 using System.ComponentModel;
 using System.Diagnostics.CodeAnalysis;
 using System.Text;
-using System.Windows.Threading;
+using Microsoft.UI.Xaml;
 
 namespace HotLyric.Win32.Utils
 {
@@ -32,8 +32,6 @@ namespace HotLyric.Win32.Utils
 
         public DelayValueHolder([AllowNull] T initValue, TimeSpan delay)
         {
-            VerifyAccess();
-
             value = initValue;
             timer = new DispatcherTimer()
             {
@@ -42,7 +40,7 @@ namespace HotLyric.Win32.Utils
             timer.Tick += Timer_Tick;
         }
 
-        private void Timer_Tick(object? sender, EventArgs e)
+        private void Timer_Tick(object? sender, object e)
         {
             Value = nextValue;
         }
@@ -56,7 +54,6 @@ namespace HotLyric.Win32.Utils
             {
                 var oldHasNext = hasNextValue;
                 CancelCore();
-                VerifyAccess();
                 if (!object.Equals(this.value, value))
                 {
                     this.value = value;
@@ -81,7 +78,6 @@ namespace HotLyric.Win32.Utils
         public void SetValueDelay([AllowNull] T value, TimeSpan delay)
         {
             CancelCore();
-            VerifyAccess();
             timer.Interval = delay;
             hasNextValue = true;
             nextValue = value;
@@ -106,14 +102,6 @@ namespace HotLyric.Win32.Utils
         public void Cancel()
         {
             Value = value;
-        }
-
-        private void VerifyAccess()
-        {
-            if (DispatcherHelper.UIDispatcher == null || !DispatcherHelper.UIDispatcher.CheckAccess())
-            {
-                throw new InvalidOperationException(nameof(Dispatcher));
-            }
         }
 
         private void ThrowIfDisposed()

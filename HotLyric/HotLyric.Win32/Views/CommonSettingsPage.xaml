@@ -1,0 +1,100 @@
+﻿<Page x:Class="HotLyric.Win32.Views.CommonSettingsPage"
+      xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
+      xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
+      xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
+      xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
+      xmlns:local="using:HotLyric.Win32.Views" 
+      xmlns:utils="using:HotLyric.Win32.Utils" 
+      xmlns:control="using:HotLyric.Win32.Controls" 
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
+
+    <Grid x:Name="LayoutRoot" DataContext="{Binding Path=SettingsWindowViewModel, Source={StaticResource Locator}}">
+        <VisualStateManager.VisualStateGroups>
+            <VisualStateGroup>
+                <VisualState x:Name="ContentCenter">
+                    <VisualState.StateTriggers>
+                        <utils:ControlSizeTrigger Control="{Binding ElementName=LayoutRoot,Mode=OneWay}" MinWidth="832" />
+                    </VisualState.StateTriggers>
+                    <VisualState.Setters>
+                        <Setter Target="ContentPanel.Width" Value="800" />
+                        <Setter Target="ContentPanel.HorizontalAlignment" Value="Center" />
+                    </VisualState.Setters>
+                </VisualState>
+            </VisualStateGroup>
+        </VisualStateManager.VisualStateGroups>
+
+        <ScrollViewer VerticalScrollBarVisibility="Auto">
+            <StackPanel x:Name="ContentPanel" Orientation="Vertical" HorizontalAlignment="Stretch" Margin="16">
+                <muxc:Expander Style="{StaticResource ExpanderCardStyle}" MinHeight="66" HorizontalAlignment="Stretch" IsExpanded="False">
+                    <muxc:Expander.Header>
+                        <Grid HorizontalAlignment="Stretch" Margin="-4,0,0,0">
+                            <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE72E;" Content="锁定歌词" />
+                            <Border MaxWidth="40" HorizontalAlignment="Right">
+                                <ToggleSwitch IsOn="{Binding WindowTransparent,Mode=TwoWay}" />
+                            </Border>
+                        </Grid>
+                    </muxc:Expander.Header>
+                    <CheckBox Padding="12,6,0,0" Margin="40,0,16,0" Content="记住设置" IsChecked="{Binding KeepWindowTransparent,Mode=TwoWay}" />
+                </muxc:Expander>
+
+                <ContentControl Style="{StaticResource CardStyle}" Margin="0,4,0,0">
+                    <Grid HorizontalAlignment="Stretch">
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE94E;" Content="双行设置" />
+
+                        <ComboBox x:Name="SecondRowComboBox" SelectedIndex="0" HorizontalAlignment="Right"
+                                  ItemsSource="{Binding SecondRowTypes.Items}"
+                                  SelectedItem="{Binding SecondRowTypes.SelectedItem,Mode=TwoWay}" />
+                    </Grid>
+                </ContentControl>
+
+                <!--<ContentControl Style="{StaticResource CardStyle}" Margin="0,4,0,0">
+                    <Grid HorizontalAlignment="Stretch">
+                        <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center">
+                            <FontIcon Glyph="&#xE248;" FontSize="16" Margin="{StaticResource IconMargin}" RenderTransformOrigin="0.5,0.5">
+                                <FontIcon.RenderTransform>
+                                    <ScaleTransform ScaleX="-1" ScaleY="-1" />
+                                </FontIcon.RenderTransform>
+                            </FontIcon>
+                            <TextBlock VerticalAlignment="Center">跳过空行</TextBlock>
+                        </StackPanel>
+
+                        <Border MaxWidth="40" HorizontalAlignment="Right">
+                            <ToggleSwitch IsOn="{Binding SkipEmptyLyricLine,Mode=TwoWay}" />
+                        </Border>
+                    </Grid>
+                </ContentControl>-->
+
+                <ContentControl Style="{StaticResource CardStyle}" Margin="0,4,0,0">
+                    <Grid HorizontalAlignment="Stretch">
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE1D6;" Content="卡拉OK模式" />
+
+                        <Border MaxWidth="40" HorizontalAlignment="Right">
+                            <ToggleSwitch IsOn="{Binding KaraokeEnabled,Mode=TwoWay}" />
+                        </Border>
+                    </Grid>
+                </ContentControl>
+
+                <ContentControl Style="{StaticResource CardStyle}" Margin="0,4,0,0">
+                    <Grid HorizontalAlignment="Stretch">
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE1A2;" Content="歌词对齐方式" />
+
+                        <ComboBox x:Name="LyricHorizontalAlignmentComboBox" HorizontalAlignment="Right" 
+                                  ItemsSource="{Binding LyricAlignments.Items}"
+                                  SelectedItem="{Binding LyricAlignments.SelectedItem,Mode=TwoWay}" />
+                    </Grid>
+                </ContentControl>
+
+                <ContentControl Style="{StaticResource CardStyle}" Margin="0,4,0,0">
+                    <Grid HorizontalAlignment="Stretch">
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE103;" Content="暂停时自动隐藏" />
+
+                        <Border MaxWidth="40" HorizontalAlignment="Right">
+                            <ToggleSwitch IsOn="{Binding HideOnPaused,Mode=TwoWay}" />
+                        </Border>
+                    </Grid>
+                </ContentControl>
+            </StackPanel>
+        </ScrollViewer>
+    </Grid>
+
+</Page>

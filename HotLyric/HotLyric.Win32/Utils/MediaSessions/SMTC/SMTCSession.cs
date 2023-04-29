@@ -7,9 +7,9 @@ using System.Text;
 using System.Threading.Tasks;
 using System.Timers;
 using System.Windows.Input;
-using System.Windows.Media;
 using Windows.ApplicationModel;
 using Windows.Media.Control;
+using Microsoft.UI.Xaml.Media;
 
 namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 {
@@ -70,7 +70,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         private void InternalPositionTimer_Elapsed(object? sender, ElapsedEventArgs? e)
         {
-            var pos = (DateTime.Now - lastUpdatePositionTime) * PlaybackRate + lastPosition;
+            var pos = TimeSpan.FromSeconds((DateTime.Now - lastUpdatePositionTime).TotalSeconds * PlaybackRate + lastPosition.TotalSeconds);
             if (PositionMode == SMTCAppPositionMode.OnlyUseTimer
                 || pos >= StartTime && pos <= EndTime)
             {
@@ -223,8 +223,8 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
                     taskSource.SetResult(mediaProperties?.PlaybackType switch
                     {
-                        Windows.Media.MediaPlaybackType.Video => null,
-                        Windows.Media.MediaPlaybackType.Image => null,
+                        global::Windows.Media.MediaPlaybackType.Video => null,
+                        global::Windows.Media.MediaPlaybackType.Image => null,
                         _ => CreateMediaProperties(mediaProperties)
                     });
                 }
@@ -285,7 +285,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 if (genres.Length > 1
                     && !string.IsNullOrEmpty(genres[1])
                     && genres[1].Trim() is string path
-                    && System.IO.Path.IsPathFullyQualified(path))
+                    && !Path.IsPathRooted(path))
                 {
                     localLrcPath = path;
                     skip++;

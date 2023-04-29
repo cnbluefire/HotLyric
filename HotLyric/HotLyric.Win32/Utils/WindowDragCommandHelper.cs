@@ -30,6 +30,7 @@ namespace HotLyric.Win32.Utils
         private static DragCommand draggingCommand;
         private static DragResizeEdge draggingEdge;
         private static DateTime lastTouchOperationTime;
+        private static TaskCompletionSource? dragTaskSource;
 
         private static PointerEventHandler pointerMoveEventHandler = new(OnPointerMoved);
         private static PointerEventHandler pointerReleasedEventHandler = new(OnPointerReleased);
@@ -149,6 +150,7 @@ namespace HotLyric.Win32.Utils
                         draggingPointerPoint = point;
                         draggingCommand = command;
                         draggingEdge = edge;
+                        dragTaskSource = new TaskCompletionSource();
                     }
                 }
 
@@ -168,12 +170,9 @@ namespace HotLyric.Win32.Utils
 
             await Task.Yield();
 
-            MSG msg;
-
-            while (User32.GetMessage(out msg) > 0 && draggingWindow != null)
+            if (dragTaskSource != null)
             {
-                User32.TranslateMessage(in msg);
-                User32.DispatchMessage(in msg);
+                await dragTaskSource.Task;
             }
 
             return true;
@@ -266,8 +265,6 @@ namespace HotLyric.Win32.Utils
                     content.RemoveHandler(UIElement.PointerMovedEvent, pointerMoveEventHandler);
                     content.RemoveHandler(UIElement.PointerReleasedEvent, pointerReleasedEventHandler);
                     content.RemoveHandler(UIElement.PointerCaptureLostEvent, pointerCaptureLostEventHandler);
-
-                    User32.PostMessage(draggingWindow.GetWindowHandle(), (uint)(User32.WindowMessage.WM_USER + 233));
                 }
 
                 draggingWindow = null;
@@ -275,6 +272,12 @@ namespace HotLyric.Win32.Utils
                 draggingPointerPoint = null;
                 draggingCommand = default;
                 draggingEdge = default;
+
+                if (dragTaskSource != null)
+                {
+                    dragTaskSource.TrySetResult();
+                    dragTaskSource = null;
+                }
             }
             finally
             {

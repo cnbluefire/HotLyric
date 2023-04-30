@@ -1,7 +1,10 @@
-﻿using HotLyric.Win32.Utils;
+﻿using HotLyric.Win32.Controls.LyricControlDrawingData.DrawAnimations;
+using HotLyric.Win32.Utils;
 using Microsoft.Graphics.Canvas;
+using Microsoft.Graphics.Canvas.Brushes;
 using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.Graphics.Canvas.Geometry;
+using System;
 using System.Collections.Generic;
 using System.Numerics;
 using Windows.Foundation;
@@ -102,61 +105,44 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
         protected override void DrawCore(CanvasDrawingSession drawingSession, double progress, bool lowFrameRateMode)
         {
-            var originalProgress = progress;
-
-            if(progressAnimationMode == LyricControlProgressAnimationMode.Disabled)
-            {
-                progress = 0;
-            }
+            var fillGeometry = geometries[0];
+            var strokeGeometry = geometries.Count > 1 ? geometries[1] : null;
 
             if (progress > 0.001)
             {
-                using (var commandList = new CanvasCommandList(drawingSession))
+                var left = bounds.Left - 100 * scale;
+                var top = bounds.Top - 100 * scale;
+                var width = bounds.Width * progress + 100 * scale;
+                var height = bounds.Height + 200 * scale;
+
+                if (width > 0 && height > 0)
                 {
-                    using (var ds = commandList.CreateDrawingSession())
-                    {
-                        DrawCore(ds, colors.FillColor2, colors.StrokeColor2, colors.GlowColor2, progress, lowFrameRateMode);
-                    }
-
-                    var left = bounds.Left - 100 * scale;
-                    var top = bounds.Top - 100 * scale;
-                    var width = bounds.Width * progress + 100 * scale;
-                    var height = bounds.Height + 200 * scale;
-
-                    if (width <= 0 || height <= 0) return;
-
-                    var sourceRect = new Rect(bounds.Left - 100 * scale, bounds.Top - 100 * scale, bounds.Width * progress + 100 * scale, bounds.Height + 200 * scale);
+                    var sourceRect = new Rect(left, top, width, height);
                     if (progress > 0.999)
                     {
                         sourceRect.Width += 100 * scale;
                     }
 
-                    using (var cropEffect = new CropEffect()
+                    using (var layer = drawingSession.CreateLayer(1, sourceRect))
                     {
-                        Source = commandList,
-                        SourceRectangle = sourceRect
-                    })
-                    {
-                        drawingSession.DrawImage(cropEffect);
+                        DrawGlow(drawingSession, fillGeometry, progress, colors.GlowColor2, scale, lowFrameRateMode);
+
+                        if (progress > 0.999 || lowFrameRateMode)
+                        {
+                            DrawCore(drawingSession, fillGeometry, strokeGeometry, colors.FillColor2, colors.StrokeColor2);
+                        }
                     }
                 }
             }
             if (progress < 0.999)
             {
-                using (var commandList = new CanvasCommandList(drawingSession))
+                var left = bounds.Left + bounds.Width * progress;
+                var top = bounds.Top - 100 * scale;
+                var width = bounds.Width + 100 * scale;
+                var height = bounds.Height + 200 * scale;
+
+                if (width > 0 && height > 0)
                 {
-                    using (var ds = commandList.CreateDrawingSession())
-                    {
-                        DrawCore(ds, colors.FillColor1, colors.StrokeColor1, colors.GlowColor1, progress, lowFrameRateMode);
-                    }
-
-                    var left = bounds.Left + bounds.Width * progress;
-                    var top = bounds.Top - 100 * scale;
-                    var width = bounds.Width + 100 * scale;
-                    var height = bounds.Height + 200 * scale;
-
-                    if (width <= 0 || height <= 0) return;
-
                     var sourceRect = new Rect(left, top, width, height);
                     if (progress < 0.001)
                     {
@@ -164,19 +150,59 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
                         sourceRect.Width += 100 * scale;
                     }
 
-                    using (var cropEffect = new CropEffect()
+                    using (var layer = drawingSession.CreateLayer(1, sourceRect))
                     {
-                        Source = commandList,
-                        SourceRectangle = sourceRect
-                    })
+                        DrawGlow(drawingSession, fillGeometry, progress, colors.GlowColor1, scale, lowFrameRateMode);
+
+                        if (progress < 0.001 || lowFrameRateMode)
+                        {
+                            DrawCore(drawingSession, fillGeometry, strokeGeometry, colors.FillColor1, colors.StrokeColor1);
+                        }
+                    }
+                }
+            }
+
+            if (!lowFrameRateMode && progress >= 0.001 && progress <= 0.999)
+            {
+                const double GradientWidth = 6d;
+
+                using (var holder = LyricDrawingKaraokeGradientStopsPool.Rent())
+                {
+                    var stops = holder.Stops;
+
+                    stops[0] = new CanvasGradientStop(0, colors.FillColor2);
+                    stops[1] = new CanvasGradientStop((float)progress, colors.FillColor2);
+                    stops[2] = new CanvasGradientStop((float)Math.Min(progress + GradientWidth * scale / bounds.Width, 1), colors.FillColor1);
+                    stops[3] = new CanvasGradientStop(1, colors.FillColor1);
+
+                    using (var brush = new CanvasLinearGradientBrush(drawingSession, stops))
                     {
-                        drawingSession.DrawImage(cropEffect);
+                        brush.StartPoint = new Vector2((float)bounds.Left, (float)bounds.Top);
+                        brush.EndPoint = new Vector2((float)bounds.Right, (float)bounds.Top);
+
+                        drawingSession.DrawCachedGeometry(fillGeometry, brush);
+                    }
+
+                    if (strokeGeometry != null)
+                    {
+                        stops[0].Color = colors.StrokeColor2;
+                        stops[1].Color = colors.StrokeColor2;
+                        stops[2].Color = colors.StrokeColor1;
+                        stops[3].Color = colors.StrokeColor1;
+
+                        using (var brush = new CanvasLinearGradientBrush(drawingSession, stops))
+                        {
+                            brush.StartPoint = new Vector2((float)bounds.Left, (float)bounds.Top);
+                            brush.EndPoint = new Vector2((float)bounds.Right, (float)bounds.Top);
+
+                            drawingSession.DrawCachedGeometry(strokeGeometry, brush);
+                        }
                     }
                 }
             }
         }
 
-        private void DrawCore(CanvasDrawingSession drawingSession, Color fillColor, Color strokeColor, Color glowColor, double progress, bool lowFrameRateMode)
+        private void DrawGlow(CanvasDrawingSession drawingSession, CanvasCachedGeometry fillGrometry, double progress, Color glowColor, double scale, bool lowFrameRateMode)
         {
             if (!lowFrameRateMode)
             {
@@ -184,7 +210,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
                 {
                     using (var effectSourceDs = effectSource.CreateDrawingSession())
                     {
-                        effectSourceDs.DrawCachedGeometry(geometries[0], glowColor);
+                        effectSourceDs.DrawCachedGeometry(fillGrometry, glowColor);
                     }
                     var bounds = effectSource.GetBounds(drawingSession);
 
@@ -205,19 +231,16 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
                     }
                 }
             }
+        }
 
-            if (geometries.Count > 0)
-            {
-                drawingSession.DrawCachedGeometry(geometries[0], fillColor);
-            }
-            if (geometries.Count > 1)
-            {
-                drawingSession.DrawCachedGeometry(geometries[1], strokeColor);
-            }
+        private void DrawCore(CanvasDrawingSession drawingSession, CanvasCachedGeometry fillGeometry, CanvasCachedGeometry? strokeGeometry, Color fillColor, Color strokeColor)
+        {
+            drawingSession.DrawCachedGeometry(fillGeometry, fillColor);
 
-#if DEBUG
-            //drawingSession.FillRectangle(bounds, Color.FromArgb(40, 255, 0, 0));
-#endif
+            if (strokeGeometry != null)
+            {
+                drawingSession.DrawCachedGeometry(strokeGeometry, strokeColor);
+            }
         }
 
         protected override void DisposeCore(bool disposing)

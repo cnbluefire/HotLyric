@@ -100,10 +100,8 @@ namespace HotLyric.Win32.Views
                     this.AppWindow.Changed += AppWindow_Changed;
                 }
 
-                if (!VM.ActualMinimized)
-                {
-                    this.Hide();
-                }
+                UpdateActualMinimized();
+                UpdateTransparent();
 
                 AcrylicController.Visible = true;
                 LayoutRoot.Opacity = 1;
@@ -120,32 +118,42 @@ namespace HotLyric.Win32.Views
         {
             if (e?.PropertyName == nameof(VM.ActualMinimized))
             {
-                if (VM.ActualMinimized && this.Visible)
-                {
-                    this.Hide();
-                }
-                else if (!VM.ActualMinimized && !this.Visible)
-                {
-                    this.Show();
-                    DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-                    {
-                        if (AppWindow.IsVisible)
-                        {
-                            var handle = this.GetWindowHandle();
-
-                            if (WindowBoundsHelper.IsWindowOutsideScreen(handle))
-                            {
-                                ResetWindowBounds(false);
-                            }
-                        }
-                    });
-                }
+                UpdateActualMinimized();
             }
             else if (e?.PropertyName == nameof(VM.IsTransparent))
             {
-                WindowHelper.SetLayeredWindow(this, VM.IsTransparent);
-                WindowHelper.SetTransparent(this, VM.IsTransparent);
+                UpdateTransparent();
             }
+        }
+
+        private void UpdateActualMinimized()
+        {
+            if (VM.ActualMinimized && this.Visible)
+            {
+                this.Hide();
+            }
+            else if (!VM.ActualMinimized && !this.Visible)
+            {
+                this.Show();
+                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                {
+                    if (AppWindow.IsVisible)
+                    {
+                        var handle = this.GetWindowHandle();
+
+                        if (WindowBoundsHelper.IsWindowOutsideScreen(handle))
+                        {
+                            ResetWindowBounds(false);
+                        }
+                    }
+                });
+            }
+        }
+
+        private void UpdateTransparent()
+        {
+            WindowHelper.SetLayeredWindow(this, VM.IsTransparent);
+            WindowHelper.SetTransparent(this, VM.IsTransparent);
         }
 
         #endregion View Model Property Changed

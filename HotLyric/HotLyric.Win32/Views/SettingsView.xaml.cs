@@ -83,24 +83,48 @@ namespace HotLyric.Win32.Views
         {
             if (args.SelectedItem is NavigationViewItem item)
             {
-                switch (item.Tag as string)
+                NavigateToPageCore(item.Tag as string);
+            }
+        }
+
+        public void NavigateToPage(string? tag)
+        {
+            foreach (var item in NavView.MenuItems.OfType<NavigationViewItem>())
+            {
+                if (item.Tag is string _tag && _tag != tag)
                 {
-                    case "CommonSettings":
-                        ContentFrame.Navigate(typeof(CommonSettingsPage), null, new DrillInNavigationTransitionInfo());
-                        break;
-
-                    case "ThemeSettings":
-                        ContentFrame.Navigate(typeof(ThemeSettingsPage), null, new DrillInNavigationTransitionInfo());
-                        break;
-
-                    case "MiscSettings":
-                        ContentFrame.Navigate(typeof(MiscSettingsPage), null, new DrillInNavigationTransitionInfo());
-                        break;
-
-                    case "About":
-                        ContentFrame.Navigate(typeof(AboutPage), null, new DrillInNavigationTransitionInfo());
-                        break;
+                    item.IsSelected = false;
                 }
+            }
+
+            NavView.SelectedItem = NavView.MenuItems
+                .OfType<NavigationViewItem>()
+                .FirstOrDefault(c => c.Tag is string _tag && _tag == tag);
+        }
+
+        private void NavigateToPageCore(string? tag)
+        {
+            switch (tag)
+            {
+                case "CommonSettings":
+                    ContentFrame.Navigate(typeof(CommonSettingsPage), null, new DrillInNavigationTransitionInfo());
+                    break;
+
+                case "ThemeSettings":
+                    ContentFrame.Navigate(typeof(ThemeSettingsPage), null, new DrillInNavigationTransitionInfo());
+                    break;
+
+                case "MiscSettings":
+                    ContentFrame.Navigate(typeof(MiscSettingsPage), null, new DrillInNavigationTransitionInfo());
+                    break;
+
+                case "ReadMe":
+                    ContentFrame.Navigate(typeof(ReadMePage), null, new DrillInNavigationTransitionInfo());
+                    break;
+
+                case "About":
+                    ContentFrame.Navigate(typeof(AboutPage), null, new DrillInNavigationTransitionInfo());
+                    break;
             }
         }
     }

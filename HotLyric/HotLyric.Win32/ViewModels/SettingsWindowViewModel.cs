@@ -786,7 +786,9 @@ namespace HotLyric.Win32.ViewModels
         {
             App.DispatcherQueue.TryEnqueue(async () =>
             {
-                await Launcher.LaunchUriAsync(new Uri("https://github.com/cnbluefire/HotLyric/blob/main/README.md"));
+                ShowSettingsWindow();
+
+                App.Current.SettingsView?.NavigateToPage("ReadMe");
             });
         }
 

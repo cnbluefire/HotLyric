@@ -63,13 +63,11 @@ namespace HotLyric.Win32.Controls
                         string.IsNullOrEmpty(FontFamily?.Source) ? "Microsoft Yahei UI" : FontFamily?.Source!,
                         LyricDrawingLineType.Classic,
                         LyricDrawingLineAlignment.Center,
-                        colors,
                         1,
-                        LyricDrawingLineTextSizeType.DrawSize,
-                        LyricControlProgressAnimationMode.Karaoke);
+                        LyricDrawingLineTextSizeType.DrawSize);
                 }
 
-                line.Draw(args.DrawingSession, 0.5, 1, false);
+                line.Draw(args.DrawingSession, new LyricDrawingParameters(0.5, 1, true, LyricControlProgressAnimationMode.Karaoke, colors));
             }
             catch (Exception ex) when (sender.Device.IsDeviceLost(ex.HResult))
             {

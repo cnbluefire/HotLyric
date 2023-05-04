@@ -19,8 +19,6 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
         public const double ShowInitScale = 0.8d;
 
         private readonly ICanvasResourceCreator resourceCreator;
-        private readonly LyricDrawingTextColors colors;
-        private readonly LyricControlProgressAnimationMode progressAnimationMode;
 
         private LyricDrawingTextGlyphRunGroup glyphRunGroup;
         private List<LyricDrawingText>? lyricTexts;
@@ -32,16 +30,12 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             string fontFamily,
             LyricDrawingLineType type,
             LyricDrawingLineAlignment alignment,
-            LyricDrawingTextColors colors,
             float strokeWidth,
-            LyricDrawingLineTextSizeType textSizeType,
-            LyricControlProgressAnimationMode progressAnimationMode)
+            LyricDrawingLineTextSizeType textSizeType)
         {
             this.resourceCreator = resourceCreator;
-            this.colors = colors;
             StrokeWidth = strokeWidth;
             TextSizeType = textSizeType;
-            this.progressAnimationMode = progressAnimationMode;
             Size = size;
             LyricLine = line;
             FontFamily = fontFamily;
@@ -84,45 +78,22 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
                 if (Type == LyricDrawingLineType.Classic)
                 {
-                    lyricTexts.Add(new LyricDrawingTextClassic(resourceCreator, glyphRunGroup.GlyphRuns, StrokeWidth, colors, geometryScale, TextSizeType, progressAnimationMode)
-                    {
-                        ProgressRangeStart = 0d,
-                        ProgressRangeEnd = 1d
-                    });
-
-                    //lyricTexts.Add(new LyricDrawingTextClipSpan(resourceCreator, glyphRunGroup.GlyphRuns, StrokeWidth, colors, geometryScale, TextSizeType)
-                    //{
-                    //    ProgressRangeStart = 0d,
-                    //    ProgressRangeEnd = 1d,
-                    //});
+                    lyricTexts.Add(new LyricDrawingTextClassic(resourceCreator, glyphRunGroup.GlyphRuns, StrokeWidth, geometryScale, TextSizeType));
 
                 }
-                else if (Type == LyricDrawingLineType.ClipByWord)
+                else
                 {
-                    foreach (var span in LyricLine.AllSpans)
-                    {
-                        if (span.CharacterLength > 0
-                            && span.CharacterIndex >= 0
-                            && span.CharacterIndex < glyphRunGroup.GlyphRuns.Count
-                            && span.CharacterIndex + span.CharacterLength < glyphRunGroup.GlyphRuns.Count)
-                        {
-                            var items = glyphRunGroup.GlyphRuns
-                                .Skip(span.CharacterIndex)
-                                .Take(span.CharacterLength)
-                                .ToArray();
-
-                            lyricTexts.Add(new LyricDrawingTextClipSpan(resourceCreator, items, 0.8f, colors, geometryScale, TextSizeType));
-                        }
-                    }
+                    throw new NotSupportedException(Type.ToString());
                 }
-
-
             }
         }
 
-        public void Draw(CanvasDrawingSession drawingSession, double playProgress, double scaleProgress, bool lowFrameRateMode)
+        public void Draw(CanvasDrawingSession drawingSession, in LyricDrawingParameters parameters)
         {
             if (glyphRunGroup.GlyphRuns.Count == 0) return;
+
+            var scaleProgress = parameters.ScaleProgress;
+            var playProgress = parameters.PlayProgress;
 
             if (scaleProgress > 1 || scaleProgress < 0)
             {
@@ -214,7 +185,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
             foreach (var lyricText in lyricTexts!)
             {
-                lyricText.Draw(drawingSession, playProgress, lowFrameRateMode);
+                lyricText.Draw(drawingSession, in parameters);
             }
 
             drawingSession.Transform = oldMatrix;
@@ -250,11 +221,6 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
         /// 逐词模式
         /// </summary>
         ClipByWord,
-
-        /// <summary>
-        /// 逐字模式
-        /// </summary>
-        ClipByCharater,
     }
 
     public enum LyricDrawingLineAlignment
@@ -277,5 +243,32 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
     {
         LayoutSize,
         DrawSize
+    }
+
+    internal struct LyricDrawingParameters
+    {
+        public LyricDrawingParameters(
+            double playProgress,
+            double scaleProgress,
+            bool lowFrameRateMode,
+            LyricControlProgressAnimationMode progressAnimationMode,
+            LyricDrawingTextColors colors)
+        {
+            PlayProgress = playProgress;
+            ScaleProgress = scaleProgress;
+            LowFrameRateMode = lowFrameRateMode;
+            ProgressAnimationMode = progressAnimationMode;
+            Colors = colors;
+        }
+
+        public double PlayProgress { get; }
+
+        public double ScaleProgress { get; }
+
+        public bool LowFrameRateMode { get; }
+
+        public LyricControlProgressAnimationMode ProgressAnimationMode { get; }
+
+        public LyricDrawingTextColors Colors { get; }
     }
 }

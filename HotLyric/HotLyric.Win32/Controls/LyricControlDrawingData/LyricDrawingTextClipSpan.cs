@@ -14,7 +14,6 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
     internal class LyricDrawingTextClipSpan : LyricDrawingText
     {
         private readonly ICanvasResourceCreator resourceCreator;
-        private readonly LyricDrawingTextColors colors;
         private readonly double scale;
         private readonly LyricDrawingLineTextSizeType sizeType;
         private List<(CanvasCachedGeometry fill, CanvasCachedGeometry? stroke, double startProgress, double endProgrsss)> geometries;
@@ -24,13 +23,11 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             ICanvasResourceCreator resourceCreator,
             IReadOnlyList<LyricDrawingTextGlyphRun> lyricTextGlyphRuns,
             float strokeWidth,
-            LyricDrawingTextColors colors,
             double scale,
             LyricDrawingLineTextSizeType sizeType)
         {
             this.resourceCreator = resourceCreator;
             StrokeWidth = strokeWidth;
-            this.colors = colors;
             this.scale = scale;
             this.sizeType = sizeType;
 
@@ -115,22 +112,22 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
         public float StrokeWidth { get; }
 
-        protected override void DrawCore(CanvasDrawingSession drawingSession, double progress, bool lowFrameRateMode)
+        protected override void DrawCore(CanvasDrawingSession drawingSession, in LyricDrawingParameters parameters)
         {
             foreach (var (fill, stroke, start, end) in geometries)
             {
-                if (progress > start)
+                if (parameters.PlayProgress > start)
                 {
-                    DrawCore2(drawingSession, fill, stroke, MapProgress(progress, start, end), lowFrameRateMode);
+                    DrawCore2(drawingSession, fill, stroke, MapProgress(parameters.PlayProgress, start, end), parameters.Colors, parameters.LowFrameRateMode);
                 }
                 else
                 {
-                    DrawCore1(drawingSession, fill, stroke, lowFrameRateMode);
+                    DrawCore1(drawingSession, fill, stroke, parameters.Colors, parameters.LowFrameRateMode);
                 }
             }
         }
 
-        protected void DrawCore1(CanvasDrawingSession drawingSession, CanvasCachedGeometry fillGeometry, CanvasCachedGeometry? strokeGeometry, bool lowFrameRateMode)
+        protected void DrawCore1(CanvasDrawingSession drawingSession, CanvasCachedGeometry fillGeometry, CanvasCachedGeometry? strokeGeometry, LyricDrawingTextColors colors, bool lowFrameRateMode)
         {
             if (!lowFrameRateMode)
             {
@@ -160,7 +157,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             }
         }
 
-        protected void DrawCore2(CanvasDrawingSession drawingSession, CanvasCachedGeometry fillGeometry, CanvasCachedGeometry? strokeGeometry, double progress, bool lowFrameRateMode)
+        protected void DrawCore2(CanvasDrawingSession drawingSession, CanvasCachedGeometry fillGeometry, CanvasCachedGeometry? strokeGeometry, double progress, LyricDrawingTextColors colors, bool lowFrameRateMode)
         {
             var offsetY = (float)(-0.6 * progress * scale);
 

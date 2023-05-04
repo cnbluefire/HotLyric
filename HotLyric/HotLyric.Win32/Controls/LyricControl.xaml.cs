@@ -78,7 +78,7 @@ namespace HotLyric.Win32.Controls
 
                 Refresh();
 
-                void GetColor(Action<Windows.UI.Color> _action, Microsoft.UI.Xaml.Media.Brush? _brush)
+                static void GetColor(Action<Color> _action, Microsoft.UI.Xaml.Media.Brush? _brush)
                 {
                     if (_brush is Microsoft.UI.Xaml.Media.SolidColorBrush _sb)
                     {
@@ -408,7 +408,6 @@ namespace HotLyric.Win32.Controls
                 var lowFrameRateMode = propObserver[LowFrameRateModeProperty]!.GetValueOrDefault<bool>();
 
                 var textStrokeType = propObserver[TextStrokeTypeProperty]!.GetValueOrDefault<LyricControlTextStrokeType>();
-                var progressAnimationMode = propObserver[ProgressAnimationModeProperty]!.GetValueOrDefault<LyricControlProgressAnimationMode>();
                 var theme = propObserver[ThemeProperty]!.GetValueOrDefault<LyricThemeView>();
                 var fontFamily = propObserver[LyricFontFamilyProperty]!.GetValueOrDefault<string>();
 
@@ -457,12 +456,10 @@ namespace HotLyric.Win32.Controls
 
                 colors ??= CreateDefaultColors();
 
-                bool karaokeFlag = progressAnimationMode == LyricControlProgressAnimationMode.Karaoke;
-
                 colors.FillColor1 = themeColors.FillColor1;
                 colors.StrokeColor1 = themeColors.StrokeColor1;
-                colors.FillColor2 = karaokeFlag ? themeColors.FillColor2 : themeColors.FillColor1;
-                colors.StrokeColor2 = karaokeFlag ? themeColors.StrokeColor2 : themeColors.StrokeColor1;
+                colors.FillColor2 = themeColors.FillColor2;
+                colors.StrokeColor2 = themeColors.StrokeColor2;
 
                 if (strokeFlag)
                 {
@@ -506,10 +503,8 @@ namespace HotLyric.Win32.Controls
                             fontFamily,
                             LyricDrawingLineType.Classic,
                             lineAlignment,
-                            colors,
                             strokeWidth,
-                            sizeType,
-                            progressAnimationMode);
+                            sizeType);
                     }
 
                     try
@@ -534,10 +529,8 @@ namespace HotLyric.Win32.Controls
                             fontFamily,
                             LyricDrawingLineType.Classic,
                             lineAlignment,
-                            colors,
                             strokeWidth,
-                            sizeType,
-                            progressAnimationMode);
+                            sizeType);
                     }
                 }
 
@@ -556,10 +549,8 @@ namespace HotLyric.Win32.Controls
                             fontFamily,
                             LyricDrawingLineType.Classic,
                             lineAlignment,
-                            colors,
                             strokeWidth,
-                            sizeType,
-                            progressAnimationMode);
+                            sizeType);
                     }
                 }
             }
@@ -567,6 +558,8 @@ namespace HotLyric.Win32.Controls
 
         private void CanvasControl_Draw(ICanvasAnimatedControl sender, CanvasAnimatedDrawEventArgs args)
         {
+            if (colors == null) return;
+
             LyricDrawingLine? drawingLine = null;
             LyricDrawingLine? drawingNextLine = null;
             Matrix3x2 matrix = Matrix3x2.Identity;
@@ -740,7 +733,7 @@ namespace HotLyric.Win32.Controls
                                             * Matrix3x2.CreateTranslation(0, (float)(-drawingRemovingLine.Size.Height * LyricDrawingLine.HideFinalScale - lineSpace))
                                             * Matrix3x2.CreateTranslation(0, (float)(moveProgress * (drawingRemovingLine.Size.Height * LyricDrawingLine.HideFinalScale + lineSpace)));
 
-                                        drawingRemovingLine?.Draw(args.DrawingSession, 1, 1 - scaleProgress, lowFrameRateMode);
+                                        drawingRemovingLine?.Draw(args.DrawingSession, new LyricDrawingParameters(1, 1 - scaleProgress, lowFrameRateMode, progressAnimationMode, colors));
                                     }
                                 }
                             }
@@ -758,14 +751,14 @@ namespace HotLyric.Win32.Controls
                                     * Matrix3x2.CreateTranslation(0, (float)(drawingLine.Size.Height + lineSpace))
                                     * Matrix3x2.CreateTranslation(0, (float)(moveProgress * (drawingNextLine.Size.Height + lineSpace)));
 
-                                drawingNextLine?.Draw(args.DrawingSession, nextLinePlayProgress, 1, lowFrameRateMode);
+                                drawingNextLine?.Draw(args.DrawingSession, new LyricDrawingParameters(nextLinePlayProgress, 1, lowFrameRateMode, progressAnimationMode, colors));
                             }
                         }
 
                         args.DrawingSession.Transform = matrix
                             * Matrix3x2.CreateTranslation(0, (float)(moveProgress * (drawingLine.Size.Height + lineSpace)));
 
-                        drawingLine.Draw(args.DrawingSession, playProgress, scaleProgress, lowFrameRateMode);
+                        drawingLine.Draw(args.DrawingSession, new LyricDrawingParameters(playProgress, scaleProgress, lowFrameRateMode, progressAnimationMode, colors));
 
                     }
                     catch (Exception ex) when (!sender.Device.IsDeviceLost(ex.HResult)) { }

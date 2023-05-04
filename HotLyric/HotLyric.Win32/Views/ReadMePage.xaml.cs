@@ -59,7 +59,7 @@ namespace HotLyric.Win32.Views
             {
                 VM.ThirdPartyNoticeCmd.Execute(null);
             }
-            else if (Uri.TryCreate(e.Link, UriKind.Absolute, out Uri link))
+            else if (Uri.TryCreate(e.Link, UriKind.Absolute, out var link))
             {
                 await Launcher.LaunchUriAsync(link);
             }

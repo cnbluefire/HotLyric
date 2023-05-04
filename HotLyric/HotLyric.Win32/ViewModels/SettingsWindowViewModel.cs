@@ -84,14 +84,14 @@ namespace HotLyric.Win32.ViewModels
             themeIsPresetVisible = currentTheme.Name != "customize";
             customizeTheme = currentTheme;
 
-            allFontfamilies = FontFamilyDisplayModel.AllFamilies;
+            allFontFamilies = FontFamilyDisplayModel.AllFamilies;
 
             lyricFontFamilySource = LoadSetting(LyricFontFamilySettingKey, "");
-            lyricFontFamily = allFontfamilies.FirstOrDefault(c => c.Source == lyricFontFamilySource);
+            lyricFontFamily = allFontFamilies.FirstOrDefault(c => c.Source == lyricFontFamilySource);
 
             if (lyricFontFamily == null)
             {
-                lyricFontFamily = allFontfamilies[0];
+                lyricFontFamily = allFontFamilies[0];
                 lyricFontFamilySource = lyricFontFamily.Source;
             }
 
@@ -147,7 +147,7 @@ namespace HotLyric.Win32.ViewModels
         private bool themeIsPresetVisible;
         private string? lyricFontFamilySource;
         private FontFamilyDisplayModel? lyricFontFamily;
-        private IReadOnlyList<FontFamilyDisplayModel> allFontfamilies;
+        private IReadOnlyList<FontFamilyDisplayModel> allFontFamilies;
         private AsyncRelayCommand? clearCacheCmd;
         private AsyncRelayCommand? openStorePageCmd;
         private AsyncRelayCommand? feedbackCmd;
@@ -273,7 +273,7 @@ namespace HotLyric.Win32.ViewModels
             set => SetProperty(ref themeIsPresetVisible, value);
         }
 
-        public IReadOnlyList<FontFamilyDisplayModel> AllFontFamilies => allFontfamilies.ToArray();
+        public IReadOnlyList<FontFamilyDisplayModel> AllFontFamilies => allFontFamilies.ToArray();
 
         public FontFamilyDisplayModel? LyricFontFamily
         {
@@ -784,7 +784,7 @@ namespace HotLyric.Win32.ViewModels
 
         public void ShowReadMe()
         {
-            App.DispatcherQueue.TryEnqueue(async () =>
+            App.DispatcherQueue.TryEnqueue(() =>
             {
                 ShowSettingsWindow();
 

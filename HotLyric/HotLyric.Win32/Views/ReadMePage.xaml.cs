@@ -3,10 +3,12 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Net.Http;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 using HotLyric.Win32.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
+using Microsoft.UI.Xaml.Navigation;
 using Windows.System;
 
 namespace HotLyric.Win32.Views
@@ -14,6 +16,8 @@ namespace HotLyric.Win32.Views
     public partial class ReadMePage : Page
     {
         private static HttpClient? client;
+        private static string? readMeContent;
+        private CancellationTokenSource? cts;
 
         public ReadMePage()
         {
@@ -33,12 +37,16 @@ namespace HotLyric.Win32.Views
                 client = new HttpClient();
             }
 
+            if (cts == null)
+            {
+                cts = new CancellationTokenSource();
+            }
+
             try
             {
-                var text = await client.GetStringAsync("https://raw.githubusercontent.com/cnbluefire/HotLyric/main/README.md");
-
-                MarkdownContent.Text = text;
+                MarkdownContent.Text = await GetMarkdownContentAsync(cts.Token);
             }
+            catch (OperationCanceledException) { }
             finally
             {
                 LoadingRing.IsActive = false;
@@ -63,6 +71,34 @@ namespace HotLyric.Win32.Views
             {
                 await Launcher.LaunchUriAsync(link);
             }
+        }
+
+        protected override void OnNavigatingFrom(NavigatingCancelEventArgs e)
+        {
+            base.OnNavigatingFrom(e);
+
+            cts?.Cancel();
+        }
+
+        private static async Task<string> GetMarkdownContentAsync(CancellationToken cancellationToken)
+        {
+            if (string.IsNullOrEmpty(readMeContent))
+            {
+                if (client == null)
+                {
+                    client = new HttpClient();
+                }
+
+                try
+                {
+                    readMeContent = await client.GetStringAsync("https://raw.githubusercontent.com/cnbluefire/HotLyric/main/README.md", cancellationToken);
+                }
+                catch (Exception ex) when (ex is not OperationCanceledException)
+                {
+                    return "加载失败，[前往浏览器查看](https://github.com/cnbluefire/HotLyric/blob/main/README.md)";
+                }
+            }
+            return readMeContent;
         }
 
     }

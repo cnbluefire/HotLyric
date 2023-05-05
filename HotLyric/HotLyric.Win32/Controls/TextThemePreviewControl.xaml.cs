@@ -71,6 +71,7 @@ namespace HotLyric.Win32.Controls
             }
             catch (Exception ex) when (sender.Device.IsDeviceLost(ex.HResult))
             {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
                 sender.Device.RaiseDeviceLost();
             }
         }

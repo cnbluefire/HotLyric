@@ -26,7 +26,10 @@ namespace HotLyric.Win32.Models
                 var jsonModel = JsonConvert.DeserializeObject<LyricThemeJsonModel[]>(allText);
                 list = jsonModel?.Select(c => CreateView(c)).ToList();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             if (list != null)
             {
@@ -70,7 +73,10 @@ namespace HotLyric.Win32.Models
                             return CreateView(model);
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                    }
                 }
 
                 return null;
@@ -83,7 +89,10 @@ namespace HotLyric.Win32.Models
                     {
                         ApplicationData.Current.LocalSettings.Values.Remove("Theme_Current");
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                    }
                 }
                 else
                 {
@@ -140,7 +149,10 @@ namespace HotLyric.Win32.Models
                         return new SolidColorBrush(color);
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                }
             }
 
             return null;

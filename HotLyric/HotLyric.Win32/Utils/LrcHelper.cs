@@ -58,7 +58,10 @@ namespace HotLyric.Win32.Utils
                     return Lyric.CreateClassicLyric(content, null, songName, artists);
                 }
             }
-            catch (Exception ex) when (!(ex is OperationCanceledException)) { }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
             return null;
         }
 
@@ -146,7 +149,10 @@ namespace HotLyric.Win32.Utils
                     }
                 }
             }
-            catch (Exception ex) when (!(ex is OperationCanceledException)) { }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             return null;
         }
@@ -162,7 +168,10 @@ namespace HotLyric.Win32.Utils
                     {
                         await item.DeleteAsync(StorageDeleteOption.PermanentDelete);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                    }
                 }
             }
         }

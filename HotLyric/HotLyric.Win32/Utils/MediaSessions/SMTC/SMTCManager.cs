@@ -95,8 +95,9 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             {
                 appid = session.SourceAppUserModelId;
             }
-            catch
+            catch (Exception ex)
             {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
                 return null;
             }
 
@@ -115,7 +116,10 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                                 var packageVersion = new Version(v.Major, v.Minor, v.Build, v.Revision);
                                 if (packageVersion >= item.MinSupportedVersion) return item;
                             }
-                            catch { }
+                            catch (Exception ex)
+                            {
+                                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                            }
                         }
                     }
                     else

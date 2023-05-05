@@ -1,4 +1,5 @@
-﻿using System.Collections.Generic;
+﻿using System;
+using System.Collections.Generic;
 using System.Linq;
 
 namespace HotLyric.Win32.Utils.LyricFiles
@@ -42,7 +43,10 @@ namespace HotLyric.Win32.Utils.LyricFiles
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             if (content != null)
             {
@@ -60,7 +64,10 @@ namespace HotLyric.Win32.Utils.LyricFiles
                             }
                         }
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                    }
                 }
 
                 return new Lyric(content, lyricContent, translate, translateContent, content == null, songName, artists);

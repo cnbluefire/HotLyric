@@ -77,6 +77,7 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
                 }
                 catch (Exception ex)
                 {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
                     LoadCompleted?.Invoke(this, new SurfaceLoadCompletedEventArgs(ConvertExceptionToStatus(ex), ex));
                 }
             });
@@ -94,6 +95,7 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
                 }
                 catch (Exception ex)
                 {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
                     LoadCompleted?.Invoke(this, new SurfaceLoadCompletedEventArgs(ConvertExceptionToStatus(ex), ex));
                 }
             });

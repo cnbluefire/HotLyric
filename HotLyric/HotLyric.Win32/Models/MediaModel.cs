@@ -124,8 +124,9 @@ namespace HotLyric.Win32.Models
                     Lyric = Lyric.CreateEmptyLyric(Name, Artist);
                 }
             }
-            catch
+            catch (Exception ex)
             {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
                 Lyric = null;
             }
         }

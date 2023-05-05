@@ -142,7 +142,10 @@ namespace HotLyric.Win32.Controls
                     IconHelper.GetPrimaryDisplayDpiScale(),
                     default);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
         }
 
         private async Task OnMenuItemClick(MenuFlyoutItemBase? menuItem)
@@ -279,7 +282,10 @@ namespace HotLyric.Win32.Controls
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             return new Uri((useDarkIcon ? darkIconUri : lightIconUri));
         }

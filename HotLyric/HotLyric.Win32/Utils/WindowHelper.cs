@@ -208,7 +208,10 @@ namespace HotLyric.Win32.Utils
                 var data = Marshal.PtrToStructure<COPYDATASTRUCT>(lParam);
                 return data.lpData ?? string.Empty;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
             return string.Empty;
         }
 

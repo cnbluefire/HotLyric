@@ -111,7 +111,7 @@ namespace HotLyric.Win32
         {
             if (exception is Exception ex)
             {
-                NLog.LogManager.GetCurrentClassLogger().Error(ex, "App_UnhandledException");
+                HotLyric.Win32.Utils.LogHelper.LogError("App_UnhandledException", ex);
                 Environment.Exit(ex.HResult);
             }
         }

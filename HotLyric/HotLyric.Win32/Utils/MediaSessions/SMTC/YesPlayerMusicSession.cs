@@ -127,7 +127,10 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                     PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             firstUpdateMediaPropertiesTask = null;
 

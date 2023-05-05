@@ -61,16 +61,25 @@ namespace HotLyric.Win32.Utils
                                     var v = c.Id.Version;
                                     return new Version(v.Major, v.Minor, v.Build, v.Revision);
                                 }
-                                catch { }
+                                catch (Exception ex)
+                                {
+                                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                                }
                                 return new Version(0, 0, 0, 0);
                             }).FirstOrDefault();
                         }
-                        catch { }
+                        catch (Exception ex)
+                        {
+                            HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                        }
                     }
                     return null;
                 }, cancellationToken);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
             return null;
         }
 
@@ -96,7 +105,10 @@ namespace HotLyric.Win32.Utils
                                     var v = c.Id.Version;
                                     return new Version(v.Major, v.Minor, v.Build, v.Revision);
                                 }
-                                catch { }
+                                catch (Exception ex)
+                                {
+                                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                                }
                                 return new Version(0, 0, 0, 0);
                             }).FirstOrDefault();
 
@@ -113,11 +125,17 @@ namespace HotLyric.Win32.Utils
                         //Process.Start("explorer.exe", $"shell:AppsFolder\\{package.Id.FamilyName}!App");
                         return true;
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                    }
                     return false;
                 }, cancellationToken);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
             return false;
         }
 
@@ -144,7 +162,10 @@ namespace HotLyric.Win32.Utils
                 }
 
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             return null;
         }
@@ -164,7 +185,10 @@ namespace HotLyric.Win32.Utils
                     return packageAppDataFolder;
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             return null;
         }
@@ -194,7 +218,11 @@ namespace HotLyric.Win32.Utils
                         await func.Invoke();
                         tcs.SetResult(true);
                     }
-                    catch (Exception ex) { tcs.SetException(ex); }
+                    catch (Exception ex)
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                        tcs.SetException(ex);
+                    }
                 });
                 await tcs.Task;
             }
@@ -243,7 +271,10 @@ namespace HotLyric.Win32.Utils
                 }
 
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             return null;
         }
@@ -258,7 +289,10 @@ namespace HotLyric.Win32.Utils
             {
                 return launcher.ActivateApplication(pfn, null, ActivateOptions.None, out var pid) == IntPtr.Zero;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
             return false;
         }
 
@@ -275,7 +309,10 @@ namespace HotLyric.Win32.Utils
                 var updates = await storeContext.GetAppAndOptionalStorePackageUpdatesAsync();
                 return new ApplicationUpdateResult(updates);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
             return new ApplicationUpdateResult(null);
         }
 
@@ -401,7 +438,10 @@ namespace HotLyric.Win32.Utils
 
                     await storeContext.TrySilentDownloadAndInstallStorePackageUpdatesAsync(updates);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                }
             }
         }
     }

@@ -511,7 +511,10 @@ namespace HotLyric.Win32.Controls
                     {
                         sender.Device.Trim();
                     }
-                    catch (Exception ex) when (!sender.Device.IsDeviceLost(ex.HResult)) { }
+                    catch (Exception ex) when (!sender.Device.IsDeviceLost(ex.HResult))
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                    }
                 }
 
 
@@ -761,7 +764,10 @@ namespace HotLyric.Win32.Controls
                         drawingLine.Draw(args.DrawingSession, new LyricDrawingParameters(playProgress, scaleProgress, lowFrameRateMode, progressAnimationMode, colors));
 
                     }
-                    catch (Exception ex) when (!sender.Device.IsDeviceLost(ex.HResult)) { }
+                    catch (Exception ex) when (!sender.Device.IsDeviceLost(ex.HResult))
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                    }
                     finally
                     {
                         args.DrawingSession.Transform = Matrix3x2.Identity;
@@ -882,7 +888,7 @@ namespace HotLyric.Win32.Controls
             }
             catch (Exception ex)
             {
-                NLog.LogManager.GetCurrentClassLogger().Error(ex, "GetDefaultFontFamilyName");
+                HotLyric.Win32.Utils.LogHelper.LogError("GetDefaultFontFamilyName", ex);
             }
             return (defaultFontFamilyName = "Segoe UI");
         }

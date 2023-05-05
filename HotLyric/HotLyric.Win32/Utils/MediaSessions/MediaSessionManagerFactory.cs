@@ -36,6 +36,7 @@ namespace HotLyric.Win32.Utils.MediaSessions
             }
             catch (Exception ex) when (!(ex is OperationCanceledException))
             {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
                 if (!isSupported.HasValue) isSupported = false;
             }
             return null;

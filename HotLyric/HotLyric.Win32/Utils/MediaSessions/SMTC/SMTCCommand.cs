@@ -56,7 +56,10 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                     curTask = action.Invoke();
                     await curTask;
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                }
                 finally
                 {
                     curTask = null;

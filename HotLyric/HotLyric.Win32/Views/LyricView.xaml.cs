@@ -378,7 +378,10 @@ namespace HotLyric.Win32.Views
 
                         VM.IsMouseOver = IsMouseInsideWindow();
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                    }
                     tcs.SetResult();
                 });
 

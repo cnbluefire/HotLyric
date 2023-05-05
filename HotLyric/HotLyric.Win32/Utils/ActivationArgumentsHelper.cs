@@ -75,7 +75,10 @@ namespace HotLyric.Win32.Utils
                     {
                         queryCollection = HttpUtility.ParseQueryString(query);
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                    }
 
                     if (queryCollection != null)
                     {

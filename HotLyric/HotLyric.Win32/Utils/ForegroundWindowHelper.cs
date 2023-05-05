@@ -31,7 +31,10 @@ namespace HotLyric.Win32.Utils
                     0,
                     User32.WINEVENT.WINEVENT_OUTOFCONTEXT | User32.WINEVENT.WINEVENT_SKIPOWNPROCESS);
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             if (hook.IsNull)
             {
@@ -48,7 +51,10 @@ namespace HotLyric.Win32.Utils
                 User32.UnhookWinEvent(hook);
                 hook = default;
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
         }
 
         private static void EventProc(User32.HWINEVENTHOOK hWinEventHook, uint winEvent, HWND hwnd, int idObject, int idChild, uint idEventThread, uint dwmsEventTime)
@@ -57,7 +63,10 @@ namespace HotLyric.Win32.Utils
             {
                 ForegroundWindowChanged?.Invoke(new ForegroundWindowHelperEventArgs(hwnd.DangerousGetHandle()));
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
         }
 
         public static event ForegroundWindowHelperEventHandler? ForegroundWindowChanged;
@@ -133,7 +142,10 @@ namespace HotLyric.Win32.Utils
                 {
                     return WindowHelper.IsWindowOfProcessElevated(Hwnd);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                }
                 return false;
             }
         }

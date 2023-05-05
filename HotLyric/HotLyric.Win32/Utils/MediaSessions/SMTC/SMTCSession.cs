@@ -228,8 +228,9 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                         _ => CreateMediaProperties(mediaProperties)
                     });
                 }
-                catch
+                catch (Exception ex)
                 {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
                     mediaPropertiesSource = null;
                     return null;
                 }

@@ -33,11 +33,17 @@ namespace HotLyric.Win32.Utils.LrcProviders
                     {
                         translatedContent = (string?)jobj?["tlyric"]?["lyric"];
                     }
-                    catch { }
+                    catch (Exception ex)
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                    }
 
                     return Lyric.CreateClassicLyric(lrcContent!, translatedContent, songName, artists);
                 }
-                catch (Exception ex) when (!(ex is OperationCanceledException)) { }
+                catch (Exception ex) when (!(ex is OperationCanceledException))
+                {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                }
             }
             return null;
         }
@@ -75,7 +81,10 @@ namespace HotLyric.Win32.Utils.LrcProviders
                     return info?.Id;
                 }
             }
-            catch (Exception ex) when (!(ex is OperationCanceledException)) { }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             return null;
         }

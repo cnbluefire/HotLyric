@@ -62,8 +62,9 @@ namespace HotLyric.Win32.Utils
                 var state = await startupTask.RequestEnableAsync();
                 RefreshCore(state);
             }
-            catch
+            catch (Exception ex)
             {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
                 RefreshCore(StartupTaskState.DisabledByPolicy);
             }
         }
@@ -77,8 +78,9 @@ namespace HotLyric.Win32.Utils
                 startupTask = await StartupTask.GetAsync(StartupTaskId);
                 RefreshCore(startupTask.State);
             }
-            catch
+            catch (Exception ex)
             {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
                 RefreshCore(StartupTaskState.DisabledByPolicy);
             }
         }
@@ -103,8 +105,9 @@ namespace HotLyric.Win32.Utils
                 var startupTask = await StartupTask.GetAsync(StartupTaskId);
                 RefreshCore(startupTask.State);
             }
-            catch
+            catch (Exception ex)
             {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
                 RefreshCore(StartupTaskState.DisabledByPolicy);
             }
         }

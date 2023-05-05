@@ -46,7 +46,7 @@ namespace HotLyric.Win32.Views
             {
                 MarkdownContent.Text = await GetMarkdownContentAsync(cts.Token);
             }
-            catch (OperationCanceledException) { }
+            catch (OperationCanceledException ex) { }
             finally
             {
                 LoadingRing.IsActive = false;
@@ -95,6 +95,7 @@ namespace HotLyric.Win32.Views
                 }
                 catch (Exception ex) when (ex is not OperationCanceledException)
                 {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
                     return "加载失败，[前往浏览器查看](https://github.com/cnbluefire/HotLyric/blob/main/README.md)";
                 }
             }

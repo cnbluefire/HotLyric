@@ -389,7 +389,10 @@ namespace HotLyric.Win32.ViewModels
             {
                 await LrcHelper.ClearCacheAsync();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
         }, () => !ClearCacheCmd.IsRunning));
 
         public AsyncRelayCommand OpenStorePageCmd => openStorePageCmd ?? (openStorePageCmd = new AsyncRelayCommand(async () =>
@@ -404,7 +407,10 @@ namespace HotLyric.Win32.ViewModels
                     FallbackUri = fallbackUri,
                 });
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
         }));
 
         public AsyncRelayCommand FeedbackCmd => feedbackCmd ?? (feedbackCmd = new AsyncRelayCommand(async () =>
@@ -422,7 +428,10 @@ namespace HotLyric.Win32.ViewModels
 
                 await Launcher.LaunchUriAsync(new Uri("https://jq.qq.com/?_wv=1027&k=K4Ixe2Gw"));
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
         }));
 
         public AsyncRelayCommand CheckUpdateCmd => checkUpdateCmd ?? (checkUpdateCmd = new AsyncRelayCommand(async () =>
@@ -476,7 +485,10 @@ namespace HotLyric.Win32.ViewModels
                     await contentDialog.ShowAsync();
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
         }, () => !CheckUpdateCmd.IsRunning));
 
@@ -518,7 +530,10 @@ namespace HotLyric.Win32.ViewModels
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
         }, () => !ThirdPartyNoticeCmd.IsRunning));
 
         public AsyncRelayCommand GithubCmd => githubCmd ?? (githubCmd = new AsyncRelayCommand(async () =>
@@ -582,7 +597,10 @@ namespace HotLyric.Win32.ViewModels
                     }
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             try
             {
@@ -595,7 +613,10 @@ namespace HotLyric.Win32.ViewModels
                     prefFileList.Add(filePath);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             var regex = new Regex("language=\".+?\"");
 
@@ -702,7 +723,10 @@ namespace HotLyric.Win32.ViewModels
                     return JsonConvert.DeserializeObject<T>(json);
                 }
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
             return defaultValue;
         }
 
@@ -716,7 +740,10 @@ namespace HotLyric.Win32.ViewModels
                 {
                     NotifySettingsChanged();
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                }
 
                 return true;
             }
@@ -740,7 +767,10 @@ namespace HotLyric.Win32.ViewModels
                         ApplicationData.Current.LocalSettings.Values[settingsKey] = json;
                     }
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                }
             }
         }
 
@@ -763,7 +793,10 @@ namespace HotLyric.Win32.ViewModels
                 App.Current.SettingsView.Activate();
                 App.Current.SettingsView.SetForegroundWindow();
             }
-            catch { }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
         }
 
         //public void ShowLauncherWindow()
@@ -779,7 +812,10 @@ namespace HotLyric.Win32.ViewModels
         //        launcherWindow.Show();
         //        launcherWindow.Activate();
         //    }
-        //    catch { }
+        //    catch (Exception ex)
+        //    {
+        //        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+        //    }
         //}
 
         public void ShowReadMe()

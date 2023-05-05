@@ -54,7 +54,10 @@ namespace HotLyric.Win32.Utils.LrcProviders
                 {
                     name = ChineseHelper.ConvertToSimpleChinese(name);
                 }
-                catch { }
+                catch (Exception ex)
+                {
+                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                }
             }
 
             return (name, _artists);
@@ -97,7 +100,10 @@ namespace HotLyric.Win32.Utils.LrcProviders
                     await FileIO.WriteTextAsync(file2, translatedContent).AsTask(cancellationToken);
                 }
             }
-            catch (Exception ex) when (!(ex is OperationCanceledException)) { }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
         }
 
         /// <summary>
@@ -127,13 +133,19 @@ namespace HotLyric.Win32.Utils.LrcProviders
                         {
                             text2 = await FileIO.ReadTextAsync(file2).AsTask(cancellationToken);
                         }
-                        catch (Exception ex) when (!(ex is OperationCanceledException)) { }
+                        catch (Exception ex) when (!(ex is OperationCanceledException))
+                        {
+                            HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                        }
                     }
 
                     return Lyric.CreateClassicLyric(text, text2, name, artists);
                 }
             }
-            catch (Exception ex) when (!(ex is OperationCanceledException)) { }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             return null;
         }
@@ -166,7 +178,10 @@ namespace HotLyric.Win32.Utils.LrcProviders
                 var resp = await client.SendAsync(req, cancellationToken);
                 return await resp.Content.ReadAsStringAsync();
             }
-            catch (Exception ex) when (!(ex is OperationCanceledException)) { }
+            catch (Exception ex) when (!(ex is OperationCanceledException))
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
+            }
 
             return String.Empty;
         }

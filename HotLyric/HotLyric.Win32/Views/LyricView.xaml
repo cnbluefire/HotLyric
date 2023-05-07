@@ -1,4 +1,4 @@
-﻿<winuiex:WindowEx
+﻿<base:TransparentWindow
     xmlns:winuiex="using:WinUIEx"
     x:Class="HotLyric.Win32.Views.LyricView"
     x:Name="RootWindow"
@@ -195,4 +195,4 @@
         </Grid>
         <control:ResizePanel HorizontalAlignment="Stretch" Margin="0,0,0,4" VerticalAlignment="Stretch" DraggerPointerPressed="ResizePanel_DraggerPointerPressed"/>
     </Grid>
-</winuiex:WindowEx>
+</base:TransparentWindow>

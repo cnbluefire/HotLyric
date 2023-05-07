@@ -28,28 +28,11 @@ using System.Reflection.Metadata;
 
 namespace HotLyric.Win32.Views
 {
-    internal sealed partial class LyricView : WindowEx
+    internal sealed partial class LyricView : TransparentWindow
     {
         public LyricView()
         {
             InitializeComponent();
-
-            var handle = this.GetWindowHandle();
-
-            #region Set Style
-
-            var style = (uint)User32.GetWindowLongAuto(handle, User32.WindowLongFlags.GWL_STYLE);
-            var exStyle = (uint)User32.GetWindowLongAuto(handle, User32.WindowLongFlags.GWL_EXSTYLE);
-
-            UpdateStyleValue(ref style, ref exStyle);
-
-            User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_STYLE, (nint)style);
-            User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_EXSTYLE, (nint)exStyle);
-
-            #endregion Set Style
-
-            DwmApi.DwmExtendFrameIntoClientArea(handle, new DwmApi.MARGINS(-1));
-            DwmApi.DwmEnableBlurBehindWindow(handle, new DwmApi.DWM_BLURBEHIND(true));
 
             ContentRoot.PointerPressed += ContentRoot_PointerPressed;
             ContentRoot.PointerCanceled += ContentRoot_PointerCanceled;
@@ -80,9 +63,6 @@ namespace HotLyric.Win32.Views
 
             VM.PropertyChanged += VM_PropertyChanged;
 
-            var manager = WindowManager.Get(this);
-            manager.WindowMessageReceived += Manager_WindowMessageReceived;
-
             this.AppWindow.Closing += AppWindow_Closing;
             this.Closed += LyricView_Closed;
 
@@ -92,7 +72,7 @@ namespace HotLyric.Win32.Views
                 {
                     RefreshWindowSize();
 
-                    if (WindowBoundsHelper.IsWindowOutsideScreen(handle))
+                    if (WindowBoundsHelper.IsWindowOutsideScreen(this.GetWindowHandle()))
                     {
                         ResetWindowBounds(false);
                     }
@@ -182,9 +162,6 @@ namespace HotLyric.Win32.Views
         {
             VM.PropertyChanged -= VM_PropertyChanged;
 
-            var manager = WindowManager.Get(this);
-            manager.WindowMessageReceived -= Manager_WindowMessageReceived;
-
             this.AppWindow.Changed -= AppWindow_Changed;
 
             AcrylicController.Window = null;
@@ -249,7 +226,7 @@ namespace HotLyric.Win32.Views
             }
         }
 
-        private void OnDisplayChanged()
+        protected override void OnDisplayChanged(uint dpi)
         {
             if (!AppWindow.IsVisible) return;
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, async () =>
@@ -266,51 +243,6 @@ namespace HotLyric.Win32.Views
                 }
             });
         }
-
-        private unsafe void Manager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
-        {
-            if (e.Message.MessageId == (uint)User32.WindowMessage.WM_STYLECHANGING)
-            {
-                var style = ((STYLESTRUCT*)e.Message.LParam.ToPointer())->styleNew;
-                var tmp = 0u;
-
-                if (e.Message.WParam.ToUInt64() == unchecked((ulong)User32.WindowLongFlags.GWL_STYLE))
-                {
-                    UpdateStyleValue(ref style, ref tmp);
-                }
-                else
-                {
-                    UpdateStyleValue(ref tmp, ref style);
-                }
-
-                ((STYLESTRUCT*)e.Message.LParam.ToPointer())->styleNew = style;
-
-                e.Handled = true;
-            }
-            else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_DISPLAYCHANGE)
-            {
-                OnDisplayChanged();
-            }
-        }
-
-        [StructLayout(LayoutKind.Sequential)]
-        private struct STYLESTRUCT
-        {
-            public uint styleOld;
-            public uint styleNew;
-        }
-
-        private static void UpdateStyleValue(ref uint style, ref uint exStyle)
-        {
-            style &= ~(uint)(User32.WindowStyles.WS_OVERLAPPEDWINDOW);
-            style |= (uint)(User32.WindowStyles.WS_POPUP);
-
-            exStyle &= ~(uint)(User32.WindowStylesEx.WS_EX_APPWINDOW);
-            exStyle |= (uint)(User32.WindowStylesEx.WS_EX_TOOLWINDOW
-                | User32.WindowStylesEx.WS_EX_LAYERED
-                | User32.WindowStylesEx.WS_EX_NOACTIVATE);
-        }
-
 
         #endregion Window Proc
 

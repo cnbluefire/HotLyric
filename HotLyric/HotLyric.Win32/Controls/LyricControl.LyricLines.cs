@@ -203,14 +203,17 @@ namespace HotLyric.Win32.Controls
             {
                 if (lyric.Translate != null && IsTranslateEnabled)
                 {
-                    var line = lyric.Translate.GetCurrentLine(currentLineStartTime, false);
-                    if (line != null) return (line, true);
+                    var translate = lyric.Translate.GetCurrentLine(currentLineStartTime, false);
+                    if (translate != null
+                        && currentLineStartTime >= translate.StartTime
+                        && currentLineStartTime < (translate.StartTime + TimeSpan.FromSeconds(0.05)))
+                    {
+                        return (translate, true);
+                    }
                 }
-                else
-                {
-                    var line = lyric.Content.GetNextLine(currentLineStartTime, skipEmpty);
-                    if (line != null) return (line, false);
-                }
+
+                var line = lyric.Content.GetNextLine(currentLineStartTime, skipEmpty);
+                if (line != null) return (line, false);
 
                 return default;
             }

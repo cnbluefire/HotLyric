@@ -39,6 +39,7 @@ namespace HotLyric.Win32.Controls
         private EaseFunctionBase easingFunc;
 
         private LyricLines lyricLines;
+        private bool isLoaded;
 
         public LyricControl()
         {
@@ -186,6 +187,8 @@ namespace HotLyric.Win32.Controls
                 if (s is LyricControl sender && !Equals(a.NewValue, a.OldValue))
                 {
                     sender.lyricLines.Lyric = (Lyric?)a.NewValue;
+
+                    sender.TrimDevice();
                 }
             }));
 
@@ -334,6 +337,8 @@ namespace HotLyric.Win32.Controls
 
         private void LyricControl_Loaded(object sender, RoutedEventArgs e)
         {
+            isLoaded = true;
+
             CanvasControl.Update += CanvasControl_Update;
             CanvasControl.Draw += CanvasControl_Draw;
 
@@ -342,6 +347,8 @@ namespace HotLyric.Win32.Controls
 
         private void LyricControl_Unloaded(object sender, RoutedEventArgs e)
         {
+            isLoaded = false;
+
             CanvasControl.Update -= CanvasControl_Update;
             CanvasControl.Draw -= CanvasControl_Draw;
 
@@ -410,6 +417,7 @@ namespace HotLyric.Win32.Controls
                 var textStrokeType = propObserver[TextStrokeTypeProperty]!.GetValueOrDefault<LyricControlTextStrokeType>();
                 var theme = propObserver[ThemeProperty]!.GetValueOrDefault<LyricThemeView>();
                 var fontFamily = propObserver[LyricFontFamilyProperty]!.GetValueOrDefault<string>();
+                var paused = propObserver[PausedProperty]!.GetValueOrDefault<bool>();
 
                 if (string.IsNullOrEmpty(fontFamily))
                 {
@@ -507,14 +515,7 @@ namespace HotLyric.Win32.Controls
                             sizeType);
                     }
 
-                    try
-                    {
-                        sender.Device.Trim();
-                    }
-                    catch (Exception ex) when (!sender.Device.IsDeviceLost(ex.HResult))
-                    {
-                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
-                    }
+                    TrimDevice();
                 }
 
 
@@ -783,6 +784,30 @@ namespace HotLyric.Win32.Controls
                         CanvasControl.Paused = paused;
                     }
                 }
+            }
+        }
+
+        private void TrimDevice()
+        {
+            if (isLoaded && lyricLines?.DrawingLocker != null)
+            {
+                var paused = propObserver[PausedProperty]!.GetValueOrDefault<bool>();
+
+                if (paused)
+                {
+                    lock (lyricLines.DrawingLocker)
+                    {
+                        try
+                        {
+                            CanvasControl.Device.Trim();
+                        }
+                        catch (Exception ex) when (!CanvasControl.Device.IsDeviceLost(ex.HResult))
+                        {
+                            HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                        }
+                    }
+                }
+                GC.Collect();
             }
         }
 

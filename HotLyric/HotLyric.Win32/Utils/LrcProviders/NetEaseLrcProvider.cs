@@ -76,6 +76,12 @@ namespace HotLyric.Win32.Utils.LrcProviders
                         .Select(c => new LrcProviderHelper.MusicInfomation(c.id, c.name, c.artists))
                         .ToArray();
 
+                    if (string.IsNullOrEmpty(artists))
+                    {
+                        searchKeyword = LrcProviderHelper.BuildSearchKey(name, musicInfos.FirstOrDefault()?.Artists?.FirstOrDefault());
+                        key = LrcProviderHelper.GetSearchKey(searchKeyword);
+                    }
+
                     var info = LrcProviderHelper.GetMostSimilarMusicInfomation(key, musicInfos, (int)Math.Ceiling(key.Length / 6d));
 
                     return info?.Id;

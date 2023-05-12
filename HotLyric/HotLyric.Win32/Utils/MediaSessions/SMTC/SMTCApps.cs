@@ -115,6 +115,13 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 supportLaunch: false,
                 defaultLrcProvider: "NeteaseMusic",
                 convertToSimpleChinese: false),
+
+            ["AppleMusic"] = new SMTCApp(
+                appId: "9pfhdd62mxs1",
+                packageFamilyNamePrefix: "AppleInc.AppleMusicWin_",
+                hasStoreUri: true,
+                positionMode: SMTCAppPositionMode.FromApp,
+                defaultLrcProvider: "NetEase")
         };
 
         public static IReadOnlyDictionary<string, SMTCApp> AllApps => allApps;

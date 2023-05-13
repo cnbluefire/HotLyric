@@ -61,7 +61,6 @@ namespace HotLyric.Win32.Utils.LrcProviders
 
                 var jobj = JObject.Parse(json);
                 var arr = jobj?["result"]?["songs"] as JArray;
-
                 if (arr?.Count > 0)
                 {
                     var musicInfos = arr
@@ -75,12 +74,6 @@ namespace HotLyric.Win32.Utils.LrcProviders
                         .Where(c => !string.IsNullOrEmpty(c.id) && !string.IsNullOrEmpty(c.name))
                         .Select(c => new LrcProviderHelper.MusicInfomation(c.id, c.name, c.artists))
                         .ToArray();
-
-                    if (string.IsNullOrEmpty(artists))
-                    {
-                        searchKeyword = LrcProviderHelper.BuildSearchKey(name, musicInfos.FirstOrDefault()?.Artists?.FirstOrDefault());
-                        key = LrcProviderHelper.GetSearchKey(searchKeyword);
-                    }
 
                     var info = LrcProviderHelper.GetMostSimilarMusicInfomation(key, musicInfos, (int)Math.Ceiling(key.Length / 6d));
 

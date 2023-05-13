@@ -1,7 +1,9 @@
 ﻿using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Text;
 using Microsoft.UI.Xaml.Media;
+using Windows.Media.Control;
 
 namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 {
@@ -17,17 +19,19 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             bool supportLaunch = true,
             string? defaultLrcProvider = null,
             bool convertToSimpleChinese = false,
-            Version? minSupportedVersion = null)
+            Version? minSupportedVersion = null,
+            SMTCAppCreateMediaPropertiesHandler? createMediaPropertiesAction = null)
             : base(appId, customName, customAppIcon, defaultLrcProvider, convertToSimpleChinese, minSupportedVersion)
         {
             PackageFamilyNamePrefix = packageFamilyNamePrefix;
             PositionMode = positionMode;
             SupportLaunch = supportLaunch;
-
             if (hasStoreUri)
             {
                 StoreUri = new Uri($"ms-windows-store://pdp/?productid={AppId}&mode=mini");
             }
+
+            CreateMediaPropertiesAction = createMediaPropertiesAction;
         }
 
         public Uri? StoreUri { get; }
@@ -37,6 +41,8 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         public SMTCAppPositionMode PositionMode { get; }
 
         public bool SupportLaunch { get; }
+
+        public SMTCAppCreateMediaPropertiesHandler? CreateMediaPropertiesAction { get; }
     }
 
     public enum SMTCAppPositionMode
@@ -45,4 +51,6 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         FromAppAndUseTimer,
         OnlyUseTimer
     }
+
+    public delegate MediaSessionMediaProperties? SMTCAppCreateMediaPropertiesHandler(GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties);
 }

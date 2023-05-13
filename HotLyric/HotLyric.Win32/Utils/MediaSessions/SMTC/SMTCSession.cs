@@ -22,6 +22,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         private GlobalSystemMediaTransportControlsSessionPlaybackInfo? playbackInfo;
         private GlobalSystemMediaTransportControlsSessionTimelineProperties? timelineProperties;
         private TaskCompletionSource<Package?>? packageSource;
+        private SMTCApp app;
 
         private SMTCCommand playCommand;
         private SMTCCommand pauseCommand;
@@ -36,7 +37,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         {
             this.session = session ?? throw new ArgumentNullException(nameof(session));
             PositionMode = app.PositionMode;
-            App = app;
+            this.app = app;
             appUserModelId = session.SourceAppUserModelId;
 
             session.MediaPropertiesChanged += Session_MediaPropertiesChanged;
@@ -260,55 +261,15 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         public SMTCAppPositionMode PositionMode { get; }
 
-        public MediaSessionApp App { get; }
+        MediaSessionApp IMediaSession.App => app;
+
+        public SMTCApp App => app;
 
         public bool IsDisposed => disposedValue;
 
         private MediaSessionMediaProperties? CreateMediaProperties(GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties)
         {
-            if (mediaProperties == null) return null;
-
-            int skip = 0;
-
-            var neteaseMusicId = string.Empty;
-            var localLrcPath = string.Empty;
-
-            var genres = mediaProperties.Genres?.ToArray();
-
-            if (genres != null)
-            {
-                if (genres.Length > 0 && genres[0]?.StartsWith("ncm-", StringComparison.OrdinalIgnoreCase) == true)
-                {
-                    neteaseMusicId = genres[0].Substring(4);
-                    skip++;
-                }
-
-                if (genres.Length > 1
-                    && !string.IsNullOrEmpty(genres[1])
-                    && genres[1].Trim() is string path
-                    && !Path.IsPathRooted(path))
-                {
-                    localLrcPath = path;
-                    skip++;
-                }
-            }
-
-            if (skip > 0)
-            {
-                genres = genres?.Skip(skip).ToArray();
-            }
-
-            return new MediaSessionMediaProperties(
-                mediaProperties.AlbumArtist,
-                mediaProperties.AlbumTitle,
-                mediaProperties.AlbumTrackCount,
-                mediaProperties.Artist,
-                neteaseMusicId,
-                localLrcPath,
-                genres ?? Array.Empty<string>(),
-                mediaProperties.Subtitle,
-                mediaProperties.Title,
-                mediaProperties.TrackNumber);
+            return App.CreateMediaPropertiesAction?.Invoke(mediaProperties);
         }
 
         private async Task<Package?> GetAppPackageAsync()

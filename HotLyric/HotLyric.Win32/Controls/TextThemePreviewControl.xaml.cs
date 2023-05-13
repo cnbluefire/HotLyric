@@ -61,6 +61,8 @@ namespace HotLyric.Win32.Controls
                         sender.Size,
                         new SampleLine("×Ö"),
                         string.IsNullOrEmpty(FontFamily?.Source) ? "Microsoft Yahei UI" : FontFamily?.Source!,
+                        FontWeight,
+                        FontStyle,
                         LyricDrawingLineType.Classic,
                         LyricDrawingLineAlignment.Center,
                         1,

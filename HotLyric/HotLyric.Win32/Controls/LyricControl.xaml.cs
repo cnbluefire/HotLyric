@@ -23,6 +23,7 @@ using Microsoft.UI.Xaml.Media.Animation;
 using Windows.UI;
 using HotLyric.Win32.Models;
 using System.Globalization;
+using Windows.UI.Text;
 
 //https://go.microsoft.com/fwlink/?LinkId=234236 上介绍了“用户控件”项模板
 
@@ -52,6 +53,8 @@ namespace HotLyric.Win32.Controls
             propObserver = new DependencyPropertiesObserver(this);
             propObserver[PaddingProperty]?.AddHandler((s, a) => Refresh());
             propObserver[OpacityProperty]?.AddHandler((s, a) => Refresh());
+            propObserver[FontWeightProperty]?.AddHandler((s, a) => Refresh());
+            propObserver[FontStyleProperty]?.AddHandler((s, a) => Refresh());
             propObserver[ClipToPaddingProperty]?.AddHandler((s, a) => Refresh());
             propObserver[LineModeProperty]?.AddHandler((s, a) => Refresh());
             propObserver[LineSpaceProperty]?.AddHandler((s, a) => Refresh());
@@ -418,6 +421,8 @@ namespace HotLyric.Win32.Controls
                 var theme = propObserver[ThemeProperty]!.GetValueOrDefault<LyricThemeView>();
                 var fontFamily = propObserver[LyricFontFamilyProperty]!.GetValueOrDefault<string>();
                 var paused = propObserver[PausedProperty]!.GetValueOrDefault<bool>();
+                var fontWeight = propObserver[FontWeightProperty]!.GetValueOrDefault<FontWeight>();
+                var fontStyle = propObserver[FontStyleProperty]!.GetValueOrDefault<FontStyle>();
 
                 if (string.IsNullOrEmpty(fontFamily))
                 {
@@ -484,14 +489,14 @@ namespace HotLyric.Win32.Controls
                         strokeWidth = 1f;
                     }
 
-                    colors.GlowColor1 = Color.FromArgb((byte)(0.1 * 255), 0, 0, 0);
+                    colors.GlowColor1 = Color.FromArgb((byte)(0.25 * 255), 0, 0, 0);
                     colors.GlowColor2 = Color.FromArgb((byte)(0.25 * 255), 0, 0, 0);
                 }
                 else
                 {
                     strokeWidth = 0f;
 
-                    colors.GlowColor1 = Color.FromArgb((byte)(0.75 * 255), 0, 0, 0);
+                    colors.GlowColor1 = Color.FromArgb((byte)(0.9 * 255), 0, 0, 0);
                     colors.GlowColor2 = Color.FromArgb((byte)(0.9 * 255), 0, 0, 0);
                 }
 
@@ -509,6 +514,8 @@ namespace HotLyric.Win32.Controls
                             mainLineSize,
                             lyricLines.MainLine,
                             fontFamily,
+                            fontWeight,
+                            fontStyle,
                             LyricDrawingLineType.Classic,
                             lineAlignment,
                             strokeWidth,
@@ -531,6 +538,8 @@ namespace HotLyric.Win32.Controls
                             secondaryLineSize,
                             lyricLines.SecondaryLine,
                             fontFamily,
+                            fontWeight,
+                            fontStyle,
                             LyricDrawingLineType.Classic,
                             lineAlignment,
                             strokeWidth,
@@ -551,6 +560,8 @@ namespace HotLyric.Win32.Controls
                             removingLineSize,
                             lyricLines.RemovingLine,
                             fontFamily,
+                            fontWeight,
+                            fontStyle,
                             LyricDrawingLineType.Classic,
                             lineAlignment,
                             strokeWidth,

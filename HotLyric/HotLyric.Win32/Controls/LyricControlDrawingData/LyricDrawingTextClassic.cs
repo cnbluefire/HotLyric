@@ -168,7 +168,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
                 if (!parameters.LowFrameRateMode && progress >= 0.001 && progress <= 0.999)
                 {
-                    const double GradientWidth = 6d;
+                    const double GradientWidth = 3d;
 
                     using (var holder = LyricDrawingKaraokeGradientStopsPool.Rent())
                     {

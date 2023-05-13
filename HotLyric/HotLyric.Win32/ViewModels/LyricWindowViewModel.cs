@@ -90,6 +90,9 @@ namespace HotLyric.Win32.ViewModels
 
         private bool lowFrameRateMode;
 
+        private Windows.UI.Text.FontStyle fontStyle;
+        private Windows.UI.Text.FontWeight fontWeight;
+
         private AsyncRelayCommand? onlyUseTimerHelpCmd;
 
         public SettingsWindowViewModel SettingViewModel => settingVm;
@@ -563,6 +566,19 @@ namespace HotLyric.Win32.ViewModels
             private set => SetProperty(ref lowFrameRateMode, value);
         }
 
+
+        public Windows.UI.Text.FontStyle FontStyle
+        {
+            get => fontStyle;
+            private set => SetProperty(ref fontStyle, value);
+        }
+
+        public Windows.UI.Text.FontWeight FontWeight
+        {
+            get => fontWeight;
+            private set => SetProperty(ref fontWeight, value);
+        }
+
         public AsyncRelayCommand OnlyUseTimerHelpCmd => onlyUseTimerHelpCmd ?? (onlyUseTimerHelpCmd = new AsyncRelayCommand(async () =>
         {
             var uri = new Uri("https://github.com/cnbluefire/HotLyric#%E5%AF%B9%E9%83%A8%E5%88%86%E8%BD%AF%E4%BB%B6%E6%8F%90%E4%BE%9B%E6%9C%89%E9%99%90%E6%94%AF%E6%8C%81");
@@ -664,6 +680,18 @@ namespace HotLyric.Win32.ViewModels
 
             AlwaysShowBackground = settingVm.AlwaysShowBackground;
             TextStrokeType = settingVm.TextStrokeTypes.SelectedValue ?? LyricControlTextStrokeType.Auto;
+
+            FontWeight = settingVm.IsLyricFontBoldWeightEnabled ? Microsoft.UI.Text.FontWeights.Bold : Microsoft.UI.Text.FontWeights.Normal;
+
+            var fontModel = settingVm.LyricFontFamily;
+            if (settingVm.IsLyricFontItalicStyleEnabled && fontModel != null)
+            {
+                FontStyle = fontModel.IsItalicStyleAvailable ? Windows.UI.Text.FontStyle.Italic : Windows.UI.Text.FontStyle.Oblique;
+            }
+            else
+            {
+                FontStyle = Windows.UI.Text.FontStyle.Normal;
+            }
 
             LyricTheme = settingVm.CurrentTheme;
 

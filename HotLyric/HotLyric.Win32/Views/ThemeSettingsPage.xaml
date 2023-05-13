@@ -92,6 +92,8 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Text="文字描边" VerticalAlignment="Center" HorizontalAlignment="Right" />
@@ -123,8 +125,18 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <TextBlock Grid.Row="3" Text="调整字号" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                        <Button Grid.Row="3" Grid.Column="1" Content="帮助" Command="{Binding FontSizeCmd}" />
+                        <TextBlock Grid.Row="3" Text="粗体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <Border Grid.Row="3" Grid.Column="1" MaxWidth="40" HorizontalAlignment="Left">
+                            <ToggleSwitch Margin="0,-4,0,-5" IsOn="{Binding IsLyricFontBoldWeightEnabled,Mode=TwoWay}" />
+                        </Border>
+
+                        <TextBlock Grid.Row="4" Text="斜体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <Border Grid.Row="4" Grid.Column="1" MaxWidth="40" HorizontalAlignment="Left">
+                            <ToggleSwitch Margin="0,-4,0,-5" IsOn="{Binding IsLyricFontItalicStyleEnabled,Mode=TwoWay}" />
+                        </Border>
+
+                        <TextBlock Grid.Row="5" Text="调整字号" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <Button Grid.Row="5" Grid.Column="1" Content="帮助" Command="{Binding FontSizeCmd}" />
 
                     </Grid>
                 </muxc:Expander>

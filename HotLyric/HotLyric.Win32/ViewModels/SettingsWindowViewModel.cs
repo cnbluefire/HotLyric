@@ -39,6 +39,8 @@ namespace HotLyric.Win32.ViewModels
         private const string TextStrokeEnabledSettingKey = "Settings_TextStrokeEnabled";
         private const string TextStrokeTypeSettingKey = "Settings_TextStrokeType";
         private const string LyricFontFamilySettingKey = "Settings_LyricFontFamily";
+        private const string LyricFontStyleSettingKey = "Settings_LyricFontStyle";
+        private const string LyricFontWeightSettingKey = "Settings_LyricFontWeight";
         private const string SecondRowSettingKey = "Settings_SecondRow";
         private const string SkipEmptyLyricLineSettingKey = "Settings_SkipEmptyLyricLine";
         private const string TextOpacityMaskSettingKey = "Settings_TextOpacityMask";
@@ -95,6 +97,9 @@ namespace HotLyric.Win32.ViewModels
                 lyricFontFamilySource = lyricFontFamily.Source;
             }
 
+            isLyricFontItalicStyleEnabled = LoadSetting(LyricFontStyleSettingKey, Windows.UI.Text.FontStyle.Normal) != Windows.UI.Text.FontStyle.Normal;
+            isLyricFontBoldWeightEnabled = LoadSetting(LyricFontWeightSettingKey, Microsoft.UI.Text.FontWeights.Normal) != Microsoft.UI.Text.FontWeights.Normal;
+
             skipEmptyLyricLine = LoadSetting(SkipEmptyLyricLineSettingKey, true);
             textOpacityMask = LoadSetting(TextOpacityMaskSettingKey, !DeviceHelper.IsLowPerformanceDevice);
             hideWhenFullScreenAppOpen = LoadSetting(HideWhenFullScreenAppOpenSettingKey, true);
@@ -148,6 +153,8 @@ namespace HotLyric.Win32.ViewModels
         private string? lyricFontFamilySource;
         private FontFamilyDisplayModel? lyricFontFamily;
         private IReadOnlyList<FontFamilyDisplayModel> allFontFamilies;
+        private bool isLyricFontItalicStyleEnabled;
+        private bool isLyricFontBoldWeightEnabled;
         private AsyncRelayCommand? clearCacheCmd;
         private AsyncRelayCommand? openStorePageCmd;
         private AsyncRelayCommand? feedbackCmd;
@@ -190,9 +197,8 @@ namespace HotLyric.Win32.ViewModels
             {
                 if (value.HasValue)
                 {
-                    this.SetSettings(SecondRowSettingKey, value.Value);
+                    this.SetSettingsAndNotify(SecondRowSettingKey, value.Value);
                 }
-                NotifySettingsChanged();
             }));
 
         public bool KaraokeEnabled
@@ -211,9 +217,8 @@ namespace HotLyric.Win32.ViewModels
             {
                 if (value.HasValue)
                 {
-                    this.SetSettings(LyricHorizontalAlignmentSettingKey, value.Value);
+                    this.SetSettingsAndNotify(LyricHorizontalAlignmentSettingKey, value.Value);
                 }
-                NotifySettingsChanged();
             }));
 
         public bool AlwaysShowBackground
@@ -232,9 +237,8 @@ namespace HotLyric.Win32.ViewModels
             {
                 if (value.HasValue)
                 {
-                    this.SetSettings(TextStrokeTypeSettingKey, value.Value);
+                    this.SetSettingsAndNotify(TextStrokeTypeSettingKey, value.Value);
                 }
-                NotifySettingsChanged();
             }));
 
         public LyricThemeView[] AllPresetThemes { get; }
@@ -287,6 +291,31 @@ namespace HotLyric.Win32.ViewModels
             }
         }
 
+
+        public bool IsLyricFontItalicStyleEnabled
+        {
+            get => isLyricFontItalicStyleEnabled;
+            set
+            {
+                if (SetProperty(ref isLyricFontItalicStyleEnabled, value))
+                {
+                    SetSettingsAndNotify(LyricFontStyleSettingKey, value ? Windows.UI.Text.FontStyle.Italic : Windows.UI.Text.FontStyle.Normal);
+                }
+            }
+        }
+
+        public bool IsLyricFontBoldWeightEnabled
+        {
+            get => isLyricFontBoldWeightEnabled;
+            set
+            {
+                if (SetProperty(ref isLyricFontBoldWeightEnabled, value))
+                {
+                    SetSettingsAndNotify(LyricFontWeightSettingKey, value ? Microsoft.UI.Text.FontWeights.Bold : Microsoft.UI.Text.FontWeights.Normal);
+                }
+            }
+        }
+
         public bool SkipEmptyLyricLine
         {
             get => skipEmptyLyricLine;
@@ -315,9 +344,8 @@ namespace HotLyric.Win32.ViewModels
             {
                 if (value.HasValue)
                 {
-                    this.SetSettings(ScrollAnimationModeKey, value.Value);
+                    this.SetSettingsAndNotify(ScrollAnimationModeKey, value.Value);
                 }
-                NotifySettingsChanged();
             }));
 
         public EnumBindingModel<LowFrameRateMode> LowFrameRateMode => lowFrameRateMode ?? (lowFrameRateMode = new EnumBindingModel<LowFrameRateMode>(
@@ -330,9 +358,8 @@ namespace HotLyric.Win32.ViewModels
             {
                 if (value.HasValue)
                 {
-                    this.SetSettings(LowFrameRateModeSettingKey, value.Value);
+                    this.SetSettingsAndNotify(LowFrameRateModeSettingKey, value.Value);
                 }
-                NotifySettingsChanged();
             }));
 
         public bool HideOnPaused
@@ -734,16 +761,7 @@ namespace HotLyric.Win32.ViewModels
         {
             if (SetProperty(ref field, value, propertyName))
             {
-                SetSettings(settingsKey, value);
-
-                try
-                {
-                    NotifySettingsChanged();
-                }
-                catch (Exception ex)
-                {
-                    HotLyric.Win32.Utils.LogHelper.LogError(ex);
-                }
+                SetSettingsAndNotify(settingsKey, value);
 
                 return true;
             }
@@ -771,6 +789,20 @@ namespace HotLyric.Win32.ViewModels
                 {
                     HotLyric.Win32.Utils.LogHelper.LogError(ex);
                 }
+            }
+        }
+
+        private void SetSettingsAndNotify<T>(string? settingsKey, T value)
+        {
+            SetSettings(settingsKey, value);
+
+            try
+            {
+                NotifySettingsChanged();
+            }
+            catch (Exception ex)
+            {
+                HotLyric.Win32.Utils.LogHelper.LogError(ex);
             }
         }
 

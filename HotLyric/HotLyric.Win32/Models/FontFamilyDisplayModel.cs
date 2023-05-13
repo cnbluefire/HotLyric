@@ -47,6 +47,11 @@ namespace HotLyric.Win32.Models
                 Source = FontFamily.XamlAutoFontFamily.Source;
                 DisplayName = "默认UI字体";
                 Order = 0;
+
+                if (Source == "Segoe UI")
+                {
+                    isItalicStyleAvailable = true;
+                }
             }
             else
             {
@@ -78,12 +83,33 @@ namespace HotLyric.Win32.Models
         }
 
         private int hashCode;
+        private bool? isItalicStyleAvailable;
 
         public string Source { get; }
 
         public string DisplayName { get; }
 
         public int Order { get; }
+
+        public bool IsItalicStyleAvailable
+        {
+            get
+            {
+                if (!isItalicStyleAvailable.HasValue)
+                {
+                    try
+                    {
+                        using var fontFamily = new System.Drawing.FontFamily(Source);
+                        isItalicStyleAvailable = fontFamily.IsStyleAvailable(System.Drawing.FontStyle.Italic);
+                    }
+                    catch
+                    {
+                        isItalicStyleAvailable = false;
+                    }
+                }
+                return isItalicStyleAvailable!.Value;
+            }
+        }
 
         public override string ToString()
         {

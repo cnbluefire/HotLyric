@@ -28,6 +28,8 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             Size size,
             ILyricLine line,
             string fontFamily,
+            Windows.UI.Text.FontWeight fontWeight,
+            Windows.UI.Text.FontStyle fontStyle,
             LyricDrawingLineType type,
             LyricDrawingLineAlignment alignment,
             float strokeWidth,
@@ -41,8 +43,10 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             FontFamily = fontFamily;
             Type = type;
             Alignment = alignment;
-            glyphRunGroup = LyricDrawingTextGlyphRunGroup.Create(resourceCreator, line.Text, FontFamily);
+            glyphRunGroup = LyricDrawingTextGlyphRunGroup.Create(resourceCreator, line.Text, FontFamily, fontWeight, fontStyle);
             CreateLyricText();
+            FontWeight = fontWeight;
+            FontStyle = fontStyle;
         }
 
         public Size TextSize => TextSizeType switch
@@ -59,6 +63,10 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
         public ILyricLine LyricLine { get; }
 
         public string FontFamily { get; }
+
+        public Windows.UI.Text.FontWeight FontWeight { get; }
+
+        public Windows.UI.Text.FontStyle FontStyle { get; }
 
         public LyricDrawingLineType Type { get; }
 

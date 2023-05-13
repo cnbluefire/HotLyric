@@ -19,10 +19,15 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
         private IReadOnlyList<LyricDrawingTextGlyphRun> glyphRuns;
         private readonly Size textLayoutSize;
         private readonly Size textDrawSize;
+        private readonly FontWeight fontWeight;
+        private readonly FontStyle fontStyle;
 
-        private LyricDrawingTextGlyphRunGroup(ICanvasResourceCreator resourceCreator, string textString, string fontFamily)
+        private LyricDrawingTextGlyphRunGroup(ICanvasResourceCreator resourceCreator, string textString, string fontFamily, FontWeight fontWeight, FontStyle fontStyle)
         {
-            var renderImpl = new LyricTextLineRendererImpl(resourceCreator, textString, fontFamily);
+            this.fontWeight = fontWeight;
+            this.fontStyle = fontStyle;
+
+            var renderImpl = new LyricTextLineRendererImpl(resourceCreator, textString, fontFamily, fontWeight, fontStyle);
 
             glyphRuns = renderImpl.GlyphRuns;
             textLayoutSize = renderImpl.TextLayoutSize;
@@ -35,9 +40,13 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
         public Size TextDrawSize => !disposedValue ? textDrawSize : throw new ObjectDisposedException(nameof(LyricDrawingTextGlyphRunGroup));
 
-        public static LyricDrawingTextGlyphRunGroup Create(ICanvasResourceCreator resourceCreator, string textString, string fontFamily)
+        public FontWeight FontWeight => !disposedValue ? fontWeight : throw new ObjectDisposedException(nameof(LyricDrawingTextGlyphRunGroup));
+
+        public FontStyle FontStyle => !disposedValue ? fontStyle : throw new ObjectDisposedException(nameof(LyricDrawingTextGlyphRunGroup));
+
+        public static LyricDrawingTextGlyphRunGroup Create(ICanvasResourceCreator resourceCreator, string textString, string fontFamily, FontWeight fontWeight, FontStyle fontStyle)
         {
-            return new LyricDrawingTextGlyphRunGroup(resourceCreator, textString, fontFamily);
+            return new LyricDrawingTextGlyphRunGroup(resourceCreator, textString, fontFamily, fontWeight, fontStyle);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -85,7 +94,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             private CanvasTextLayout? textLayout;
             private List<LyricDrawingTextGlyphRun> glyphRuns;
 
-            public LyricTextLineRendererImpl(ICanvasResourceCreator resourceCreator, string textString, string fontFamily)
+            public LyricTextLineRendererImpl(ICanvasResourceCreator resourceCreator, string textString, string fontFamily, FontWeight fontWeight, FontStyle fontStyle)
             {
                 using (var textFormat = new CanvasTextFormat()
                 {
@@ -96,8 +105,8 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
                     Direction = CanvasTextDirection.LeftToRightThenTopToBottom,
                     FontSize = 10,
                     FontStretch = FontStretch.Normal,
-                    FontStyle = FontStyle.Normal,
-                    FontWeight = FontWeights.Normal,
+                    FontStyle = fontStyle,
+                    FontWeight = fontWeight,
                     Options = CanvasDrawTextOptions.EnableColorFont,
                     WordWrapping = CanvasWordWrapping.NoWrap,
                 })

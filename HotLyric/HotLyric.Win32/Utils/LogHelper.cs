@@ -12,6 +12,11 @@ namespace HotLyric.Win32.Utils
         public static NLog.Logger Logger =>
             NLog.LogManager.GetLogger("global");
 
+        public static void LogInfo(string message)
+        {
+            Logger.Info(message);
+        }
+
         public static void LogError(Exception ex, [CallerMemberName] string? callerName = null, [CallerFilePath] string? callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
         {
             Logger.Error(ex, BuildMessage(null, callerName, callerFilePath, callerLineNumber));

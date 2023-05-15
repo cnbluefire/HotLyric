@@ -86,6 +86,9 @@ namespace HotLyric.Win32.Views
                 AcrylicController.Visible = true;
                 LayoutRoot.Opacity = 1;
             });
+
+            var manager = WindowManager.Get(this);
+            manager.WindowMessageReceived += Manager_WindowMessageReceived;
         }
 
         public WindowTopmostHelper? TopmostHelper { get; private set; }
@@ -160,6 +163,9 @@ namespace HotLyric.Win32.Views
 
         private void ReleaseResources()
         {
+            var manager = WindowManager.Get(this);
+            manager.WindowMessageReceived -= Manager_WindowMessageReceived;
+
             VM.PropertyChanged -= VM_PropertyChanged;
 
             this.AppWindow.Changed -= AppWindow_Changed;
@@ -243,6 +249,22 @@ namespace HotLyric.Win32.Views
                 }
             });
         }
+
+
+        private void Manager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
+        {
+            if (e.Message.MessageId == (uint)User32.WindowMessage.WM_ENDSESSION)
+            {
+                LogHelper.LogInfo("WM_ENDSESSION");
+                e.Handled = true;
+                e.Result = 0;
+                DispatcherQueue.TryEnqueue(() =>
+                {
+                    App.Current.Exit();
+                });
+            }
+        }
+
 
         #endregion Window Proc
 

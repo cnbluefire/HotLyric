@@ -22,6 +22,7 @@ v1.3.0 后从 wpf 移植到 winui3 框架。由于winui3框架还远远谈不上
 |[媒体播放器（Groove 音乐）](https://www.microsoft.com/store/productId/9WZDNCRFJ3PT)|歌词可能匹配不准确<sup><a href="#ref1">1</a>
 |[Foobar2000 (v1.5.1+)](https://www.foobar2000.org/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup>
 |[YesPlayerMusic](https://github.com/qier222/YesPlayMusic)|完全支持（请使用最新版）
+|[Apple Music Preview](https://www.microsoft.com/store/productId/9PFHDD62MXS1)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup>
 ---
 
 1. <span id="ref1">由于热词对这些播放器的歌词匹配基于歌名歌手搜索，所以匹配可能不精准或匹配不到。</span>

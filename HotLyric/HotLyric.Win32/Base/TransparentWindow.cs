@@ -66,6 +66,16 @@ namespace HotLyric.Win32.Base
                 var manager = WindowManager.Get(this);
                 manager.WindowMessageReceived -= Manager_WindowMessageReceived;
             }
+            else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_ERASEBKGND)
+            {
+                if (User32.GetClientRect(e.Message.Hwnd, out var rect))
+                {
+                    using var brush = Gdi32.CreateSolidBrush((uint)System.Drawing.ColorTranslator.ToWin32(System.Drawing.Color.FromArgb(255, 99, 99, 99)));
+                    User32.FillRect((nint)e.Message.WParam, rect, brush);
+                    e.Result = 1;
+                    e.Handled = true;
+                }
+            }
         }
 
         protected virtual void OnDisplayChanged(uint dpi)
@@ -112,7 +122,7 @@ namespace HotLyric.Win32.Base
             User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_STYLE, (nint)style);
             User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_EXSTYLE, (nint)exStyle);
 
-            User32.SetLayeredWindowAttributes(handle, new COLORREF(255, 0, 0), 0, User32.LayeredWindowAttributes.LWA_COLORKEY);
+            User32.SetLayeredWindowAttributes(handle, new COLORREF(99, 99, 99), 0, User32.LayeredWindowAttributes.LWA_COLORKEY);
         }
     }
 }

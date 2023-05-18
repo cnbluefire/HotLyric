@@ -177,11 +177,11 @@ namespace HotLyric.Win32.Controls
             }
             else if (menuItem.Name == "Exit")
             {
+                await Task.Delay(500);
+
                 var lyricHostWindow = App.Current.LyricView;
                 if (lyricHostWindow != null)
                 {
-                    //lyricHostWindow.SaveBounds();
-                    //lyricHostWindow.ApplicationExiting = true;
                     lyricHostWindow.Close();
                 }
                 App.Current.Exit();

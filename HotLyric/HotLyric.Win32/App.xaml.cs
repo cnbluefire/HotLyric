@@ -123,6 +123,9 @@ namespace HotLyric.Win32
             {
                 Exiting = true;
 
+                notifyIcon?.Dispose();
+                notifyIcon = null;
+
                 LyricView?.Close();
                 LyricView = null;
 

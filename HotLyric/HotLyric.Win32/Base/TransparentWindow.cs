@@ -87,9 +87,9 @@ namespace HotLyric.Win32.Base
             style |= (uint)(User32.WindowStyles.WS_POPUP);
 
             exStyle &= ~(uint)(User32.WindowStylesEx.WS_EX_APPWINDOW);
-            exStyle |= (uint)(User32.WindowStylesEx.WS_EX_TOOLWINDOW
-                | User32.WindowStylesEx.WS_EX_LAYERED
-                | User32.WindowStylesEx.WS_EX_NOACTIVATE);
+            exStyle |= (uint)(User32.WindowStylesEx.WS_EX_TOOLWINDOW);
+            exStyle |= (uint)(User32.WindowStylesEx.WS_EX_LAYERED);
+            exStyle |= (uint)(User32.WindowStylesEx.WS_EX_NOACTIVATE);
         }
 
         public static void SetWindowTransparentStyle(WindowId windowId) =>
@@ -112,6 +112,7 @@ namespace HotLyric.Win32.Base
             User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_STYLE, (nint)style);
             User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_EXSTYLE, (nint)exStyle);
 
+            User32.SetLayeredWindowAttributes(handle, new COLORREF(255, 0, 0), 0, User32.LayeredWindowAttributes.LWA_COLORKEY);
         }
     }
 }

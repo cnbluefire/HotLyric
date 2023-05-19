@@ -17,14 +17,13 @@ namespace HotLyric.Win32.Base
 {
     public class TransparentWindow : WinUIEx.WindowEx
     {
+        private static COLORREF WindowBackgroundColor = new COLORREF(0, 0, 0);
+
         public TransparentWindow()
         {
             var handle = this.GetWindowHandle();
 
             SetWindowTransparentStyle(handle);
-
-            DwmApi.DwmExtendFrameIntoClientArea(handle, new DwmApi.MARGINS(-1));
-            DwmApi.DwmEnableBlurBehindWindow(handle, new DwmApi.DWM_BLURBEHIND(true));
 
             var manager = WindowManager.Get(this);
             manager.WindowMessageReceived += Manager_WindowMessageReceived;
@@ -70,11 +69,15 @@ namespace HotLyric.Win32.Base
             {
                 if (User32.GetClientRect(e.Message.Hwnd, out var rect))
                 {
-                    using var brush = Gdi32.CreateSolidBrush((uint)System.Drawing.ColorTranslator.ToWin32(System.Drawing.Color.FromArgb(255, 99, 99, 99)));
+                    using var brush = Gdi32.CreateSolidBrush(WindowBackgroundColor);
                     User32.FillRect((nint)e.Message.WParam, rect, brush);
                     e.Result = 1;
                     e.Handled = true;
                 }
+            }
+            else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_DWMCOMPOSITIONCHANGED)
+            {
+                SetDwmProperties(e.Message.Hwnd);
             }
         }
 
@@ -122,7 +125,19 @@ namespace HotLyric.Win32.Base
             User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_STYLE, (nint)style);
             User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_EXSTYLE, (nint)exStyle);
 
-            User32.SetLayeredWindowAttributes(handle, new COLORREF(99, 99, 99), 0, User32.LayeredWindowAttributes.LWA_COLORKEY);
+            User32.SetLayeredWindowAttributes(handle, WindowBackgroundColor, 0, User32.LayeredWindowAttributes.LWA_COLORKEY);
+            SetDwmProperties(handle);
+        }
+
+        private static void SetDwmProperties(nint handle)
+        {
+            DwmApi.DwmExtendFrameIntoClientArea(handle, new DwmApi.MARGINS(-1));
+            using var rgn = Gdi32.CreateRectRgn(-2, -2, -1, -1);
+            DwmApi.DwmEnableBlurBehindWindow(handle, new DwmApi.DWM_BLURBEHIND(true)
+            {
+                dwFlags = DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_ENABLE | DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_BLURREGION,
+                hRgnBlur = rgn
+            });
         }
     }
 }

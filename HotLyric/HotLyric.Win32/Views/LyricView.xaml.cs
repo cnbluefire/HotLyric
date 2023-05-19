@@ -25,6 +25,7 @@ using Microsoft.UI.Xaml.Controls.Primitives;
 using System.Diagnostics;
 using Microsoft.Win32;
 using System.Reflection.Metadata;
+using Windows.ApplicationModel;
 
 namespace HotLyric.Win32.Views
 {
@@ -33,6 +34,8 @@ namespace HotLyric.Win32.Views
         public LyricView()
         {
             InitializeComponent();
+
+            this.Title = "Hotlyric.LyricView";
 
             ContentRoot.PointerPressed += ContentRoot_PointerPressed;
             ContentRoot.PointerCanceled += ContentRoot_PointerCanceled;
@@ -89,7 +92,11 @@ namespace HotLyric.Win32.Views
 
             var manager = WindowManager.Get(this);
             manager.WindowMessageReceived += Manager_WindowMessageReceived;
+
+            _ = InitIconAsync();
         }
+
+        private System.Drawing.Icon? appIcon;
 
         public WindowTopmostHelper? TopmostHelper { get; private set; }
 
@@ -439,6 +446,21 @@ namespace HotLyric.Win32.Views
 
             visual.ImplicitAnimations = imp;
             visual2.ImplicitAnimations = imp;
+        }
+
+
+
+        private async Task InitIconAsync()
+        {
+            var dpi = this.GetDpiForWindow();
+
+            appIcon = await IconHelper.CreateIconAsync(
+                Package.Current.Logo,
+                IconHelper.GetSmallIconSize(),
+                dpi / 96d,
+                default);
+
+            this.SetIcon(appIcon.GetIconId());
         }
 
     }

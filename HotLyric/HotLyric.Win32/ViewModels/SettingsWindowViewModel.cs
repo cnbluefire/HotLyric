@@ -37,6 +37,7 @@ namespace HotLyric.Win32.ViewModels
         private const string AlwaysShowBackgroundSettingKey = "Settings_AlwaysShowBackground";
         private const string ShowShadowSettingKey = "Settings_ShowShadow";
         private const string TextStrokeEnabledSettingKey = "Settings_TextStrokeEnabled";
+        private const string TextShadowEnabledSettingKey = "Settings_TextShadowEnabled";
         private const string TextStrokeTypeSettingKey = "Settings_TextStrokeType";
         private const string LyricFontFamilySettingKey = "Settings_LyricFontFamily";
         private const string LyricFontStyleSettingKey = "Settings_LyricFontStyle";
@@ -79,6 +80,8 @@ namespace HotLyric.Win32.ViewModels
                 textStrokeType = textStrokeEnabled ? LyricControlTextStrokeType.Auto : LyricControlTextStrokeType.Disabled;
             }
             TextStrokeTypes.SelectedValue = textStrokeType.Value;
+
+            textShadowEnabled = LoadSetting(TextShadowEnabledSettingKey, true);
 
             currentTheme = LyricThemeManager.CurrentThemeView ?? LyricThemeManager.LyricThemes[0];
             AllPresetThemes = LyricThemeManager.LyricThemes.ToArray();
@@ -147,6 +150,7 @@ namespace HotLyric.Win32.ViewModels
 
         private bool alwaysShowBackground;
         private EnumBindingModel<LyricControlTextStrokeType>? textStrokeTypes;
+        private bool textShadowEnabled;
         private LyricThemeView currentTheme;
         private LyricThemeView customizeTheme;
         private bool themeIsPresetVisible;
@@ -231,7 +235,7 @@ namespace HotLyric.Win32.ViewModels
             new[]
             {
                 new EnumDisplayModel<LyricControlTextStrokeType>("自动", LyricControlTextStrokeType.Auto),
-                new EnumDisplayModel<LyricControlTextStrokeType>("启用", LyricControlTextStrokeType.Enabled),
+                new EnumDisplayModel<LyricControlTextStrokeType>("描边", LyricControlTextStrokeType.Enabled),
                 new EnumDisplayModel<LyricControlTextStrokeType>("禁用", LyricControlTextStrokeType.Disabled),
             }, value =>
             {
@@ -240,6 +244,12 @@ namespace HotLyric.Win32.ViewModels
                     this.SetSettingsAndNotify(TextStrokeTypeSettingKey, value.Value);
                 }
             }));
+
+        public bool TextShadowEnabled
+        {
+            get => textShadowEnabled;
+            set => ChangeSettings(ref textShadowEnabled,value, TextShadowEnabledSettingKey);
+        }
 
         public LyricThemeView[] AllPresetThemes { get; }
 

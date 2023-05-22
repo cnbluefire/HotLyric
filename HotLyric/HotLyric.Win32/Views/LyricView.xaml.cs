@@ -125,18 +125,22 @@ namespace HotLyric.Win32.Views
             else if (!VM.ActualMinimized && !this.Visible)
             {
                 this.Show();
-                DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
-                {
-                    if (AppWindow.IsVisible)
-                    {
-                        var handle = this.GetWindowHandle();
 
-                        if (WindowBoundsHelper.IsWindowOutsideScreen(handle))
+                if (!ActivationArgumentsHelper.RedirectMode)
+                {
+                    DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
+                    {
+                        if (AppWindow.IsVisible)
                         {
-                            ResetWindowBounds(false);
+                            var handle = this.GetWindowHandle();
+
+                            if (WindowBoundsHelper.IsWindowOutsideScreen(handle))
+                            {
+                                ResetWindowBounds(false);
+                            }
                         }
-                    }
-                });
+                    });
+                }
             }
         }
 
@@ -242,6 +246,8 @@ namespace HotLyric.Win32.Views
         protected override void OnDisplayChanged(uint dpi)
         {
             if (!AppWindow.IsVisible) return;
+            if (ActivationArgumentsHelper.RedirectMode) return;
+
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, async () =>
             {
                 await Task.Delay(1000);

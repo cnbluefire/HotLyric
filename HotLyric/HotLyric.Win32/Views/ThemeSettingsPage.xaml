@@ -94,14 +94,20 @@
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
                         </Grid.RowDefinitions>
 
                         <TextBlock Text="文字描边" VerticalAlignment="Center" HorizontalAlignment="Right" />
                         <ComboBox Grid.Column="1" HorizontalAlignment="Left" 
                                   ItemsSource="{Binding TextStrokeTypes.Items}" SelectedItem="{Binding TextStrokeTypes.SelectedItem,Mode=TwoWay}" />
 
-                        <TextBlock Grid.Row="1" Text="不透明度" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="LyricOpacityComboBox" SelectedItem="{Binding LyricOpacity,Mode=TwoWay}">
+                        <TextBlock Grid.Row="1" Text="文字阴影" VerticalAlignment="Center" HorizontalAlignment="Right" />
+                        <Border Grid.Row="1" Grid.Column="1" MaxWidth="40" HorizontalAlignment="Left">
+                            <ToggleSwitch Margin="0,-4,0,-5" IsOn="{Binding TextShadowEnabled,Mode=TwoWay}" />
+                        </Border>
+                        
+                        <TextBlock Grid.Row="2" Text="不透明度" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <ComboBox Grid.Row="2" Grid.Column="1" x:Name="LyricOpacityComboBox" SelectedItem="{Binding LyricOpacity,Mode=TwoWay}">
                             <ComboBox.Items>
                                 <x:Double>1</x:Double>
                                 <x:Double>0.8</x:Double>
@@ -116,8 +122,8 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <TextBlock Grid.Row="2" Text="修改字体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                        <ComboBox Grid.Row="2" Grid.Column="1" x:Name="FontFamilyComboBox" ItemsSource="{Binding AllFontFamilies}" SelectedItem="{Binding LyricFontFamily,Mode=TwoWay}">
+                        <TextBlock Grid.Row="3" Text="修改字体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <ComboBox Grid.Row="3" Grid.Column="1" x:Name="FontFamilyComboBox" ItemsSource="{Binding AllFontFamilies}" SelectedItem="{Binding LyricFontFamily,Mode=TwoWay}">
                             <ComboBox.ItemTemplate>
                                 <DataTemplate>
                                     <TextBlock Text="{Binding DisplayName}" />
@@ -125,18 +131,18 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <TextBlock Grid.Row="3" Text="粗体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                        <Border Grid.Row="3" Grid.Column="1" MaxWidth="40" HorizontalAlignment="Left">
+                        <TextBlock Grid.Row="4" Text="粗体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <Border Grid.Row="4" Grid.Column="1" MaxWidth="40" HorizontalAlignment="Left">
                             <ToggleSwitch Margin="0,-4,0,-5" IsOn="{Binding IsLyricFontBoldWeightEnabled,Mode=TwoWay}" />
                         </Border>
 
-                        <TextBlock Grid.Row="4" Text="斜体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                        <Border Grid.Row="4" Grid.Column="1" MaxWidth="40" HorizontalAlignment="Left">
+                        <TextBlock Grid.Row="5" Text="斜体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <Border Grid.Row="5" Grid.Column="1" MaxWidth="40" HorizontalAlignment="Left">
                             <ToggleSwitch Margin="0,-4,0,-5" IsOn="{Binding IsLyricFontItalicStyleEnabled,Mode=TwoWay}" />
                         </Border>
 
-                        <TextBlock Grid.Row="5" Text="调整字号" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                        <Button Grid.Row="5" Grid.Column="1" Content="帮助" Command="{Binding FontSizeCmd}" />
+                        <TextBlock Grid.Row="6" Text="调整字号" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <Button Grid.Row="6" Grid.Column="1" Content="帮助" Command="{Binding FontSizeCmd}" />
 
                     </Grid>
                 </muxc:Expander>

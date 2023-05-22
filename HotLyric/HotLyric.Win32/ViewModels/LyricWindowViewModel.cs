@@ -69,6 +69,8 @@ namespace HotLyric.Win32.ViewModels
         private bool isLyricTranslateEnabled;
         private bool isTransparent;
         private LyricControlTextStrokeType textStrokeType;
+        private bool textShadowEnabled;
+        private bool? textShadowEnabledSession;
         private LyricControlScrollAnimationMode scrollAnimationMode = LyricControlScrollAnimationMode.Fast;
 
 
@@ -204,6 +206,24 @@ namespace HotLyric.Win32.ViewModels
         {
             get => textStrokeType;
             private set => SetProperty(ref textStrokeType, value);
+        }
+
+        public bool? TextShadowEnabledSession
+        {
+            get => textShadowEnabledSession;
+            set
+            {
+                if (SetProperty(ref textShadowEnabledSession, value))
+                {
+                    OnPropertyChanged(nameof(TextShadowEnabled));
+                }
+            }
+        }
+
+        public bool TextShadowEnabled
+        {
+            get => textShadowEnabledSession ?? textShadowEnabled;
+            private set => SetProperty(ref textShadowEnabled, value);
         }
 
         public LyricControlScrollAnimationMode ScrollAnimationMode
@@ -397,6 +417,20 @@ namespace HotLyric.Win32.ViewModels
         private void CommandLineArgsHelper_ActivateMainInstanceEventReceived(object? sender, EventArgs e)
         {
             UpdateSessions();
+            App.DispatcherQueue.TryEnqueue(() =>
+            {
+                if (!App.Current.Exiting)
+                {
+                    if (ActivationArgumentsHelper.RedirectMode)
+                    {
+                        this.TextShadowEnabledSession = false;
+                    }
+                    else
+                    {
+                        this.TextShadowEnabledSession = null;
+                    }
+                }
+            });
         }
 
         private void SelectedSession_MediaChanged(object? sender, EventArgs e)
@@ -680,6 +714,7 @@ namespace HotLyric.Win32.ViewModels
 
             AlwaysShowBackground = settingVm.AlwaysShowBackground;
             TextStrokeType = settingVm.TextStrokeTypes.SelectedValue ?? LyricControlTextStrokeType.Auto;
+            TextShadowEnabled = settingVm.TextShadowEnabled;
 
             FontWeight = settingVm.IsLyricFontBoldWeightEnabled ? Microsoft.UI.Text.FontWeights.Bold : Microsoft.UI.Text.FontWeights.Normal;
 

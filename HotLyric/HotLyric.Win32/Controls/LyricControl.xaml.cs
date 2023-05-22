@@ -62,6 +62,7 @@ namespace HotLyric.Win32.Controls
             propObserver[LyricProperty]?.AddHandler((s, a) => Refresh());
             propObserver[PausedProperty]?.AddHandler((s, a) => Refresh());
             propObserver[TextStrokeTypeProperty]?.AddHandler((s, a) => Refresh());
+            propObserver[TextShadowEnabledProperty]?.AddHandler((s, a) => Refresh());
             propObserver[ProgressAnimationModeProperty]?.AddHandler((s, a) => Refresh());
             propObserver[ScrollAnimationModeProperty]?.AddHandler((s, a) => Refresh());
             propObserver[MediaDurationProperty]?.AddHandler((s, a) => Refresh());
@@ -260,6 +261,17 @@ namespace HotLyric.Win32.Controls
 
 
 
+        public bool TextShadowEnabled
+        {
+            get { return (bool)GetValue(TextShadowEnabledProperty); }
+            set { SetValue(TextShadowEnabledProperty, value); }
+        }
+
+        public static readonly DependencyProperty TextShadowEnabledProperty =
+            DependencyProperty.Register("TextShadowEnabled", typeof(bool), typeof(LyricControl), new PropertyMetadata(true));
+
+
+
 
         public LyricControlProgressAnimationMode ProgressAnimationMode
         {
@@ -418,6 +430,7 @@ namespace HotLyric.Win32.Controls
                 var lowFrameRateMode = propObserver[LowFrameRateModeProperty]!.GetValueOrDefault<bool>();
 
                 var textStrokeType = propObserver[TextStrokeTypeProperty]!.GetValueOrDefault<LyricControlTextStrokeType>();
+                var textShadowEnabled = propObserver[TextShadowEnabledProperty]!.GetValueOrDefault<bool>();
                 var theme = propObserver[ThemeProperty]!.GetValueOrDefault<LyricThemeView>();
                 var fontFamily = propObserver[LyricFontFamilyProperty]!.GetValueOrDefault<string>();
                 var paused = propObserver[PausedProperty]!.GetValueOrDefault<bool>();
@@ -489,15 +502,31 @@ namespace HotLyric.Win32.Controls
                         strokeWidth = 1f;
                     }
 
-                    colors.GlowColor1 = Color.FromArgb((byte)(0.25 * 255), 0, 0, 0);
-                    colors.GlowColor2 = Color.FromArgb((byte)(0.25 * 255), 0, 0, 0);
+                    if (textShadowEnabled)
+                    {
+                        colors.GlowColor1 = Color.FromArgb((byte)(0.25 * 255), 0, 0, 0);
+                        colors.GlowColor2 = Color.FromArgb((byte)(0.25 * 255), 0, 0, 0);
+                    }
+                    else
+                    {
+                        colors.GlowColor1 = Color.FromArgb(0, 0, 0, 0);
+                        colors.GlowColor2 = Color.FromArgb(0, 0, 0, 0);
+                    }
                 }
                 else
                 {
                     strokeWidth = 0f;
 
-                    colors.GlowColor1 = Color.FromArgb((byte)(0.9 * 255), 0, 0, 0);
-                    colors.GlowColor2 = Color.FromArgb((byte)(0.9 * 255), 0, 0, 0);
+                    if (textShadowEnabled)
+                    {
+                        colors.GlowColor1 = Color.FromArgb((byte)(0.9 * 255), 0, 0, 0);
+                        colors.GlowColor2 = Color.FromArgb((byte)(0.9 * 255), 0, 0, 0);
+                    }
+                    else
+                    {
+                        colors.GlowColor1 = Color.FromArgb(0, 0, 0, 0);
+                        colors.GlowColor2 = Color.FromArgb(0, 0, 0, 0);
+                    }
                 }
 
                 var sizeType = LyricDrawingLineTextSizeType.LayoutSize;
@@ -940,7 +969,7 @@ namespace HotLyric.Win32.Controls
     {
         Auto,
         Enabled,
-        Disabled
+        Disabled,
     }
 
     public enum LyricControlProgressAnimationMode

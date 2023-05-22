@@ -1,4 +1,5 @@
-﻿using Microsoft.Windows.AppLifecycle;
+﻿using HotLyric.Win32.ViewModels;
+using Microsoft.Windows.AppLifecycle;
 using System;
 using System.Collections.Generic;
 using System.Collections.Specialized;
@@ -27,6 +28,8 @@ namespace HotLyric.Win32.Utils
                 }
             }
         }
+
+        public static bool RedirectMode { get; private set; }
 
         public static bool HasLaunchParameters
         {
@@ -89,6 +92,19 @@ namespace HotLyric.Win32.Utils
                             System.Threading.Thread.Sleep(1000);
                         }
                         LaunchFromPackageFamilyName = queryCollection.Get("from");
+
+                        if (queryCollection.Get("redirect") is string redirect)
+                        {
+                            if (string.IsNullOrEmpty(redirect)
+                                || string.Equals(redirect, "off", StringComparison.OrdinalIgnoreCase))
+                            {
+                                RedirectMode = false;
+                            }
+                            else
+                            {
+                                RedirectMode = true;
+                            }
+                        }
 
                         ActivateMainInstanceEventReceived?.Invoke(null, EventArgs.Empty);
                     }

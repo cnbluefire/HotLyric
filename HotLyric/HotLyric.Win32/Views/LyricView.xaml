@@ -182,6 +182,7 @@
                                   IsLyricTranslateEnabled="{x:Bind VM.IsLyricTranslateEnabled,Mode=OneWay}"
                                   
                                   TextStrokeType="{x:Bind VM.TextStrokeType,Mode=OneWay}"
+                                  TextShadowEnabled="{x:Bind VM.TextShadowEnabled,Mode=OneWay}"
                                   LyricFontFamily="{x:Bind VM.SettingViewModel.LyricFontFamily.Source,Mode=OneWay}"
                                   FontStyle="{x:Bind VM.FontStyle,Mode=OneWay}"
                                   FontWeight="{x:Bind VM.FontWeight,Mode=OneWay}"

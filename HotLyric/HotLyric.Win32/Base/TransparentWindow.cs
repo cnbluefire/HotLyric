@@ -17,7 +17,12 @@ namespace HotLyric.Win32.Base
 {
     public class TransparentWindow : WinUIEx.WindowEx
     {
-        private static COLORREF WindowBackgroundColor = new COLORREF(0, 0, 0);
+        private static COLORREF WindowBackgroundColor;
+
+        static TransparentWindow()
+        {
+            WindowBackgroundColor = User32.GetSysColor(SystemColorIndex.COLOR_WINDOW);
+        }
 
         public TransparentWindow()
         {
@@ -33,6 +38,7 @@ namespace HotLyric.Win32.Base
             {
                 brushHost.SystemBackdrop = WindowsCompositionHelper.Compositor.CreateColorBrush(Color.FromArgb(0, 255, 255, 255));
             }
+
         }
 
         private unsafe void Manager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)

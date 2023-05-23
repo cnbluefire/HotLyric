@@ -352,7 +352,9 @@ namespace HotLyric.Win32.ViewModels
 
                 IsPlaying = SelectedSession?.IsPlaying ?? false;
 
-                if (oldId != selectedSession?.AppTitle && !IsBackgroundVisible)
+                if (oldId != selectedSession?.AppTitle
+                    && !IsBackgroundVisible
+                    && !ActivationArgumentsHelper.RedirectMode)
                 {
                     ShowBackgroundTransient(TimeSpan.FromSeconds(2));
                 }

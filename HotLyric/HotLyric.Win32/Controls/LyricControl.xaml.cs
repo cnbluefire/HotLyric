@@ -777,7 +777,27 @@ namespace HotLyric.Win32.Controls
                                             * Matrix3x2.CreateTranslation(0, (float)(-drawingRemovingLine.Size.Height * LyricDrawingLine.HideFinalScale - lineSpace))
                                             * Matrix3x2.CreateTranslation(0, (float)(moveProgress * (drawingRemovingLine.Size.Height * LyricDrawingLine.HideFinalScale + lineSpace)));
 
-                                        drawingRemovingLine?.Draw(args.DrawingSession, new LyricDrawingParameters(1, 1 - scaleProgress, lowFrameRateMode, progressAnimationMode, colors));
+                                        if (ActivationArgumentsHelper.RedirectMode
+                                            || (clipRect.HasValue && !clipRect.Value.IsEmpty))
+                                        {
+                                            drawingRemovingLine?.Draw(args.DrawingSession, new LyricDrawingParameters(1, 1 - scaleProgress, lowFrameRateMode, progressAnimationMode, colors));
+                                        }
+                                        else
+                                        {
+                                            using (var cmdList = new CanvasCommandList(args.DrawingSession))
+                                            using (var effect = new GaussianBlurEffect()
+                                            {
+                                                BlurAmount = (float)(24 * originalScaleProgress),
+                                                Source = cmdList
+                                            })
+                                            {
+                                                using (var ds = cmdList.CreateDrawingSession())
+                                                {
+                                                    drawingRemovingLine?.Draw(ds, new LyricDrawingParameters(1, 1 - scaleProgress, lowFrameRateMode, progressAnimationMode, colors));
+                                                }
+                                                args.DrawingSession.DrawImage(effect);
+                                            }
+                                        }
                                     }
                                 }
                             }

@@ -70,6 +70,7 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
 
             var noiseSurface = EnsureNoiseImageSurface();
             noiseBrush = compositor.CreateSurfaceBrush(noiseSurface);
+            noiseBrush.Stretch = CompositionStretch.None;
 
             var factory = compositor.CreateEffectFactory(effect, new[]
             {

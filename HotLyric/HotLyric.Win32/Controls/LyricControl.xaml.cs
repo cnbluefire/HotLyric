@@ -71,10 +71,10 @@ namespace HotLyric.Win32.Controls
             {
                 if (a.NewValue is LyricThemeView theme)
                 {
-                    GetColor(c => themeColors.FillColor1 = c, theme.LyricBrush);
-                    GetColor(c => themeColors.StrokeColor1 = c, theme.LyricStrokeBrush);
-                    GetColor(c => themeColors.FillColor2 = c, theme.KaraokeBrush);
-                    GetColor(c => themeColors.StrokeColor2 = c, theme.KaraokeStrokeBrush);
+                    themeColors.FillColor1 = theme.LyricColor;
+                    themeColors.StrokeColor1 = theme.LyricStrokeColor;
+                    themeColors.FillColor2 = theme.KaraokeColor;
+                    themeColors.StrokeColor2 = theme.KaraokeStrokeColor;
                 }
                 else
                 {
@@ -82,14 +82,6 @@ namespace HotLyric.Win32.Controls
                 }
 
                 Refresh();
-
-                static void GetColor(Action<Color> _action, Microsoft.UI.Xaml.Media.Brush? _brush)
-                {
-                    if (_brush is Microsoft.UI.Xaml.Media.SolidColorBrush _sb)
-                    {
-                        _action.Invoke(_sb.Color.WithOpacity(_sb.Opacity));
-                    }
-                }
             });
             propObserver[LyricFontFamilyProperty]?.AddHandler((s, a) => Refresh());
             propObserver[IsLyricTranslateEnabledProperty]?.AddHandler((s, a) =>

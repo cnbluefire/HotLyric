@@ -436,8 +436,7 @@ namespace HotLyric.Win32.Views
 
         private void InitBorderAndTitleOpacityAnimation()
         {
-            var visual = ElementCompositionPreview.GetElementVisual(BackgroundAndShadowHost);
-            var visual2 = ElementCompositionPreview.GetElementVisual(TitleContainer);
+            var visual = ElementCompositionPreview.GetElementVisual(TitleContainer);
 
             var compositor = visual.Compositor;
 
@@ -451,7 +450,6 @@ namespace HotLyric.Win32.Views
             imp[animation.Target] = animation;
 
             visual.ImplicitAnimations = imp;
-            visual2.ImplicitAnimations = imp;
         }
 
 

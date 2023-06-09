@@ -46,7 +46,9 @@ namespace HotLyric.Win32.Base
                             sender.context = new WindowAcrylicContext(sender)
                             {
                                 Opacity = sender.VisualOpacity,
-                                Visible = sender.Visible
+                                Visible = sender.Visible,
+                                BorderColor = sender.BorderColor,
+                                Margin = sender.Margin,
                             };
                         }
                         sender.context.Window = window;
@@ -89,6 +91,28 @@ namespace HotLyric.Win32.Base
                 }
             }));
 
+
+
+        public Thickness Margin
+        {
+            get { return (Thickness)GetValue(MarginProperty); }
+            set { SetValue(MarginProperty, value); }
+        }
+
+        public static readonly DependencyProperty MarginProperty =
+            DependencyProperty.Register("Margin", typeof(Thickness), typeof(WindowAcrylicController), new PropertyMetadata(new Thickness(), (s, a) =>
+            {
+                if (s is WindowAcrylicController sender && !Equals(a.NewValue, a.OldValue))
+                {
+                    if (sender.context != null)
+                    {
+                        sender.context.Margin = (Thickness)a.NewValue;
+                    }
+                }
+            }));
+
+
+
         public double ShadowOpacity
         {
             get { return (double)GetValue(ShadowOpacityProperty); }
@@ -115,7 +139,7 @@ namespace HotLyric.Win32.Base
         }
 
         public static readonly DependencyProperty ShadowOffsetYProperty =
-            DependencyProperty.Register("ShadowOffsetY", typeof(double), typeof(WindowAcrylicController), new PropertyMetadata(1d, UpdateShadowProperties));
+            DependencyProperty.Register("ShadowOffsetY", typeof(double), typeof(WindowAcrylicController), new PropertyMetadata(3d, UpdateShadowProperties));
 
         public Color ShadowColor
         {
@@ -135,7 +159,7 @@ namespace HotLyric.Win32.Base
         }
 
         public static readonly DependencyProperty CornerRadiusProperty =
-            DependencyProperty.Register("CornerRadius", typeof(CornerRadius), typeof(WindowAcrylicController), new PropertyMetadata(new CornerRadius(0, 0, 0, 0), UpdateProperties));
+            DependencyProperty.Register("CornerRadius", typeof(CornerRadius), typeof(WindowAcrylicController), new PropertyMetadata(new CornerRadius(8, 8, 8, 8), UpdateProperties));
 
 
 
@@ -173,6 +197,26 @@ namespace HotLyric.Win32.Base
                     if (sender.context != null)
                     {
                         sender.context.Visible = a.NewValue is true;
+                    }
+                }
+            }));
+
+
+
+        public Color BorderColor
+        {
+            get { return (Color)GetValue(BorderColorProperty); }
+            set { SetValue(BorderColorProperty, value); }
+        }
+
+        public static readonly DependencyProperty BorderColorProperty =
+            DependencyProperty.Register("BorderColor", typeof(Color), typeof(WindowAcrylicController), new PropertyMetadata(Color.FromArgb(0, 255, 255, 255), (s, a) =>
+            {
+                if (s is WindowAcrylicController sender && !Equals(a.NewValue, a.OldValue))
+                {
+                    if (sender.context != null)
+                    {
+                        sender.context.BorderColor = (Color)a.NewValue;
                     }
                 }
             }));

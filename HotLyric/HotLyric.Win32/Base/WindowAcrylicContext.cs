@@ -50,7 +50,12 @@ namespace HotLyric.Win32.Base
         private CompositionPathGeometry? hostBackdropGeometry;
         private SpriteVisual? hostBackdropVisual;
 
-        private Thickness padding = new Thickness(10);
+        private CompositionPathGeometry? borderGeometry;
+        private CompositionColorBrush? borderBrush;
+        private CompositionSpriteShape? borderShape;
+        private ShapeVisual? borderVisual;
+
+        private Thickness margin = new Thickness(10);
         private double cornerRadius = 8;
 
         private AcrylicHelper? acrylicHelper;
@@ -68,9 +73,13 @@ namespace HotLyric.Win32.Base
 
             InitializeLayoutRootShadow();
             InitializeAcrylic();
+            InitializeBorder();
+
+            UpdateVisualSize();
 
             blurAndShadowContainer.Children.InsertAtTop(backgroundShadowHostVisual);
             blurAndShadowContainer.Children.InsertAtTop(hostBackdropVisual);
+            blurAndShadowContainer.Children.InsertAtTop(borderVisual);
 
             rootVisual.Children.InsertAtTop(blurAndShadowContainer);
 
@@ -97,14 +106,14 @@ namespace HotLyric.Win32.Base
             }
         }
 
-        public Thickness Padding
+        public Thickness Margin
         {
-            get => padding;
+            get => margin;
             set
             {
-                if (padding != value)
+                if (margin != value)
                 {
-                    padding = value;
+                    margin = value;
                     UpdateVisualSize();
                 }
             }
@@ -133,6 +142,12 @@ namespace HotLyric.Win32.Base
         {
             get => rootVisual.IsVisible;
             set => rootVisual.IsVisible = value;
+        }
+
+        public Windows.UI.Color BorderColor
+        {
+            get => borderBrush!.Color;
+            set => borderBrush!.Color = value;
         }
 
         public void UpdateShadowProperties()
@@ -251,8 +266,6 @@ namespace HotLyric.Win32.Base
             backgroundShadowHostVisual.Brush = backgroundShadowHostSurfaceBrush;
             backgroundShadowHostVisual.Shadow = backgroundShadow;
             backgroundShadowHostVisual.Clip = backgroundShadowClip;
-
-            UpdateVisualSize();
         }
 
         private void InitializeAcrylic()
@@ -268,19 +281,36 @@ namespace HotLyric.Win32.Base
             hostBackdropVisual.Clip = compositor.CreateGeometricClip(hostBackdropGeometry);
         }
 
+        private void InitializeBorder()
+        {
+            borderBrush = compositor.CreateColorBrush(Windows.UI.Color.FromArgb(0, 255, 255, 255));
+
+            borderGeometry = compositor.CreatePathGeometry();
+
+            borderShape = compositor.CreateSpriteShape(borderGeometry);
+            borderShape.StrokeBrush = borderBrush;
+            borderShape.StrokeThickness = 0;
+
+            borderVisual = compositor.CreateShapeVisual();
+            borderVisual.RelativeSizeAdjustment = Vector2.One;
+            borderVisual.Shapes.Add(borderShape);
+        }
+
         private void UpdateVisualSize()
         {
             if (backgroundShadowHostVisual == null
                 || backgroundShadowClipGeometry == null
                 || backgroundShadowHostGeometry == null
                 || hostBackdropGeometry == null
+                || borderGeometry == null
+                || borderShape == null
                 || window == null) return;
 
             var dpi = window.GetDpiForWindow();
             var pixelSize = window.GetAppWindow().Size;
 
-            var width = pixelSize.Width * 96 / dpi - Padding.Left - Padding.Right;
-            var height = (pixelSize.Height) * 96 / dpi - Padding.Top - Padding.Bottom - 3;
+            var width = pixelSize.Width * 96 / dpi - Margin.Left - Margin.Right;
+            var height = (pixelSize.Height) * 96 / dpi - Margin.Top - Margin.Bottom;
 
             if (width <= 0 || height <= 0)
             {
@@ -289,8 +319,9 @@ namespace HotLyric.Win32.Base
             }
 
             var size = new Vector2((float)width, (float)height);
-            var offset = new Vector3((float)Padding.Left, (float)Padding.Top, 0);
-            var radius = (float)CornerRadius;
+            var offset = new Vector3((float)Margin.Left, (float)Margin.Top, 0);
+
+            var radius = (float)(CornerRadius * dpi / 96);
 
             blurAndShadowContainer.Offset = offset;
             blurAndShadowContainer.Size = size;
@@ -298,6 +329,9 @@ namespace HotLyric.Win32.Base
             backgroundShadowHostVisual.IsVisible = true;
 
             backdropSurface.SourceSize = size;
+
+            var borderThickness = (float)(0.8 * dpi / 96);
+            borderShape.StrokeThickness = borderThickness;
 
             if (backgroundShadowHostSurface != null && backgroundShadowHostSurfaceVisual != null)
             {
@@ -310,25 +344,37 @@ namespace HotLyric.Win32.Base
                 backgroundShadowHostGeometry.Path = null;
                 backgroundShadowClipGeometry.Path = null;
                 hostBackdropGeometry.Path = null;
+                borderGeometry = null;
             }
             else
             {
                 using (var geometry1 = CanvasGeometry.CreateRoundedRectangle(null, new Windows.Foundation.Rect(-MaxBlurRadius, -MaxBlurRadius, width + MaxBlurRadius * 2, height + MaxBlurRadius * 2), MaxBlurRadius, MaxBlurRadius))
-                using (var geometry2 = CanvasGeometry.CreateRoundedRectangle(null, new Windows.Foundation.Rect(0, 0, width, height), radius, radius))
+                using (var geometry2 = CanvasGeometry.CreateRoundedRectangle(null, new Windows.Foundation.Rect(borderThickness, borderThickness, width - borderThickness * 2, height - borderThickness * 2), radius, radius))
                 using (var geometry3 = geometry1.CombineWith(geometry2, Matrix3x2.Identity, CanvasGeometryCombine.Exclude))
                 {
                     backgroundShadowClipGeometry.Path = new CompositionPath(geometry3);
                 }
-
-                using (var geometry1 = CanvasGeometry.CreateRoundedRectangle(null, new Windows.Foundation.Rect(1, 1, width - 2, height - 2), radius, radius))
+                using (var geometry = CanvasGeometry.CreateRoundedRectangle(null, new Windows.Foundation.Rect(borderThickness + 0.5, borderThickness + 0.5, width - 2 * (borderThickness + 0.5), height - 2 * (borderThickness + 0.5)), radius, radius))
                 {
-                    backgroundShadowHostGeometry.Path = new CompositionPath(geometry1);
+                    backgroundShadowHostGeometry.Path = new CompositionPath(geometry);
                 }
 
-                using (var geometry1 = CanvasGeometry.CreateRoundedRectangle(null, new Windows.Foundation.Rect(0, 0, width, height), radius, radius))
+                using (var geometry = CanvasGeometry.CreateRoundedRectangle(null, new Windows.Foundation.Rect(0, 0, width, height), radius, radius))
                 {
-                    hostBackdropGeometry.Path = new CompositionPath(geometry1);
+                    hostBackdropGeometry.Path = new CompositionPath(geometry);
                 }
+
+                using (var geometry = CanvasGeometry.CreateRoundedRectangle(null, new Windows.Foundation.Rect(borderThickness / 2, borderThickness / 2, width - borderThickness, height - borderThickness), radius - borderThickness / 2, radius - borderThickness / 2))
+                {
+                    // 使用CanvasGeometry.CreateRoundedRectangle创建圆角矩形Geometry
+                    // 使用Stroke呈现时，着色是以Geometry的线条为中线向两侧扩展着色
+                    // CornerRadius此时是中线的角半径
+                    // 如果需要设置外侧角半径为 radius 时，中线半径应为 radius - borderThickness / 2
+                    // 此时内测半径为 radius - borderThickness
+
+                    borderGeometry.Path = new CompositionPath(geometry);
+                }
+
             }
         }
 
@@ -336,7 +382,7 @@ namespace HotLyric.Win32.Base
         #region Update Size
 
         [System.Diagnostics.DebuggerNonUserCode]
-        private void WindowManager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
+        private unsafe void WindowManager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
         {
             if (window != null)
             {
@@ -344,10 +390,19 @@ namespace HotLyric.Win32.Base
                 {
                     window.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateRootVisualScale);
                 }
-                else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_SIZE
-                    || e.Message.MessageId == (uint)User32.WindowMessage.WM_WINDOWPOSCHANGED)
+                else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_SIZE)
                 {
                     window.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateRootVisualSize);
+                }
+                else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_WINDOWPOSCHANGED)
+                {
+                    var wndpos = (User32.WINDOWPOS*)e.Message.LParam.ToPointer();
+                    var flag = wndpos->flags;
+
+                    if ((flag & (User32.SetWindowPosFlags.SWP_NOSIZE)) == 0)
+                    {
+                        window.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateRootVisualSize);
+                    }
                 }
                 else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_SHOWWINDOW)
                 {

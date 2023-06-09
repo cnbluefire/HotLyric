@@ -11,74 +11,49 @@ namespace HotLyric.Win32.Models
 {
     public class LyricThemeView
     {
-        private static Brush TransparentBrush = new SolidColorBrush(Colors.Transparent);
+        public LyricThemeView(Color borderColor, Color backgroundColor, Color lyricColor, Color karaokeColor, Color lyricStrokeColor, Color karaokeStrokeColor)
+            : this("customize", borderColor, backgroundColor, lyricColor, karaokeColor, lyricStrokeColor, karaokeStrokeColor) { }
 
-        public LyricThemeView(Brush? borderBrush, Brush? backgroundBrush, Brush? lyricBrush, Brush? karaokeBrush, Brush? lyricStrokeBrush, Brush? karaokeStrokeBrush)
-            : this("customize", borderBrush, backgroundBrush, lyricBrush, karaokeBrush, lyricStrokeBrush, karaokeStrokeBrush)
-        {
-            KaraokeStrokeBrush = karaokeStrokeBrush;
-        }
-
-        internal LyricThemeView(string name, Brush? borderBrush, Brush? backgroundBrush, Brush? lyricBrush, Brush? karaokeBrush, Brush? lyricStrokeBrush, Brush? karaokeStrokeBrush)
+        internal LyricThemeView(string name, Color borderColor, Color backgroundColor, Color lyricColor, Color karaokeColor, Color lyricStrokeColor, Color karaokeStrokeColor)
         {
             Name = name;
 
-            BorderBrush = NormalizeBrush(borderBrush);
-            BackgroundBrush = NormalizeBrush(backgroundBrush);
-            LyricBrush = NormalizeBrush(lyricBrush);
-            KaraokeBrush = NormalizeBrush(karaokeBrush);
-            LyricStrokeBrush = NormalizeBrush(lyricStrokeBrush);
-            KaraokeStrokeBrush = NormalizeBrush(karaokeStrokeBrush);
+            BorderColor = borderColor;
+            BackgroundColor = backgroundColor;
+            LyricColor = lyricColor;
+            KaraokeColor = karaokeColor;
+            LyricStrokeColor = lyricStrokeColor;
+            KaraokeStrokeColor = karaokeStrokeColor;
 
-            if (KaraokeStrokeBrush is SolidColorBrush _brush
-                && _brush.Opacity * _brush.Color.A == 0)
+            if (KaraokeStrokeColor.A == 0)
             {
-                KaraokeStrokeBrush = LyricStrokeBrush;
+                KaraokeStrokeColor = LyricStrokeColor;
             }
 
-            var color = Colors.Black;
-
-            if (BackgroundBrush is SolidColorBrush scb)
-            {
-                color = scb.Color;
-            }
+            var color = BackgroundColor;
 
             var l = (color.R * 0.2126f + color.G * 0.7152f + color.B * 0.0722f) / 255f;
 
-            ForegroundBrush = l >= 0.65 ? new SolidColorBrush(Color.FromArgb(230, 0, 0, 0)) : new SolidColorBrush(Color.FromArgb(204, 255, 255, 255));
+            ForegroundColor = l >= 0.65 ? Color.FromArgb(230, 0, 0, 0) : Color.FromArgb(204, 255, 255, 255);
+            ForegroundBrush = new SolidColorBrush(ForegroundColor);
         }
 
         public string Name { get; }
 
-        public Brush? BorderBrush { get; }
+        public Color BorderColor { get; }
 
-        public Brush? BackgroundBrush { get; }
+        public Color BackgroundColor { get; }
 
-        public Brush? LyricBrush { get; }
+        public Color LyricColor { get; }
 
-        public Brush? KaraokeBrush { get; }
+        public Color KaraokeColor { get; }
 
-        public Brush? LyricStrokeBrush { get; }
+        public Color LyricStrokeColor { get; }
 
-        public Brush? KaraokeStrokeBrush { get; }
+        public Color KaraokeStrokeColor { get; }
+
+        public Color ForegroundColor { get; }
 
         public Brush? ForegroundBrush { get; }
-
-        private static Brush NormalizeBrush(Brush? brush)
-        {
-            if (brush == null) return TransparentBrush;
-            else if (brush is SolidColorBrush scb)
-            {
-                if (scb.Opacity == 1) return brush;
-                else if (scb.Opacity == 0) return TransparentBrush;
-                else return new SolidColorBrush(
-                    Color.FromArgb(
-                        (byte)Math.Min(Math.Max((int)(scb.Opacity * scb.Color.A), 0), 255),
-                        scb.Color.R,
-                        scb.Color.G,
-                        scb.Color.B));
-            }
-            else return TransparentBrush;
-        }
     }
 }

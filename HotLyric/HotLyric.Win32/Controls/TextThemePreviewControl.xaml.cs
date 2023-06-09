@@ -30,11 +30,20 @@ namespace HotLyric.Win32.Controls
         private LyricDrawingLine? line;
         private LyricDrawingTextColors colors;
 
+        private SolidColorBrush backgroundBrush;
+        private SolidColorBrush borderBrush;
+
         public TextThemePreviewControl()
         {
             this.InitializeComponent();
             this.Loaded += TextThemePreviewControl_Loaded;
             this.Unloaded += TextThemePreviewControl_Unloaded;
+
+            backgroundBrush = new SolidColorBrush();
+            borderBrush = new SolidColorBrush();
+
+            BackgroundBorder.Background = backgroundBrush;
+            BackgroundBorder.BorderBrush = borderBrush;
 
             colors = new LyricDrawingTextColors();
         }
@@ -98,13 +107,13 @@ namespace HotLyric.Win32.Controls
         {
             if (Theme == null) return;
 
-            BackgroundBorder.Background = Theme.BackgroundBrush;
-            BackgroundBorder.BorderBrush = Theme.BorderBrush;
+            backgroundBrush.Color = Theme.BackgroundColor;
+            borderBrush.Color = Theme.BorderColor;
 
-            colors.FillColor1 = (Theme.LyricBrush as SolidColorBrush)?.Color ?? Color.FromArgb(0, 0, 0, 0);
-            colors.FillColor2 = (Theme.KaraokeBrush as SolidColorBrush)?.Color ?? Color.FromArgb(0, 0, 0, 0);
-            colors.StrokeColor1 = (Theme.LyricStrokeBrush as SolidColorBrush)?.Color ?? Color.FromArgb(0, 0, 0, 0);
-            colors.StrokeColor2 = (Theme.KaraokeStrokeBrush as SolidColorBrush)?.Color ?? Color.FromArgb(0, 0, 0, 0);
+            colors.FillColor1 = Theme.LyricColor;
+            colors.FillColor2 = Theme.KaraokeColor;
+            colors.StrokeColor1 = Theme.LyricStrokeColor;
+            colors.StrokeColor2 = Theme.KaraokeStrokeColor;
 
             if (IsLoaded)
             {

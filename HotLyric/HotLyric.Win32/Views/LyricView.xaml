@@ -19,28 +19,26 @@
           RequestedTheme="Dark">
         <Grid.Resources>
             <base:WindowAcrylicController x:Name="AcrylicController" Visible="False"
-                                          VisualOpacity="{x:Bind converter:BindUtils.OpacityVisible(VM.IsBackgroundVisible),Mode=OneWay}">
+                                          CornerRadius="8"
+                                          Margin="{x:Bind ContentRoot.Margin,Mode=OneWay}"
+                                          VisualOpacity="{x:Bind converter:BindUtils.OpacityVisible(VM.IsBackgroundVisible),Mode=OneWay}"
+                                          BorderColor="{x:Bind VM.LyricTheme.BorderColor,Mode=OneWay}">
                 <base:WindowAcrylicController.AcrylicBrush>
-                    <AcrylicBrush TintColor="{x:Bind VM.LyricTheme.BackgroundBrush.(SolidColorBrush.Color),Mode=OneWay}"
-                                  TintOpacity="0.4"
-                                  FallbackColor="{x:Bind VM.LyricTheme.BackgroundBrush.(SolidColorBrush.Color)}" />
+                    <AcrylicBrush TintColor="{x:Bind VM.LyricTheme.BackgroundColor,Mode=OneWay}"
+                                  TintOpacity="0.6"
+                                  FallbackColor="{x:Bind VM.LyricTheme.BackgroundColor}" />
                 </base:WindowAcrylicController.AcrylicBrush>
             </base:WindowAcrylicController>
         </Grid.Resources>
         <Grid x:Name="ContentRoot"
               HorizontalAlignment="Stretch"
               VerticalAlignment="Stretch"
-              Margin="10,10,10,14" Background="Transparent"
+              Margin="10" Background="Transparent"
               SizeChanged="ContentRoot_SizeChanged">
             <Grid.RowDefinitions>
                 <RowDefinition Height="Auto" />
                 <RowDefinition Height="*" />
             </Grid.RowDefinitions>
-            <Rectangle x:Name="BackgroundAndShadowHost" HorizontalAlignment="Stretch" VerticalAlignment="Stretch"
-                       RadiusX="8" RadiusY="8" UseLayoutRounding="False" 
-                       StrokeThickness="0.66" Stroke="{Binding LyricTheme.BorderBrush}"
-                       Grid.RowSpan="2" Canvas.ZIndex="1" 
-                       Opacity="{Binding IsBackgroundVisible, Converter={StaticResource BooleanToOpacityConverter}}" />
             <Grid x:Name="TitleContainer" Height="44" Canvas.ZIndex="1" Opacity="{Binding IsBackgroundVisible, Converter={StaticResource BooleanToOpacityConverter}}">
                 <Grid.Resources>
                     <Style x:Key="TitleButtonStyle" TargetType="Button" BasedOn="{StaticResource DefaultButtonStyle}">

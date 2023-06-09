@@ -47,12 +47,12 @@ namespace HotLyric.Win32.Controls
                 {
                     if (a.NewValue is LyricThemeView newTheme)
                     {
-                        sender.WindowBorderColorPicker.SelectedColor = GetBrushColor(newTheme.BorderBrush);
-                        sender.WindowBackgroundColorPicker.SelectedColor = GetBrushColor(newTheme.BackgroundBrush);
-                        sender.LyricTextColorPicker.SelectedColor = GetBrushColor(newTheme.LyricBrush);
-                        sender.KaraokeTextColorPicker.SelectedColor = GetBrushColor(newTheme.KaraokeBrush);
-                        sender.LyricStrokeColorPicker.SelectedColor = GetBrushColor(newTheme.LyricStrokeBrush);
-                        sender.KaraokeStrokeColorPicker.SelectedColor = GetBrushColor(newTheme.KaraokeStrokeBrush);
+                        sender.WindowBorderColorPicker.SelectedColor = newTheme.BorderColor;
+                        sender.WindowBackgroundColorPicker.SelectedColor = newTheme.BackgroundColor;
+                        sender.LyricTextColorPicker.SelectedColor = newTheme.LyricColor;
+                        sender.KaraokeTextColorPicker.SelectedColor = newTheme.KaraokeColor;
+                        sender.LyricStrokeColorPicker.SelectedColor = newTheme.LyricStrokeColor;
+                        sender.KaraokeStrokeColorPicker.SelectedColor = newTheme.KaraokeStrokeColor;
                     }
                 }
             }));
@@ -68,14 +68,14 @@ namespace HotLyric.Win32.Controls
 
             if (Theme != null)
             {
-                var windowBorderColor = GetBrushColor(Theme.BorderBrush);
-                var windowBackgroundColor = GetBrushColor(Theme.BackgroundBrush);
-                var lyricTextColor = GetBrushColor(Theme.LyricBrush);
-                var karaokeTextColor = GetBrushColor(Theme.KaraokeBrush);
-                var lyricStrokeColor = GetBrushColor(Theme.LyricStrokeBrush);
-                var karaokeStrokeColor = GetBrushColor(Theme.KaraokeStrokeBrush);
+                var windowBorderColor = Theme.BorderColor;
+                var windowBackgroundColor = Theme.BackgroundColor;
+                var lyricTextColor = Theme.LyricColor;
+                var karaokeTextColor = Theme.KaraokeColor;
+                var lyricStrokeColor = Theme.LyricStrokeColor;
+                var karaokeStrokeColor = Theme.KaraokeStrokeColor;
 
-                if((windowBorderColor, windowBackgroundColor, lyricTextColor, karaokeTextColor, lyricStrokeColor, karaokeStrokeColor) ==
+                if ((windowBorderColor, windowBackgroundColor, lyricTextColor, karaokeTextColor, lyricStrokeColor, karaokeStrokeColor) ==
                     (WindowBorderColorPicker.SelectedColor, WindowBackgroundColorPicker.SelectedColor, LyricTextColorPicker.SelectedColor, KaraokeTextColorPicker.SelectedColor, LyricStrokeColorPicker.SelectedColor, KaraokeStrokeColorPicker.SelectedColor))
                 {
                     return;
@@ -83,21 +83,14 @@ namespace HotLyric.Win32.Controls
             }
 
             var theme = new LyricThemeView(
-                new SolidColorBrush(WindowBorderColorPicker.SelectedColor),
-                new SolidColorBrush(WindowBackgroundColorPicker.SelectedColor),
-                new SolidColorBrush(LyricTextColorPicker.SelectedColor),
-                new SolidColorBrush(KaraokeTextColorPicker.SelectedColor),
-                new SolidColorBrush(LyricStrokeColorPicker.SelectedColor),
-                new SolidColorBrush(KaraokeStrokeColorPicker.SelectedColor));
+                WindowBorderColorPicker.SelectedColor,
+                WindowBackgroundColorPicker.SelectedColor,
+                LyricTextColorPicker.SelectedColor,
+                KaraokeTextColorPicker.SelectedColor,
+                LyricStrokeColorPicker.SelectedColor,
+                KaraokeStrokeColorPicker.SelectedColor);
 
             Theme = theme;
         }
-
-        private static Color GetBrushColor(Brush? brush)
-        {
-            if (brush is SolidColorBrush scb) return scb.Color;
-            return Color.FromArgb(255, 255, 255, 255);
-        }
-
     }
 }

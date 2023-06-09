@@ -41,12 +41,12 @@ namespace HotLyric.Win32.Models
                 {
                     new LyricThemeView(
                         name: "default",
-                        borderBrush: CreateBrush("#548F8F8F"),
-                        backgroundBrush: CreateBrush("#FF2C2C2C"),
-                        lyricBrush: CreateBrush("#FFFFFFFF"),
-                        karaokeBrush: CreateBrush("#FFFFA04D"),
-                        lyricStrokeBrush: CreateBrush("#FF000000"),
-                        karaokeStrokeBrush: CreateBrush("#FF000000"))
+                        borderColor: ParseColor("#548F8F8F"),
+                        backgroundColor: ParseColor("#FF2C2C2C"),
+                        lyricColor: ParseColor("#FFFFFFFF"),
+                        karaokeColor: ParseColor("#FFFFA04D"),
+                        lyricStrokeColor: ParseColor("#FF000000"),
+                        karaokeStrokeColor: ParseColor("#FF000000"))
                 };
             }
 
@@ -110,43 +110,43 @@ namespace HotLyric.Win32.Models
                 name = "customize";
             }
 
-            var borderBrush = CreateBrush(jsonModel?.BorderBrush);
-            var backgroundBrush = CreateBrush(jsonModel?.BackgroundBrush);
-            var lyricBrush = CreateBrush(jsonModel?.LyricBrush);
-            var karaokeBrush = CreateBrush(jsonModel?.KaraokeBrush);
-            var lyricStrokeBrush = CreateBrush(jsonModel?.LyricStrokeBrush);
-            var karaokeStrokeBrush = CreateBrush(jsonModel?.KaraokeStrokeBrush);
+            var borderBrush = ParseColor(jsonModel?.BorderBrush);
+            var backgroundBrush = ParseColor(jsonModel?.BackgroundBrush);
+            var lyricBrush = ParseColor(jsonModel?.LyricBrush);
+            var karaokeBrush = ParseColor(jsonModel?.KaraokeBrush);
+            var lyricStrokeBrush = ParseColor(jsonModel?.LyricStrokeBrush);
+            var karaokeStrokeBrush = ParseColor(jsonModel?.KaraokeStrokeBrush);
 
             return new LyricThemeView(name, borderBrush, backgroundBrush, lyricBrush, karaokeBrush, lyricStrokeBrush, karaokeStrokeBrush);
         }
 
         private static LyricThemeJsonModel CreateJsonModel(LyricThemeView? view)
         {
+            var defaultColor = Color.FromArgb(0, 255, 255, 255);
+
             var jsonModel = new LyricThemeJsonModel()
             {
                 Name = view?.Name,
-                BorderBrush = GetBrushJson(view?.BorderBrush),
-                BackgroundBrush = GetBrushJson(view?.BackgroundBrush),
-                LyricBrush = GetBrushJson(view?.LyricBrush),
-                KaraokeBrush = GetBrushJson(view?.KaraokeBrush),
-                LyricStrokeBrush = GetBrushJson(view?.LyricStrokeBrush),
-                KaraokeStrokeBrush = GetBrushJson(view?.KaraokeStrokeBrush),
+                BorderBrush = GetColorJson(view?.BorderColor ?? defaultColor),
+                BackgroundBrush = GetColorJson(view?.BackgroundColor ?? defaultColor),
+                LyricBrush = GetColorJson(view?.LyricColor ?? defaultColor),
+                KaraokeBrush = GetColorJson(view?.KaraokeColor ?? defaultColor),
+                LyricStrokeBrush = GetColorJson(view?.LyricStrokeColor ?? defaultColor),
+                KaraokeStrokeBrush = GetColorJson(view?.KaraokeStrokeColor ?? defaultColor),
             };
 
             return jsonModel;
         }
 
-        private static Brush? CreateBrush(string? brushJson)
+        private static Color ParseColor(string? colorJson)
         {
-            if (brushJson == null) return null;
-
-            if (brushJson.Length > 0 && brushJson[0] == '#' && (brushJson.Length == 4 || brushJson.Length == 7 || brushJson.Length == 9))
+            if (!string.IsNullOrEmpty(colorJson) && colorJson[0] == '#' && (colorJson.Length == 4 || colorJson.Length == 7 || colorJson.Length == 9))
             {
                 try
                 {
-                    if (XamlBindingHelper.ConvertValue(typeof(Color), brushJson) is Color color)
+                    if (XamlBindingHelper.ConvertValue(typeof(Color), colorJson) is Color color)
                     {
-                        return new SolidColorBrush(color);
+                        return color;
                     }
                 }
                 catch (Exception ex)
@@ -154,18 +154,12 @@ namespace HotLyric.Win32.Models
                     HotLyric.Win32.Utils.LogHelper.LogError(ex);
                 }
             }
-
-            return null;
+            return Color.FromArgb(0, 255, 255, 255);
         }
 
-        private static string GetBrushJson(Brush? brush)
+        private static string GetColorJson(Color color)
         {
-            if (brush is SolidColorBrush solidColorBrush)
-            {
-                var c = solidColorBrush.Color;
-                return $"#{c.A:X2}{c.R:X2}{c.G:X2}{c.B:X2}";
-            }
-            return $"#00FFFFFF";
+            return $"#{color.A:X2}{color.R:X2}{color.G:X2}{color.B:X2}";
         }
 
         private class LyricThemeJsonModel

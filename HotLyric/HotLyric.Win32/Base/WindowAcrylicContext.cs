@@ -310,7 +310,7 @@ namespace HotLyric.Win32.Base
             var pixelSize = window.GetAppWindow().Size;
 
             var width = pixelSize.Width * 96 / dpi - Margin.Left - Margin.Right;
-            var height = (pixelSize.Height) * 96 / dpi - Margin.Top - Margin.Bottom;
+            var height = pixelSize.Height * 96 / dpi - Margin.Top - Margin.Bottom;
 
             if (width <= 0 || height <= 0)
             {
@@ -321,7 +321,7 @@ namespace HotLyric.Win32.Base
             var size = new Vector2((float)width, (float)height);
             var offset = new Vector3((float)Margin.Left, (float)Margin.Top, 0);
 
-            var radius = (float)(CornerRadius * dpi / 96);
+            var radius = (float)(CornerRadius);
 
             blurAndShadowContainer.Offset = offset;
             blurAndShadowContainer.Size = size;
@@ -330,7 +330,7 @@ namespace HotLyric.Win32.Base
 
             backdropSurface.SourceSize = size;
 
-            var borderThickness = (float)(0.8 * dpi / 96);
+            var borderThickness = 1f;
             borderShape.StrokeThickness = borderThickness;
 
             if (backgroundShadowHostSurface != null && backgroundShadowHostSurfaceVisual != null)

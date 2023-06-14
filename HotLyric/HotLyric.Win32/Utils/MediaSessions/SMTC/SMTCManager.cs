@@ -39,12 +39,41 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             var appIdHash = new HashSet<string>();
 
             var tmp = manager.GetSessions().ToArray();
-            var curSession = manager.GetCurrentSession();
+            var tmp2 = new List<(SMTCApp, List<GlobalSystemMediaTransportControlsSession>)>();
 
-            var app = await GetAppAsync(curSession);
-            if (app != null)
+            foreach (var session in tmp)
             {
-                var s = CreateMediaSession(curSession, app, sessions);
+                var sessionApp = await GetAppAsync(session);
+                if (sessionApp != null)
+                {
+                    if (sessionApp.PackageFamilyNamePrefix == "903DB504.12708F202F598_"
+                        || sessionApp.PackageFamilyNamePrefix == "903DB504.QQWP_")
+                    {
+                        // QQ音乐创造性的使用两个GSMTC来控制音乐
+                        // 一个用来提供媒体信息，一个用来提供时间轴信息
+                        var list2 = tmp2.FirstOrDefault(c => c.Item1.PackageFamilyNamePrefix == sessionApp.PackageFamilyNamePrefix).Item2;
+                        if (list2 != null)
+                        {
+                            list2.Add(session);
+                        }
+                        else
+                        {
+                            tmp2.Add((sessionApp, new List<GlobalSystemMediaTransportControlsSession>() { session }));
+                        }
+                    }
+                    else
+                    {
+                        tmp2.Add((sessionApp, new List<GlobalSystemMediaTransportControlsSession>() { session }));
+                    }
+                }
+            }
+
+            var curSession = manager.GetCurrentSession();
+            var curApp = tmp2.FirstOrDefault(c => c.Item2?.Contains(curSession) == true);
+
+            if (curApp.Item1 != null)
+            {
+                var s = CreateMediaSession(curApp.Item2, curApp.Item1, sessions);
 
                 list.Add(s);
                 appIdHash.Add(curSession.SourceAppUserModelId);
@@ -55,12 +84,11 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 this.curSession = null;
             }
 
-            foreach (var session in tmp)
+            foreach (var (app2, sessionGroup) in tmp2)
             {
-                var app2 = await GetAppAsync(session);
-                if (app2 != null && appIdHash.Add(session.SourceAppUserModelId))
+                if (app2 != null && appIdHash.Add(sessionGroup[0].SourceAppUserModelId))
                 {
-                    var s = CreateMediaSession(session, app2, sessions);
+                    var s = CreateMediaSession(sessionGroup, app2, sessions);
                     list.Add(s);
                 }
             }
@@ -74,16 +102,16 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             }
         }
 
-        private ISMTCSession CreateMediaSession(GlobalSystemMediaTransportControlsSession session, SMTCApp app, IReadOnlyList<ISMTCSession>? oldSessions)
+        private ISMTCSession CreateMediaSession(IReadOnlyList<GlobalSystemMediaTransportControlsSession> sessionGroup, SMTCApp app, IReadOnlyList<ISMTCSession>? oldSessions)
         {
-            var result = oldSessions?.FirstOrDefault(c => c.Session == session);
+            var result = oldSessions?.FirstOrDefault(c => sessionGroup.Contains(c.Session));
             if (result != null) return result;
 
             if (app.AppId == "com.electron.yesplaymusic" || app.AppId == "YesPlayMusic.exe")
             {
-                return new YesPlayerMusicSession(session, app);
+                return new YesPlayerMusicSession(sessionGroup[0], app);
             }
-            return new SMTCSession(session, app);
+            return new SMTCSession(sessionGroup, app);
         }
 
         private async Task<SMTCApp?> GetAppAsync(GlobalSystemMediaTransportControlsSession session)

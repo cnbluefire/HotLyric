@@ -16,7 +16,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
     public partial class SMTCSession : ISMTCSession
     {
         private bool disposedValue;
-        private GlobalSystemMediaTransportControlsSession session;
+        private IReadOnlyList<GlobalSystemMediaTransportControlsSession> sessions;
         private string appUserModelId;
         private TaskCompletionSource<MediaSessionMediaProperties?>? mediaPropertiesSource;
         private GlobalSystemMediaTransportControlsSessionPlaybackInfo? playbackInfo;
@@ -33,24 +33,50 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         private DateTime lastUpdatePositionTime = default;
         private Timer? internalPositionTimer;
 
-        public SMTCSession(GlobalSystemMediaTransportControlsSession session, SMTCApp app)
+        public SMTCSession(
+            GlobalSystemMediaTransportControlsSession session,
+            SMTCApp app) :
+            this(new[] { session }, app)
+        { }
+
+        public SMTCSession(
+            IReadOnlyList<GlobalSystemMediaTransportControlsSession> sessions,
+            SMTCApp app)
         {
-            this.session = session ?? throw new ArgumentNullException(nameof(session));
+            if (sessions == null || sessions.Count == 0 || sessions.Any(c => c == null))
+                throw new ArgumentNullException(nameof(sessions));
+
+            this.sessions = sessions.ToArray();
             PositionMode = app.PositionMode;
             this.app = app;
-            appUserModelId = session.SourceAppUserModelId;
+            appUserModelId = sessions[0].SourceAppUserModelId;
 
-            session.MediaPropertiesChanged += Session_MediaPropertiesChanged;
-            session.PlaybackInfoChanged += Session_PlaybackInfoChanged;
-            session.TimelinePropertiesChanged += Session_TimelinePropertiesChanged;
+            foreach (var session in sessions)
+            {
+                session.MediaPropertiesChanged += Session_MediaPropertiesChanged;
+                session.TimelinePropertiesChanged += Session_TimelinePropertiesChanged;
 
-            playbackInfo = session.GetPlaybackInfo();
-            timelineProperties = session.GetTimelineProperties();
+                if (playbackInfo == null)
+                {
+                    playbackInfo = session.GetPlaybackInfo();
+                    session.PlaybackInfoChanged += Session_PlaybackInfoChanged;
 
-            playCommand = new SMTCCommand(async () => await session.TryPlayAsync());
-            pauseCommand = new SMTCCommand(async () => await session.TryPauseAsync());
-            skipPreviousCommand = new SMTCCommand(async () => await session.TrySkipPreviousAsync());
-            skipNextCommand = new SMTCCommand(async () => await session.TrySkipNextAsync());
+                    playCommand = new SMTCCommand(async () => await session.TryPlayAsync());
+                    pauseCommand = new SMTCCommand(async () => await session.TryPauseAsync());
+                    skipPreviousCommand = new SMTCCommand(async () => await session.TrySkipPreviousAsync());
+                    skipNextCommand = new SMTCCommand(async () => await session.TrySkipNextAsync());
+                }
+
+                if (timelineProperties == null || timelineProperties.LastUpdatedTime.Year <= 2000)
+                {
+                    timelineProperties = session.GetTimelineProperties();
+                }
+            }
+
+            playCommand ??= new SMTCCommand(() => Task.CompletedTask);
+            pauseCommand ??= new SMTCCommand(() => Task.CompletedTask);
+            skipPreviousCommand ??= new SMTCCommand(() => Task.CompletedTask);
+            skipNextCommand ??= new SMTCCommand(() => Task.CompletedTask);
 
             UpdateTimelineProperties();
             UpdatePlaybackInfo();
@@ -102,7 +128,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         private void Session_TimelinePropertiesChanged(GlobalSystemMediaTransportControlsSession sender, TimelinePropertiesChangedEventArgs args)
         {
-            timelineProperties = session.GetTimelineProperties();
+            timelineProperties = sender.GetTimelineProperties();
             UpdateInternalTimerState();
 
             if (PositionMode != SMTCAppPositionMode.OnlyUseTimer)
@@ -114,7 +140,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         private void Session_PlaybackInfoChanged(GlobalSystemMediaTransportControlsSession sender, PlaybackInfoChangedEventArgs args)
         {
-            playbackInfo = session.GetPlaybackInfo();
+            playbackInfo = sender.GetPlaybackInfo();
             UpdatePlaybackInfo();
             PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
         }
@@ -218,7 +244,19 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 mediaPropertiesSource = taskSource;
                 try
                 {
-                    var mediaProperties = await session?.TryGetMediaPropertiesAsync();
+                    GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties = null;
+
+                    foreach (var session in sessions)
+                    {
+                        mediaProperties = await session?.TryGetMediaPropertiesAsync();
+
+                        if (disposedValue) break;
+                        
+                        if (mediaProperties != null && !string.IsNullOrEmpty(mediaProperties.Title))
+                        {
+                            break;
+                        }
+                    }
 
                     var playbackType = mediaProperties?.PlaybackType;
 
@@ -239,7 +277,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             return await taskSource.Task.ConfigureAwait(false);
         }
 
-        public GlobalSystemMediaTransportControlsSession Session => session;
+        public GlobalSystemMediaTransportControlsSession Session => sessions[0];
 
         public double PlaybackRate { get; private set; }
 
@@ -330,9 +368,12 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                     skipPreviousCommand.CanExecute = false;
                     skipNextCommand.CanExecute = false;
 
-                    session.MediaPropertiesChanged -= Session_MediaPropertiesChanged;
-                    session.PlaybackInfoChanged -= Session_PlaybackInfoChanged;
-                    session.TimelinePropertiesChanged -= Session_TimelinePropertiesChanged;
+                    foreach (var session in sessions)
+                    {
+                        session.MediaPropertiesChanged -= Session_MediaPropertiesChanged;
+                        session.PlaybackInfoChanged -= Session_PlaybackInfoChanged;
+                        session.TimelinePropertiesChanged -= Session_TimelinePropertiesChanged;
+                    }
 
                     mediaPropertiesSource = null;
                     playbackInfo = null;
@@ -341,7 +382,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                     UpdateTimelineProperties();
                     UpdatePlaybackInfo();
 
-                    session = null!;
+                    sessions = null!;
                 }
 
                 // TODO: 释放未托管的资源(未托管的对象)并重写终结器

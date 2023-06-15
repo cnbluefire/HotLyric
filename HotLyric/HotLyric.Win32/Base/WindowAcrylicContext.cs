@@ -452,7 +452,7 @@ namespace HotLyric.Win32.Base
         {
             var compositor = WindowsCompositionHelper.Compositor;
 
-            var interop = compositor.As<WindowsCompositionHelper.ICompositorDesktopInterop>();
+            var interop = compositor.As<NativeMethods.ICompositorDesktopInterop>();
             interop.CreateDesktopWindowTarget(windowHandle, false, out var raw);
             var target = DesktopWindowTarget.FromAbi(raw);
 

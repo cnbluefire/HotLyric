@@ -67,7 +67,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                     skipNextCommand = new SMTCCommand(async () => await session.TrySkipNextAsync());
                 }
 
-                if (timelineProperties == null || timelineProperties.LastUpdatedTime.Year <= 2000)
+                if (timelineProperties == null || timelineProperties.LastUpdatedTime.Year > 2000)
                 {
                     timelineProperties = session.GetTimelineProperties();
                 }

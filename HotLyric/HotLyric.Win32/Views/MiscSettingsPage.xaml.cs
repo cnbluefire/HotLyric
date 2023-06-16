@@ -18,6 +18,8 @@ namespace HotLyric.Win32.Views
             this.InitializeComponent();
         }
 
+        public SettingsWindowViewModel VM => (SettingsWindowViewModel)DataContext;
+
         private void ResetWindowBoundsButton_Click(object sender, RoutedEventArgs e)
         {
             if (App.Current.LyricView != null)
@@ -25,6 +27,11 @@ namespace HotLyric.Win32.Views
                 WindowBoundsHelper.ResetWindowBounds(App.Current.LyricView.GetWindowHandle());
                 ViewModelLocator.Instance.SettingsWindowViewModel.ActivateInstance();
             }
+        }
+
+        private void ResetHotKeyButton_Click(object sender, RoutedEventArgs e)
+        {
+            VM.HotKeyManager.ResetToDefaultSettings();
         }
     }
 }

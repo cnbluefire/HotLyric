@@ -1,4 +1,5 @@
-﻿using Microsoft.UI.Xaml;
+﻿using HotLyric.Win32.Models;
+using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -18,5 +19,11 @@ namespace HotLyric.Win32.Utils.Converters
         public static Visibility Visible(bool value) => value ? Visibility.Visible : Visibility.Collapsed;
 
         public static Visibility NotVisible(bool value) => Visible(!value);
+
+        public static string HotKeyTip(HotKeyModel? hotKeyModel)
+        {
+            if (hotKeyModel == null) return "";
+            return HotKeyHelper.MapKeyToString(hotKeyModel.Modifiers, hotKeyModel.Key);
+        }
     }
 }

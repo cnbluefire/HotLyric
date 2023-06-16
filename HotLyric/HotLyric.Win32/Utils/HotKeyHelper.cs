@@ -1,253 +1,224 @@
 ﻿using System;
 using System.Collections.Generic;
 using System.Linq;
-using System.Runtime.InteropServices;
+using System.Runtime.CompilerServices;
 using System.Text;
-using System.Threading;
 using System.Threading.Tasks;
 using Vanara.PInvoke;
-using WinDispatcherQueueController = Windows.System.DispatcherQueueController;
 using VirtualKey = Windows.System.VirtualKey;
 using VirtualKeyModifiers = Windows.System.VirtualKeyModifiers;
-using System.Runtime.CompilerServices;
+
 
 namespace HotLyric.Win32.Utils
 {
-    internal class HotKeyHelper : IDisposable
+    public static class HotKeyHelper
     {
-        private bool disposedValue;
-
-        private static int id;
-        private Thread backgroundThread;
-        private WinDispatcherQueueController? dispatcherQueueController;
-        private EventWaitHandle? initializeWaitHandle;
-        private User32.SafeHWND? messageWindowHandle;
-        private User32.WindowProc? wndProcHandler;
-        private Dictionary<(User32.HotKeyModifiers modifiers, User32.VK key), int> hotkeyEventHandlers
-            = new Dictionary<(User32.HotKeyModifiers modifiers, User32.VK key), int>();
-
-        public HotKeyHelper()
+        private static Dictionary<User32.VK, string> keyNames = new Dictionary<User32.VK, string>()
         {
-            backgroundThread = new Thread(ThreadMain);
-            backgroundThread.IsBackground = true;
-            backgroundThread.SetApartmentState(ApartmentState.STA);
+            [User32.VK.VK_PRIOR] = "Page Up",
+            [User32.VK.VK_NEXT] = "Page Down",
+            [User32.VK.VK_HOME] = "Home",
+            [User32.VK.VK_END] = "End",
+            [User32.VK.VK_LEFT] = "←",
+            [User32.VK.VK_RIGHT] = "→",
+            [User32.VK.VK_UP] = "↑",
+            [User32.VK.VK_DOWN] = "↓",
 
-            initializeWaitHandle = new EventWaitHandle(false, EventResetMode.ManualReset);
-            backgroundThread.Start();
+            [User32.VK.VK_MULTIPLY] = "Num *",
+            [User32.VK.VK_ADD] = "Num +",
+            [User32.VK.VK_SUBTRACT] = "Num -",
+            [User32.VK.VK_DECIMAL] = "Num .",
+            [User32.VK.VK_DIVIDE] = "Num /",
 
-            initializeWaitHandle.WaitOne();
-            initializeWaitHandle.Dispose();
-            initializeWaitHandle = null;
+            //[User32.VK.VK_OEM_PLUS] = "+",
+            //[User32.VK.VK_OEM_COMMA] = ",",
+            //[User32.VK.VK_OEM_MINUS] = "-",
+            //[User32.VK.VK_OEM_PERIOD] = ".",
+            //[User32.VK.VK_OEM_1] = ";",
+            //[User32.VK.VK_OEM_2] = "?",
+            //[User32.VK.VK_OEM_3] = "~",
+            //[User32.VK.VK_OEM_4] = "[",
+            //[User32.VK.VK_OEM_5] = "\\",
+            //[User32.VK.VK_OEM_6] = "]",
+            //[User32.VK.VK_OEM_7] = "'",
+        };
+
+        private static Dictionary<User32.HotKeyModifiers, string[]> modifierNames = new Dictionary<User32.HotKeyModifiers, string[]>();
+
+        public static string[] MapKeyToString(User32.HotKeyModifiers modifiers)
+        {
+            User32.HotKeyModifiers modifiers2 = default;
+
+            int capacity = 0;
+
+            if ((modifiers & User32.HotKeyModifiers.MOD_CONTROL) != 0)
+            {
+                capacity++;
+                modifiers2 |= User32.HotKeyModifiers.MOD_CONTROL;
+            }
+            if ((modifiers & User32.HotKeyModifiers.MOD_ALT) != 0)
+            {
+                capacity++;
+                modifiers2 |= User32.HotKeyModifiers.MOD_ALT;
+            }
+            if ((modifiers & User32.HotKeyModifiers.MOD_SHIFT) != 0)
+            {
+                capacity++;
+                modifiers2 |= User32.HotKeyModifiers.MOD_SHIFT;
+            }
+            if ((modifiers & User32.HotKeyModifiers.MOD_WIN) != 0)
+            {
+                capacity++;
+                modifiers2 |= User32.HotKeyModifiers.MOD_WIN;
+            }
+
+            if (capacity == 0) return Array.Empty<string>();
+
+            lock (modifierNames)
+            {
+                if (modifierNames.TryGetValue(modifiers2, out var value)) return value;
+
+                value = new string[capacity];
+                var idx = 0;
+
+                if ((modifiers2 & User32.HotKeyModifiers.MOD_CONTROL) != 0) value[idx++] = "Ctrl";
+                if ((modifiers2 & User32.HotKeyModifiers.MOD_ALT) != 0) value[idx++] = "Alt";
+                if ((modifiers2 & User32.HotKeyModifiers.MOD_SHIFT) != 0) value[idx++] = "Shift";
+                if ((modifiers2 & User32.HotKeyModifiers.MOD_WIN) != 0) value[idx++] = "Win";
+
+                return value;
+            }
         }
 
-        private void ThreadMain()
+        public static string MapKeyToString(User32.VK key)
         {
-            dispatcherQueueController = NativeMethods.CreateCoreDispatcherForCurrentThread();
-            dispatcherQueueController.DispatcherQueue.ShutdownCompleted += DispatcherQueue_ShutdownCompleted;
-
-            try
+            lock (keyNames)
             {
-                CreateMessageWindow();
-            }
-            catch { }
+                if (keyNames.TryGetValue(key, out var name)) return name;
 
-            initializeWaitHandle!.Set();
-
-            while (User32.GetMessage(out var msg) > 0)
-            {
-                User32.TranslateMessage(in msg);
-                User32.DispatchMessage(in msg);
-            }
-        }
-
-        private void CreateMessageWindow()
-        {
-            const nint HWND_MESSAGE = -3;
-
-            var windowName = $"HotKeyWnd";
-            var className = $"{windowName}_{Guid.NewGuid()}";
-
-            wndProcHandler = new User32.WindowProc(WndProc);
-
-            var wndClassEx = new User32.WNDCLASSEX()
-            {
-                cbSize = (uint)Marshal.SizeOf<User32.WNDCLASSEX>(),
-                lpfnWndProc = wndProcHandler,
-                lpszClassName = className
-            };
-
-            var ret = User32.RegisterClassEx(in wndClassEx);
-
-            if (ret != 0)
-            {
-                messageWindowHandle = User32.CreateWindow(className, windowName, 0, 0, 0, 0, 0, HWND_MESSAGE, 0, Kernel32.GetModuleHandle(), 0);
-            }
-        }
-
-        private nint WndProc(HWND hwnd, uint uMsg, nint wParam, nint lParam)
-        {
-            if (uMsg == (uint)User32.WindowMessage.WM_HOTKEY)
-            {
-                if (wParam != -2 && wParam != -1)
+                else if (key == User32.VK.VK_OEM_PLUS        // 加号 +
+                    || key == User32.VK.VK_OEM_COMMA    // 逗号 ,
+                    || key == User32.VK.VK_OEM_MINUS    // 减号 -
+                    || key == User32.VK.VK_OEM_PERIOD   // 句点 .
+                    || key == User32.VK.VK_OEM_1        // 分号 ;
+                    || key == User32.VK.VK_OEM_2        // 问号 ?
+                    || key == User32.VK.VK_OEM_3        // 波浪线号 ~
+                    || key == User32.VK.VK_OEM_4        // 左中括号 [
+                    || key == User32.VK.VK_OEM_5        // 反斜线 \
+                    || key == User32.VK.VK_OEM_6        // 右中括号 ]
+                    || key == User32.VK.VK_OEM_7)       // 单引号 '
                 {
-                    lock (hotkeyEventHandlers)
+                    var sb = new StringBuilder(64);
+                    var scanCode = User32.MapVirtualKey((uint)key, User32.MAPVK.MAPVK_VK_TO_VSC);
+
+                    User32.GetKeyNameText((int)(scanCode << 16), sb, 64);
+
+                    if (sb.Length > 0)
                     {
-                        foreach (var ((modifier, key), id) in hotkeyEventHandlers)
+                        name = sb.ToString();
+
+                        if (key == User32.VK.VK_OEM_3 && name == "`")
                         {
-                            if (id == wParam)
-                            {
-                                dispatcherQueueController?.DispatcherQueue.TryEnqueue(() =>
-                                {
-                                    try
-                                    {
-                                        HotKeyInvoked?.Invoke(this, new HotKeyInvokedEventArgs(modifier, key));
-                                    }
-                                    catch { }
-                                });
-                            }
+                            name = "~";
                         }
                     }
+                    else
+                    {
+                        if (key == User32.VK.VK_OEM_PLUS) name = "+";
+                        else if (key == User32.VK.VK_OEM_COMMA) name = ",";
+                        else if (key == User32.VK.VK_OEM_MINUS) name = "-";
+                        else if (key == User32.VK.VK_OEM_PERIOD) name = ".";
+                        else if (key == User32.VK.VK_OEM_1) name = ";";
+                        else if (key == User32.VK.VK_OEM_2) name = "?";
+                        else if (key == User32.VK.VK_OEM_3) name = "~";
+                        else if (key == User32.VK.VK_OEM_4) name = "[";
+                        else if (key == User32.VK.VK_OEM_5) name = "\\";
+                        else if (key == User32.VK.VK_OEM_6) name = "]";
+                        else if (key == User32.VK.VK_OEM_7) name = "'";
+                    }
+
+                    keyNames[key] = name!;
+                    return name!;
                 }
-                return 0;
             }
 
-            return User32.DefWindowProc(hwnd, uMsg, wParam, lParam);
-        }
+            var keyNum = (int)key;
 
-        public async Task<bool> RegisterKey(User32.HotKeyModifiers modifiers, User32.VK key)
-        {
-            if (modifiers == 0 && key == 0) return false;
-
-            var tcs = new TaskCompletionSource<bool>();
-
-            dispatcherQueueController!.DispatcherQueue.TryEnqueue(() =>
+            if (keyNum >= (int)User32.VK.VK_0 && keyNum <= (int)User32.VK.VK_9)
             {
-                try
-                {
-                    int hotKeyId;
-
-                    lock (hotkeyEventHandlers)
-                    {
-                        if (hotkeyEventHandlers.ContainsKey((modifiers, key)))
-                        {
-                            tcs.TrySetResult(true);
-                            return;
-                        }
-
-                        hotKeyId = id;
-                        id++;
-                    }
-
-                    var res = User32.RegisterHotKey(messageWindowHandle, hotKeyId, modifiers, (uint)key);
-                    if (res)
-                    {
-                        hotkeyEventHandlers[(modifiers, key)] = hotKeyId;
-                    }
-
-                    tcs.TrySetResult(res);
-                }
-                finally
-                {
-                    tcs.TrySetResult(false);
-                }
-            });
-
-            return await tcs.Task.ConfigureAwait(false);
-        }
-
-        public async Task UnregisterKey(User32.HotKeyModifiers modifiers, User32.VK key)
-        {
-            if (modifiers == 0 && key == 0) return;
-
-            var tcs = new TaskCompletionSource();
-
-            dispatcherQueueController!.DispatcherQueue.TryEnqueue(() =>
-            {
-                try
-                {
-                    lock (hotkeyEventHandlers)
-                    {
-                        if (hotkeyEventHandlers.Remove((modifiers, key), out var hotKeyId))
-                        {
-                            User32.UnregisterHotKey(messageWindowHandle, hotKeyId);
-                        }
-                    }
-                }
-                finally
-                {
-                    tcs.TrySetResult();
-                }
-            });
-
-            await tcs.Task.ConfigureAwait(false);
-        }
-
-        public bool GetHotKeyState(User32.HotKeyModifiers modifiers, User32.VK key)
-        {
-            lock (hotkeyEventHandlers)
-            {
-                return hotkeyEventHandlers.ContainsKey((modifiers, key));
+                var ch = (char)(keyNum - (int)User32.VK.VK_0 + '0');
+                return $"{ch}";
             }
-        }
 
-        public event HotKeyInvokedEventHandler? HotKeyInvoked;
-
-        private void DispatcherQueue_ShutdownCompleted(Windows.System.DispatcherQueue sender, object args)
-        {
-            User32.PostQuitMessage(0);
-        }
-
-        protected virtual void Dispose(bool disposing)
-        {
-            if (!disposedValue)
+            else if (keyNum >= (int)User32.VK.VK_A && keyNum <= (int)User32.VK.VK_Z)
             {
-                if (disposing)
+                var ch = (char)(keyNum - (int)User32.VK.VK_A + 'A');
+                return $"{ch}";
+            }
+
+            else if (keyNum >= (int)User32.VK.VK_NUMPAD0 && keyNum <= (int)User32.VK.VK_NUMPAD9)
+            {
+                var ch = (char)(keyNum - (int)User32.VK.VK_NUMPAD0 + '0');
+                return $"Num {ch}";
+            }
+
+            return "";
+        }
+
+        public static bool IsCompleted(User32.HotKeyModifiers modifiers, User32.VK? key)
+        {
+            if (!key.HasValue) return false;
+
+            var modifierTexts = MapKeyToString(modifiers);
+
+            if (modifierTexts == null || modifierTexts.Length == 0) return false;
+
+            var keyText = MapKeyToString(key.Value);
+
+            if (string.IsNullOrEmpty(keyText)) return false;
+
+            return true;
+        }
+
+        public static string MapKeyToString(User32.HotKeyModifiers modifiers, User32.VK key, bool compact = false)
+        {
+            var modifierTexts = MapKeyToString(modifiers);
+            var keyText = key != 0 ? MapKeyToString(key) : "";
+
+            if ((modifierTexts != null && modifierTexts.Length > 0)
+                || !string.IsNullOrEmpty(keyText))
+            {
+                var sb = new StringBuilder();
+
+                if (modifierTexts != null && modifierTexts.Length > 0)
                 {
-                    lock (hotkeyEventHandlers)
+                    foreach (var item in modifierTexts)
                     {
-                        hotkeyEventHandlers.Clear();
+                        sb.Append(item);
+
+                        if (compact) sb.Append("+");
+                        else sb.Append(" + ");
                     }
-
-                    initializeWaitHandle?.WaitOne();
-                    initializeWaitHandle?.Dispose();
-                    initializeWaitHandle = null;
-
-                    messageWindowHandle?.Dispose();
-
-                    dispatcherQueueController?.DispatcherQueue.TryEnqueue(
-                        Windows.System.DispatcherQueuePriority.Low,
-                        () => dispatcherQueueController?.ShutdownQueueAsync());
-
-                    dispatcherQueueController = null;
-
-                    backgroundThread.Join();
-                    backgroundThread = null!;
-
-                    // TODO: 释放托管状态(托管对象)
                 }
 
-                // TODO: 释放未托管的资源(未托管的对象)并重写终结器
-                // TODO: 将大型字段设置为 null
-                disposedValue = true;
+                if (!string.IsNullOrEmpty(keyText))
+                {
+                    sb.Append(keyText);
+                }
+                else if (sb.Length > 0)
+                {
+                    sb.Length--;
+                }
+
+                return sb.ToString();
             }
+
+            return "";
         }
 
-        // // TODO: 仅当“Dispose(bool disposing)”拥有用于释放未托管资源的代码时才替代终结器
-        // ~HotKeyHelper()
-        // {
-        //     // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-        //     Dispose(disposing: false);
-        // }
-
-        public void Dispose()
-        {
-            // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
-            Dispose(disposing: true);
-            GC.SuppressFinalize(this);
-        }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static VirtualKeyModifiers GetCurrentVirtualModifiersStates()
+        public static VirtualKeyModifiers GetCurrentVirtualKeyModifiersStates()
         {
             VirtualKeyModifiers modifiers = default;
 
@@ -271,7 +242,7 @@ namespace HotLyric.Win32.Utils
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static User32.HotKeyModifiers GetCurrentModifiersStates() =>
-            MapModifiers(GetCurrentVirtualModifiersStates());
+            MapModifiers(GetCurrentVirtualKeyModifiersStates());
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static VirtualKeyModifiers MapModifiers(User32.HotKeyModifiers modifiers)
@@ -298,10 +269,29 @@ namespace HotLyric.Win32.Utils
 
             return m;
         }
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static User32.HotKeyModifiers MapModifiers(User32.VK key) => key switch
+        {
+            User32.VK.VK_CONTROL => User32.HotKeyModifiers.MOD_CONTROL,
+            User32.VK.VK_LCONTROL => User32.HotKeyModifiers.MOD_CONTROL,
+            User32.VK.VK_RCONTROL => User32.HotKeyModifiers.MOD_CONTROL,
+
+            User32.VK.VK_MENU => User32.HotKeyModifiers.MOD_ALT,
+            User32.VK.VK_LMENU => User32.HotKeyModifiers.MOD_ALT,
+            User32.VK.VK_RMENU => User32.HotKeyModifiers.MOD_ALT,
+
+            User32.VK.VK_LWIN => User32.HotKeyModifiers.MOD_WIN,
+            User32.VK.VK_RWIN => User32.HotKeyModifiers.MOD_WIN,
+
+            User32.VK.VK_SHIFT => User32.HotKeyModifiers.MOD_SHIFT,
+            User32.VK.VK_LSHIFT => User32.HotKeyModifiers.MOD_SHIFT,
+            User32.VK.VK_RSHIFT => User32.HotKeyModifiers.MOD_SHIFT,
+
+            _ => 0
+        };
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static VirtualKeyModifiers MapVirtualKeyModifiers(User32.VK key) => MapModifiers(MapModifiers(key));
     }
-
-    public record HotKeyInvokedEventArgs(User32.HotKeyModifiers Modifier, User32.VK Key);
-
-
-    internal delegate void HotKeyInvokedEventHandler(HotKeyHelper sender, HotKeyInvokedEventArgs args);
 }

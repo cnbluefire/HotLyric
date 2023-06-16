@@ -5,6 +5,7 @@
       xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
       xmlns:local="using:HotLyric.Win32.Views" 
       xmlns:utils="using:HotLyric.Win32.Utils" 
+      xmlns:converter="using:HotLyric.Win32.Utils.Converters" 
       xmlns:control="using:HotLyric.Win32.Controls" 
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls">
 
@@ -63,6 +64,124 @@
                     </StackPanel>
                 </muxc:Expander>
 
+                <muxc:Expander Style="{StaticResource ExpanderCardStyle}" MinHeight="66" HorizontalAlignment="Stretch" Margin="0,4,0,0" IsExpanded="{x:Bind VM.IsHotKeyEnabled}">
+                    <muxc:Expander.Header>
+                        <Grid HorizontalAlignment="Stretch" Margin="-4,0,0,0">
+                            <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE144;" Content="快捷键设置" Margin="-4,0,0,0" />
+                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Right" VerticalAlignment="Center">
+                                <TextBlock Text="启用快捷键" VerticalAlignment="Center" />
+                                <Border MaxWidth="40" Margin="8,0,0,0">
+                                    <ToggleSwitch IsOn="{x:Bind VM.IsHotKeyEnabled,Mode=TwoWay}" />
+                                </Border>
+                                <Button Margin="12,0,0,0" Content="重置" Click="ResetHotKeyButton_Click"
+                                        IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}" />
+                            </StackPanel>
+                        </Grid>
+                    </muxc:Expander.Header>
+
+                    <Grid Margin="40,0,16,0" RowSpacing="16">
+                        <Grid.Resources>
+                            <x:String x:Key="HotKeyDisabledText">快捷键可能被其他应用占用</x:String>
+                        </Grid.Resources>
+
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MinWidth="120" />
+                            <ColumnDefinition Width="Auto" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
+
+                        <TextBlock Text="播放/暂停" VerticalAlignment="Center" />
+                        <control:HotKeyInputBox VerticalAlignment="Center" Grid.Column="1"
+                                                IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
+                                                VirtualKey="{x:Bind VM.HotKeyManager.PlayPauseKeyModel.Key,Mode=TwoWay}"
+                                                Modifiers="{x:Bind VM.HotKeyManager.PlayPauseKeyModel.Modifiers,Mode=TwoWay}"/>
+                        <FontIcon Glyph="&#xE946;" FontSize="16" 
+                                  Grid.Column="2"
+                                  Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                  ToolTipService.ToolTip="{StaticResource HotKeyDisabledText}" 
+                                  Visibility="{x:Bind converter:BindUtils.NotVisible(VM.HotKeyManager.PlayPauseKeyModel.IsEnabled),Mode=OneWay}"/>
+
+                        <TextBlock Text="上一曲" VerticalAlignment="Center" Grid.Row="1" />
+                        <control:HotKeyInputBox VerticalAlignment="Center" Grid.Column="1" Grid.Row="1"
+                                                IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
+                                                VirtualKey="{x:Bind VM.HotKeyManager.PrevMediaKeyModel.Key,Mode=TwoWay}"
+                                                Modifiers="{x:Bind VM.HotKeyManager.PrevMediaKeyModel.Modifiers,Mode=TwoWay}"/>
+                        <FontIcon Glyph="&#xE946;" FontSize="16" 
+                                  Grid.Column="2" Grid.Row="1"
+                                  Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                  ToolTipService.ToolTip="{StaticResource HotKeyDisabledText}"
+                                  Visibility="{x:Bind converter:BindUtils.NotVisible(VM.HotKeyManager.PrevMediaKeyModel.IsEnabled),Mode=OneWay}"/>
+
+                        <TextBlock Text="下一曲" VerticalAlignment="Center" Grid.Row="2" />
+                        <control:HotKeyInputBox VerticalAlignment="Center" Grid.Column="1" Grid.Row="2"
+                                                IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
+                                                VirtualKey="{x:Bind VM.HotKeyManager.NextMediaKeyModel.Key,Mode=TwoWay}"
+                                                Modifiers="{x:Bind VM.HotKeyManager.NextMediaKeyModel.Modifiers,Mode=TwoWay}"/>
+                        <FontIcon Glyph="&#xE946;" FontSize="16" 
+                                  Grid.Column="2" Grid.Row="2"
+                                  Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                  ToolTipService.ToolTip="{StaticResource HotKeyDisabledText}"
+                                  Visibility="{x:Bind converter:BindUtils.NotVisible(VM.HotKeyManager.NextMediaKeyModel.IsEnabled),Mode=OneWay}" />
+
+                        <TextBlock Text="显示/隐藏歌词" VerticalAlignment="Center" Grid.Row="3" />
+                        <control:HotKeyInputBox VerticalAlignment="Center" Grid.Column="1" Grid.Row="3"
+                                                IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
+                                                VirtualKey="{x:Bind VM.HotKeyManager.ShowHideLyricKeyModel.Key,Mode=TwoWay}"
+                                                Modifiers="{x:Bind VM.HotKeyManager.ShowHideLyricKeyModel.Modifiers,Mode=TwoWay}"/>
+                        <FontIcon Glyph="&#xE946;" FontSize="16" 
+                                  Grid.Column="2" Grid.Row="3"
+                                  Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                  ToolTipService.ToolTip="{StaticResource HotKeyDisabledText}"
+                                  Visibility="{x:Bind converter:BindUtils.NotVisible(VM.HotKeyManager.ShowHideLyricKeyModel.IsEnabled),Mode=OneWay}" />
+
+                        <TextBlock Text="锁定/解锁歌词" VerticalAlignment="Center" Grid.Row="4" />
+                        <control:HotKeyInputBox VerticalAlignment="Center" Grid.Column="1" Grid.Row="4"
+                                                IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
+                                                VirtualKey="{x:Bind VM.HotKeyManager.LockUnlockKeyModel.Key,Mode=TwoWay}"
+                                                Modifiers="{x:Bind VM.HotKeyManager.LockUnlockKeyModel.Modifiers,Mode=TwoWay}"/>
+                        <FontIcon Glyph="&#xE946;" FontSize="16" 
+                                  Grid.Column="2" Grid.Row="4"
+                                  Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                  ToolTipService.ToolTip="{StaticResource HotKeyDisabledText}"
+                                  Visibility="{x:Bind converter:BindUtils.NotVisible(VM.HotKeyManager.LockUnlockKeyModel.IsEnabled),Mode=OneWay}" />
+
+                        <TextBlock Text="显示播放器" VerticalAlignment="Center" Grid.Row="5" />
+                        <control:HotKeyInputBox VerticalAlignment="Center" Grid.Column="1" Grid.Row="5"
+                                                IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
+                                                VirtualKey="{x:Bind VM.HotKeyManager.OpenPlayerKeyModel.Key,Mode=TwoWay}"
+                                                Modifiers="{x:Bind VM.HotKeyManager.OpenPlayerKeyModel.Modifiers,Mode=TwoWay}"/>
+                        <FontIcon Glyph="&#xE946;" FontSize="16" 
+                                  Grid.Column="2" Grid.Row="5"
+                                  Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" 
+                                  ToolTipService.ToolTip="{StaticResource HotKeyDisabledText}"
+                                  Visibility="{x:Bind converter:BindUtils.NotVisible(VM.HotKeyManager.OpenPlayerKeyModel.IsEnabled),Mode=OneWay}" />
+
+                        <TextBlock Grid.Row="6" Grid.ColumnSpan="3"
+                                   FontSize="12" Margin="0,12,0,0"
+                                   TextWrapping="Wrap">
+                            <Run Text="只有以" /><Run 
+                                FontWeight="Bold" Text=" Windows " /><Run Text="、" /><Run 
+                                FontWeight="Bold" Text=" Ctrl " /><Run Text="、" /><Run 
+                                FontWeight="Bold" Text=" Alt " /><Run Text="、" /><Run 
+                                FontWeight="Bold" Text=" Shift " /><Run Text="开头的快捷键才有效。" /><LineBreak /><Run 
+                                Text="使用" /><Run 
+                                FontWeight="Bold" Text=" Tab " /><Run Text="键移除快捷键。" />
+                        </TextBlock>
+
+                    </Grid>
+
+                </muxc:Expander>
+
                 <ContentControl Style="{StaticResource CardStyle}" Margin="0,4,0,0">
                     <Grid HorizontalAlignment="Stretch" Margin="0,12">
                         <StackPanel Orientation="Vertical" Spacing="8">
@@ -73,7 +192,6 @@
                         <Button x:Name="SpotifySetLanguageButton" Content="设置" HorizontalAlignment="Right" Command="{Binding SpotifySetLanguage}" />
                     </Grid>
                 </ContentControl>
-
             </StackPanel>
         </ScrollViewer>
     </Grid>

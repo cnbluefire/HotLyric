@@ -17,6 +17,7 @@ using WinUIEx;
 using Microsoft.UI.Dispatching;
 using HotLyric.Win32.Base.BackgroundHelpers;
 using HotLyric.Win32.Views;
+using Microsoft.UI.Xaml.Input;
 
 namespace HotLyric.Win32
 {
@@ -42,8 +43,10 @@ namespace HotLyric.Win32
             _ = CheckUpdateAsync();
 
             ViewModelLocator.Instance.SettingsWindowViewModel.TryShowReadMeOnStartup();
-        }
 
+            ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyManager.HotKeyInvoked += HotKeyManager_HotKeyInvoked;
+            ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyManager.Install();
+        }
 
         public static new App Current => (App)Application.Current;
 
@@ -98,6 +101,61 @@ namespace HotLyric.Win32
             }
         }
 
+
+        private void HotKeyManager_HotKeyInvoked(Models.HotKeyManager sender, Models.HotKeyManagerHotKeyInvokedEventArgs args)
+        {
+            DispatcherQueue.TryEnqueue(() =>
+            {
+                if (Exiting) return;
+
+                var settingsXamlRoot = SettingsView?.Content.XamlRoot;
+                if (settingsXamlRoot != null)
+                {
+                    if (FocusManager.GetFocusedElement(settingsXamlRoot) is HotKeyInputBox) return;
+                }
+
+                if (args.HotKeyModel.HotKeyName == "PlayPause")
+                {
+                    var session = ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession?.Session;
+
+                    if (session != null)
+                    {
+                        if (session.PlaybackStatus == Utils.MediaSessions.MediaSessionPlaybackStatus.Playing)
+                        {
+                            session.PauseCommand?.Execute(null);
+                        }
+                        else
+                        {
+                            session.PlayCommand?.Execute(null);
+                        }
+                    }
+                }
+                else if (args.HotKeyModel.HotKeyName == "PrevMedia")
+                {
+                    ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession?.Session?
+                        .SkipPreviousCommand?.Execute(null);
+                }
+                else if (args.HotKeyModel.HotKeyName == "NextMedia")
+                {
+                    ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession?.Session?
+                        .SkipNextCommand?.Execute(null);
+                }
+                else if (args.HotKeyModel.HotKeyName == "ShowHideLyric")
+                {
+                    ViewModelLocator.Instance.LyricWindowViewModel.IsMinimized = !ViewModelLocator.Instance.LyricWindowViewModel.IsMinimized;
+                }
+                else if (args.HotKeyModel.HotKeyName == "LockUnlock")
+                {
+                    notifyIcon?.ToggleWindowTransparent();
+                }
+                else if (args.HotKeyModel.HotKeyName == "OpenPlayer")
+                {
+                    ViewModelLocator.Instance.LyricWindowViewModel.OpenCurrentSessionAppCmd.Execute(null);
+                }
+            });
+        }
+
+
         private void App_UnhandledException(object sender, Microsoft.UI.Xaml.UnhandledExceptionEventArgs e)
         {
             LogException(e.Exception);
@@ -122,6 +180,8 @@ namespace HotLyric.Win32
             try
             {
                 Exiting = true;
+
+                ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyManager.Uninstall();
 
                 notifyIcon?.Dispose();
                 notifyIcon = null;

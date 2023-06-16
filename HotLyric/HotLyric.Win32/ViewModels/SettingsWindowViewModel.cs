@@ -56,6 +56,7 @@ namespace HotLyric.Win32.ViewModels
         private const string HideOnPausedSettingKey = "Settings_HideOnPaused";
         private const string AutoResetWindowPosSettingsKey = "Settings_AutoResetWindowPos";
         private const string ReadMeAlreadyShowedOnStartUpSettingsKey = "Settings_ReadMeAlreadyShowedOnStartUp";
+        private const string IsHotKeyEnabledSettingsKey = "Settings_IsHotKeyEnabled";
 
         public SettingsWindowViewModel()
         {
@@ -139,6 +140,9 @@ namespace HotLyric.Win32.ViewModels
             hideOnPaused = LoadSetting(HideOnPausedSettingKey, false);
 
             autoResetWindowPos = LoadSetting(AutoResetWindowPosSettingsKey, true);
+
+            hotKeyManager = new HotKeyManager(this);
+            isHotKeyEnabled = LoadSetting(IsHotKeyEnabledSettingsKey, true);
         }
 
         private bool windowTransparent;
@@ -176,6 +180,8 @@ namespace HotLyric.Win32.ViewModels
         private bool hideOnPaused;
         private bool autoResetWindowPos;
         private AsyncRelayCommand? spotifySetLanguage;
+        private HotKeyManager hotKeyManager;
+        private bool isHotKeyEnabled;
 
         public StartupTaskHelper StartupTaskHelper { get; }
 
@@ -248,7 +254,7 @@ namespace HotLyric.Win32.ViewModels
         public bool TextShadowEnabled
         {
             get => textShadowEnabled;
-            set => ChangeSettings(ref textShadowEnabled,value, TextShadowEnabledSettingKey);
+            set => ChangeSettings(ref textShadowEnabled, value, TextShadowEnabledSettingKey);
         }
 
         public LyricThemeView[] AllPresetThemes { get; }
@@ -746,8 +752,17 @@ namespace HotLyric.Win32.ViewModels
 
         }, () => !SpotifySetLanguage.IsRunning));
 
+
+        public HotKeyManager HotKeyManager => hotKeyManager;
+
+        public bool IsHotKeyEnabled
+        {
+            get => isHotKeyEnabled;
+            set => ChangeSettings(ref isHotKeyEnabled, value, IsHotKeyEnabledSettingsKey);
+        }
+
         [return: MaybeNull]
-        private T LoadSetting<T>(string? settingsKey, [AllowNull] T defaultValue = default)
+        internal T LoadSetting<T>(string? settingsKey, [AllowNull] T defaultValue = default)
         {
             settingsKey = settingsKey?.Trim();
             if (string.IsNullOrEmpty(settingsKey)) return defaultValue;
@@ -778,7 +793,7 @@ namespace HotLyric.Win32.ViewModels
             return false;
         }
 
-        private void SetSettings<T>(string? settingsKey, T value)
+        internal void SetSettings<T>(string? settingsKey, T value)
         {
             settingsKey = settingsKey?.Trim();
             if (!string.IsNullOrEmpty(settingsKey))

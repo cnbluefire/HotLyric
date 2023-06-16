@@ -47,9 +47,16 @@
 	</ItemGroup>
 
 	<ItemGroup>
+	  <None Remove="Controls\HotKeyInputBox.xaml" />
+	</ItemGroup>
+
+	<ItemGroup>
 		<None Update="Assets\defaultTheme.json">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
+		<Page Update="Controls\HotKeyInputBox.xaml">
+		  <Generator>MSBuild:Compile</Generator>
+		</Page>
 		<None Update="NLog.config">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>

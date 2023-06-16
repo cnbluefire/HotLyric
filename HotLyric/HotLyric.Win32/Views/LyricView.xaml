@@ -149,8 +149,15 @@
                         <FontIcon FontSize="12" Glyph="&#xE11B;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
                     </Button>
                     <Button x:Name="LockButton" Style="{StaticResource TitleButtonStyle}" Margin="2,0"
-                            ToolTipService.ToolTip="锁定歌词"
                             Click="LockButton_Click">
+                        <ToolTipService.ToolTip>
+                            <ToolTip>
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock TextAlignment="Center" Text="锁定歌词" />
+                                    <TextBlock TextAlignment="Center" Text="{x:Bind converter:BindUtils.HotKeyTip(VM.SettingViewModel.HotKeyManager.LockUnlockKeyModel),Mode=OneWay}" />
+                                </StackPanel>
+                            </ToolTip>
+                        </ToolTipService.ToolTip>
                         <FontIcon FontSize="12" Glyph="&#xE72E;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
                     </Button>
                     <Button x:Name="SettingsButton" Style="{StaticResource TitleButtonStyle}" Margin="2,0"
@@ -159,8 +166,15 @@
                         <FontIcon FontSize="12" Glyph="&#xE115;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
                     </Button>
                     <Button x:Name="MinimizeButton" Style="{StaticResource TitleButtonStyle}" Margin="2,0"
-                            ToolTipService.ToolTip="隐藏"
 							Click="MinimizeButton_Click">
+                        <ToolTipService.ToolTip>
+                            <ToolTip>
+                                <StackPanel Orientation="Vertical">
+                                    <TextBlock TextAlignment="Center" Text="隐藏" />
+                                    <TextBlock TextAlignment="Center" Text="{x:Bind converter:BindUtils.HotKeyTip(VM.SettingViewModel.HotKeyManager.ShowHideLyricKeyModel),Mode=OneWay}" />
+                                </StackPanel>
+                            </ToolTip>
+                        </ToolTipService.ToolTip>
                         <FontIcon FontSize="12" Glyph="&#xE921;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
                     </Button>
                 </StackPanel>

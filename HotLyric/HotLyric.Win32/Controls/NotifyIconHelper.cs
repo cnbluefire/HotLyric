@@ -96,6 +96,7 @@ namespace HotLyric.Win32.Controls
 
             notifyIcon.LeftClickCommand = new RelayCommand(NotifyIcon_Click);
             notifyIcon.DoubleClickCommand = new RelayCommand(NotifyIcon_DoubleClick);
+            notifyIcon.RightClickCommand = new RelayCommand(NotifyIcon_RightClick);
 
             themeChangedTimer = new DispatcherTimer()
             {
@@ -117,6 +118,24 @@ namespace HotLyric.Win32.Controls
             });
         }
 
+        private void NotifyIcon_RightClick()
+        {
+            transparentMenuItem.Text = GetMenuItemText(
+                "锁定歌词",
+                ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyManager.LockUnlockKeyModel);
+
+            static string GetMenuItemText(string _text, Models.HotKeyModel _hotKeyModel)
+            {
+                if (_hotKeyModel != null && _hotKeyModel.IsEnabled)
+                {
+                    var _hotKeyText = HotKeyHelper.MapKeyToString(_hotKeyModel.Modifiers, _hotKeyModel.Key, true);
+
+                    if (!string.IsNullOrEmpty(_hotKeyText)) return $"{_text} [{_hotKeyText}]";
+                }
+
+                return _text;
+            }
+        }
 
         private async void ThemeChangedTimer_Tick(object? sender, object e)
         {

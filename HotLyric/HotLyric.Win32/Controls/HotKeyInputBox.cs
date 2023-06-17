@@ -133,6 +133,11 @@ namespace HotLyric.Win32.Controls
                     VirtualKey = 0;
                     Modifiers = 0;
                 }
+                else if (e.Key == Windows.System.VirtualKey.Escape)
+                {
+                    this.newModifiers = Modifiers;
+                    this.newKey = VirtualKey;
+                }
 
                 var focusElement = FocusManager.FindFirstFocusableElement(XamlRoot.Content);
 

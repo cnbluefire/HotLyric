@@ -27,6 +27,7 @@ using Newtonsoft.Json.Linq;
 using WinRT;
 using WinUIEx;
 using Microsoft.UI.Xaml.Controls;
+using Microsoft.UI.Xaml.Input;
 
 namespace HotLyric.Win32.ViewModels
 {
@@ -758,7 +759,13 @@ namespace HotLyric.Win32.ViewModels
         public bool IsHotKeyEnabled
         {
             get => isHotKeyEnabled;
-            set => ChangeSettings(ref isHotKeyEnabled, value, IsHotKeyEnabledSettingsKey);
+            set
+            {
+                if (ChangeSettings(ref isHotKeyEnabled, value, IsHotKeyEnabledSettingsKey))
+                {
+                    UpdateHotKeyManagerState();
+                }
+            }
         }
 
         [return: MaybeNull]
@@ -908,6 +915,38 @@ namespace HotLyric.Win32.ViewModels
                     ViewModelLocator.Instance.LyricWindowViewModel.ShowBackgroundTransient(TimeSpan.FromSeconds(2));
                 }
             }
+        }
+
+        public void UpdateHotKeyManagerState()
+        {
+            bool install = false;
+
+            if (!App.Current.Exiting && IsHotKeyEnabled)
+            {
+                var activated = IsActivated(App.Current.SettingsView);
+                if (activated)
+                {
+                    install = FocusManager.GetFocusedElement(App.Current.SettingsView!.Content.XamlRoot) is not HotKeyInputBox;
+                }
+                else
+                {
+                    install = true;
+                }
+            }
+
+            if (install)
+            {
+                HotKeyManager.Install();
+            }
+            else
+            {
+                HotKeyManager.Uninstall();
+            }
+
+            static bool IsActivated(Microsoft.UI.Xaml.Window? _window) =>
+                _window != null
+                    && _window.Visible
+                    && Vanara.PInvoke.User32.GetForegroundWindow().DangerousGetHandle().ToInt64() == (long)_window.AppWindow.Id.Value;
         }
     }
 

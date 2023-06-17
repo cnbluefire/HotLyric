@@ -1,4 +1,5 @@
-﻿using HotLyric.Win32.Utils;
+﻿using HotLyric.Win32.Controls;
+using HotLyric.Win32.Utils;
 using HotLyric.Win32.ViewModels;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;

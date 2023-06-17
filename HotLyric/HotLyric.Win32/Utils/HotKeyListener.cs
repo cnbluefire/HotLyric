@@ -23,8 +23,12 @@ namespace HotLyric.Win32.Utils
         private Dictionary<(User32.HotKeyModifiers modifiers, User32.VK key), int> hotkeyEventHandlers
             = new Dictionary<(User32.HotKeyModifiers modifiers, User32.VK key), int>();
 
+        private Microsoft.UI.Dispatching.DispatcherQueue mainThreadDispatcher;
+
         public HotKeyListener()
         {
+            mainThreadDispatcher = Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread();
+
             backgroundThread = new Thread(ThreadMain);
             backgroundThread.IsBackground = true;
             backgroundThread.SetApartmentState(ApartmentState.STA);
@@ -86,20 +90,28 @@ namespace HotLyric.Win32.Utils
             {
                 if (wParam != -2 && wParam != -1)
                 {
+                    User32.HotKeyModifiers modifiers = 0;
+                    User32.VK key = 0;
+
                     lock (hotkeyEventHandlers)
                     {
-                        foreach (var ((modifier, key), id) in hotkeyEventHandlers)
+                        foreach (var ((tmpModifier, tmpKey), id) in hotkeyEventHandlers)
                         {
                             if (id == wParam)
                             {
+                                modifiers = tmpModifier;
+                                key = tmpKey;
+
                                 dispatcherQueueController?.DispatcherQueue.TryEnqueue(() =>
                                 {
                                     try
                                     {
-                                        HotKeyInvoked?.Invoke(this, new HotKeyInvokedEventArgs(modifier, key));
+                                        HotKeyInvoked?.Invoke(this, new HotKeyInvokedEventArgs(tmpModifier, tmpKey));
                                     }
                                     catch { }
                                 });
+
+                                break;
                             }
                         }
                     }
@@ -134,7 +146,7 @@ namespace HotLyric.Win32.Utils
                         id++;
                     }
 
-                    var res = User32.RegisterHotKey(messageWindowHandle, hotKeyId, modifiers, (uint)key);
+                    var res = User32.RegisterHotKey(messageWindowHandle, hotKeyId, modifiers | User32.HotKeyModifiers.MOD_NOREPEAT, (uint)key);
                     if (res)
                     {
                         hotkeyEventHandlers[(modifiers, key)] = hotKeyId;

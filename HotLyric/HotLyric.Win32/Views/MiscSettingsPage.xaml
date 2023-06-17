@@ -79,7 +79,7 @@
                         </Grid>
                     </muxc:Expander.Header>
 
-                    <Grid Margin="40,0,16,0" RowSpacing="16">
+                    <Grid x:Name="HotKeySettingsPanel" Margin="40,0,16,0" RowSpacing="16" >
                         <Grid.Resources>
                             <x:String x:Key="HotKeyDisabledText">快捷键可能被其他应用占用</x:String>
                         </Grid.Resources>

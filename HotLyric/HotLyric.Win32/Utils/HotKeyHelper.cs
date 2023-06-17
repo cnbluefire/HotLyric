@@ -44,6 +44,7 @@ namespace HotLyric.Win32.Utils
         };
 
         private static Dictionary<User32.HotKeyModifiers, string[]> modifierNames = new Dictionary<User32.HotKeyModifiers, string[]>();
+        private static Dictionary<User32.HotKeyModifiers, User32.VK[]> modifierKeys = new Dictionary<User32.HotKeyModifiers, User32.VK[]>();
 
         public static string[] MapKeyToString(User32.HotKeyModifiers modifiers)
         {
@@ -293,5 +294,34 @@ namespace HotLyric.Win32.Utils
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
         public static VirtualKeyModifiers MapVirtualKeyModifiers(User32.VK key) => MapModifiers(MapModifiers(key));
+
+        [MethodImpl(MethodImplOptions.AggressiveInlining)]
+        public static IReadOnlyList<User32.VK> MapModifiersToVirtualKey(User32.HotKeyModifiers modifiers)
+        {
+            if (modifiers == 0 || modifiers == User32.HotKeyModifiers.MOD_NOREPEAT) return Array.Empty<User32.VK>();
+
+            lock (modifierKeys)
+            {
+                if (modifierKeys.TryGetValue(modifiers, out var keys)) return keys;
+
+                var list = new List<User32.VK>();
+
+                if ((modifiers & User32.HotKeyModifiers.MOD_CONTROL) != 0) list.Add(User32.VK.VK_CONTROL);
+                if ((modifiers & User32.HotKeyModifiers.MOD_ALT) != 0) list.Add(User32.VK.VK_MENU);
+                if ((modifiers & User32.HotKeyModifiers.MOD_SHIFT) != 0) list.Add(User32.VK.VK_SHIFT);
+                if ((modifiers & User32.HotKeyModifiers.MOD_WIN) != 0) list.Add(User32.VK.VK_LWIN);
+
+                if (list.Count > 0)
+                {
+                    keys = list.ToArray();
+                }
+                else
+                {
+                    keys = Array.Empty<User32.VK>();
+                }
+                modifierKeys[modifiers] = keys;
+                return keys;
+            }
+        }
     }
 }

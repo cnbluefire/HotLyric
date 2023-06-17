@@ -45,7 +45,8 @@ namespace HotLyric.Win32
             ViewModelLocator.Instance.SettingsWindowViewModel.TryShowReadMeOnStartup();
 
             ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyManager.HotKeyInvoked += HotKeyManager_HotKeyInvoked;
-            ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyManager.Install();
+
+            ViewModelLocator.Instance.SettingsWindowViewModel.UpdateHotKeyManagerState();
         }
 
         public static new App Current => (App)Application.Current;
@@ -181,7 +182,7 @@ namespace HotLyric.Win32
             {
                 Exiting = true;
 
-                ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyManager.Uninstall();
+                ViewModelLocator.Instance.SettingsWindowViewModel.UpdateHotKeyManagerState();
 
                 notifyIcon?.Dispose();
                 notifyIcon = null;

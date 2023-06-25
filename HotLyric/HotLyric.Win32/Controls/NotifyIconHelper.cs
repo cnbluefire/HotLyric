@@ -15,6 +15,8 @@ using HotLyric.Win32.Controls.LyricControlDrawingData;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Vanara.PInvoke;
+using Windows.UI.ViewManagement;
+using System.Runtime;
 
 namespace HotLyric.Win32.Controls
 {
@@ -32,6 +34,7 @@ namespace HotLyric.Win32.Controls
         private MenuFlyoutItem exitMenuItem;
 
         private DispatcherTimer themeChangedTimer;
+        private UISettings uiSettings;
 
         public NotifyIconHelper()
         {
@@ -108,7 +111,8 @@ namespace HotLyric.Win32.Controls
             _ = UpdateNotifyIconAsync();
             notifyIcon.Visibility = Visibility.Visible;
 
-            SystemEvents.UserPreferenceChanged += SystemEvents_UserPreferenceChanged;
+            uiSettings = new UISettings();
+            uiSettings.ColorValuesChanged += UISettings_ColorValuesChanged;
 
             App.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
@@ -145,10 +149,13 @@ namespace HotLyric.Win32.Controls
             await UpdateNotifyIconAsync();
         }
 
-        private void SystemEvents_UserPreferenceChanged(object sender, UserPreferenceChangedEventArgs e)
+        private void UISettings_ColorValuesChanged(UISettings sender, object args)
         {
-            themeChangedTimer?.Stop();
-            themeChangedTimer?.Start();
+            App.DispatcherQueue.TryEnqueue(() =>
+            {
+                themeChangedTimer?.Stop();
+                themeChangedTimer?.Start();
+            });
         }
 
         private async Task UpdateNotifyIconAsync()
@@ -316,7 +323,8 @@ namespace HotLyric.Win32.Controls
                 if (disposing)
                 {
                     // TODO: 释放托管状态(托管对象)
-                    SystemEvents.UserPreferenceChanged -= SystemEvents_UserPreferenceChanged;
+                    uiSettings.ColorValuesChanged -= UISettings_ColorValuesChanged;
+                    uiSettings = null!;
                     ViewModelLocator.Instance.SettingsWindowViewModel.PropertyChanged -= SettingsWindowViewModel_SettingsChanged;
 
                     if (themeChangedTimer != null)

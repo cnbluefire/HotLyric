@@ -38,7 +38,6 @@ namespace HotLyric.Win32.Base
             {
                 brushHost.SystemBackdrop = WindowsCompositionHelper.Compositor.CreateColorBrush(Color.FromArgb(0, 255, 255, 255));
             }
-
         }
 
         private unsafe void Manager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
@@ -75,7 +74,7 @@ namespace HotLyric.Win32.Base
             {
                 if (User32.GetClientRect(e.Message.Hwnd, out var rect))
                 {
-                    using var brush = Gdi32.CreateSolidBrush(WindowBackgroundColor);
+                    using var brush = Gdi32.CreateSolidBrush(new COLORREF(0, 0, 0));
                     User32.FillRect((nint)e.Message.WParam, rect, brush);
                     e.Result = 1;
                     e.Handled = true;
@@ -131,13 +130,21 @@ namespace HotLyric.Win32.Base
             User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_STYLE, (nint)style);
             User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_EXSTYLE, (nint)exStyle);
 
-            User32.SetLayeredWindowAttributes(handle, WindowBackgroundColor, 0, User32.LayeredWindowAttributes.LWA_COLORKEY);
+            if (WindowBackgroundColor.ToArgb() != 0)
+            {
+                User32.SetLayeredWindowAttributes(handle, WindowBackgroundColor, 255, User32.LayeredWindowAttributes.LWA_COLORKEY);
+            }
+            else
+            {
+                User32.SetLayeredWindowAttributes(handle, default, 255, User32.LayeredWindowAttributes.LWA_ALPHA);
+            }
+
             SetDwmProperties(handle);
         }
 
         private static void SetDwmProperties(nint handle)
         {
-            DwmApi.DwmExtendFrameIntoClientArea(handle, new DwmApi.MARGINS(-1));
+            DwmApi.DwmExtendFrameIntoClientArea(handle, new DwmApi.MARGINS(0));
             using var rgn = Gdi32.CreateRectRgn(-2, -2, -1, -1);
             DwmApi.DwmEnableBlurBehindWindow(handle, new DwmApi.DWM_BLURBEHIND(true)
             {

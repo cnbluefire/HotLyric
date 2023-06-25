@@ -323,5 +323,14 @@ namespace HotLyric.Win32.Utils
                 return keys;
             }
         }
+
+        public static bool SendKey(User32.VK key, bool keyUp)
+        {
+            var inputs = new User32.INPUT[1]
+            {
+                new User32.INPUT(keyUp ? User32.KEYEVENTF.KEYEVENTF_KEYUP : 0, (ushort)key)
+            };
+            return User32.SendInput(1, inputs, System.Runtime.InteropServices.Marshal.SizeOf<User32.INPUT>()) != 0;
+        }
     }
 }

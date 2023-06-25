@@ -81,8 +81,8 @@
                                         <Setter Property="Padding" Value="0,2" />
                                     </Style>
                                 </Flyout.FlyoutPresenterStyle>
-                                <ListView ItemsSource="{x:Bind VM.SessionModels,Mode=OneWay}"
-                                          SelectedItem="{x:Bind VM.SelectedSession,Mode=TwoWay}" 
+                                <ListView ItemsSource="{Binding SessionModels,Mode=OneWay}"
+                                          SelectedItem="{Binding SelectedSession,Mode=TwoWay}" 
                                           SingleSelectionFollowsFocus="False" 
                                           IsItemClickEnabled="True"
                                           ItemClick="ListView_ItemClick">

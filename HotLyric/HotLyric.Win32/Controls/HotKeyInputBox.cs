@@ -21,6 +21,7 @@ namespace HotLyric.Win32.Controls
         }
 
         private TextBlock? PreviewTextBlock;
+        private Button? ClearButton;
 
         private User32.VK newKey;
         private User32.HotKeyModifiers newModifiers;
@@ -29,7 +30,18 @@ namespace HotLyric.Win32.Controls
         {
             base.OnApplyTemplate();
 
+            if (ClearButton != null)
+            {
+                ClearButton.Click -= ClearButton_Click;
+            }
+
             PreviewTextBlock = GetTemplateChild(nameof(PreviewTextBlock)) as TextBlock;
+            ClearButton = GetTemplateChild(nameof(ClearButton)) as Button;
+
+            if (ClearButton != null)
+            {
+                ClearButton.Click += ClearButton_Click;
+            }
 
             UpdatePreviewText();
         }
@@ -130,8 +142,7 @@ namespace HotLyric.Win32.Controls
             {
                 if (e.Key == Windows.System.VirtualKey.Tab)
                 {
-                    VirtualKey = 0;
-                    Modifiers = 0;
+                    return;
                 }
                 else if (e.Key == Windows.System.VirtualKey.Escape)
                 {
@@ -171,7 +182,14 @@ namespace HotLyric.Win32.Controls
         {
             base.OnPreviewKeyUp(e);
 
-            if (HotKeyHelper.IsCompleted(newModifiers, this.newKey))
+            if (e.Key == Windows.System.VirtualKey.Tab
+                || e.Key == Windows.System.VirtualKey.Enter
+                || e.Key == Windows.System.VirtualKey.Escape)
+            {
+                return;
+            }
+
+            if (HotKeyHelper.IsCompleted(this.newModifiers, this.newKey))
             {
                 e.Handled = true;
                 return;
@@ -191,6 +209,21 @@ namespace HotLyric.Win32.Controls
 
             UpdatePreviewText();
         }
+
+
+        private void ClearButton_Click(object sender, RoutedEventArgs e)
+        {
+            this.newKey = 0;
+            this.newModifiers = 0;
+
+            Modifiers = newModifiers;
+            VirtualKey = newKey;
+
+            UpdateCommonVisualState();
+
+            UpdatePreviewText();
+        }
+
 
         private void UpdatePreviewText()
         {

@@ -141,6 +141,18 @@ namespace HotLyric.Win32
                     ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession?.Session?
                         .SkipNextCommand?.Execute(null);
                 }
+                else if (args.HotKeyModel.HotKeyName == "VolumeUp")
+                {
+                    HotKeyHelper.SendKey(User32.VK.VK_VOLUME_UP, false);
+                    System.Threading.Thread.Sleep(20);
+                    HotKeyHelper.SendKey(User32.VK.VK_VOLUME_UP, true);
+                }
+                else if (args.HotKeyModel.HotKeyName == "VolumeDown")
+                {
+                    HotKeyHelper.SendKey(User32.VK.VK_VOLUME_DOWN, false);
+                    System.Threading.Thread.Sleep(20);
+                    HotKeyHelper.SendKey(User32.VK.VK_VOLUME_DOWN, true);
+                }
                 else if (args.HotKeyModel.HotKeyName == "ShowHideLyric")
                 {
                     ViewModelLocator.Instance.LyricWindowViewModel.IsMinimized = !ViewModelLocator.Instance.LyricWindowViewModel.IsMinimized;

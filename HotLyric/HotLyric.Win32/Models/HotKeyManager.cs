@@ -22,6 +22,8 @@ namespace HotLyric.Win32.Models
             ["PlayPause"] = HotKeyModel.BuildSettingValue(User32.HotKeyModifiers.MOD_CONTROL | User32.HotKeyModifiers.MOD_ALT, User32.VK.VK_P),
             ["PrevMedia"] = HotKeyModel.BuildSettingValue(User32.HotKeyModifiers.MOD_CONTROL | User32.HotKeyModifiers.MOD_ALT, User32.VK.VK_LEFT),
             ["NextMedia"] = HotKeyModel.BuildSettingValue(User32.HotKeyModifiers.MOD_CONTROL | User32.HotKeyModifiers.MOD_ALT, User32.VK.VK_RIGHT),
+            ["VolumeUp"] = HotKeyModel.BuildSettingValue(User32.HotKeyModifiers.MOD_CONTROL | User32.HotKeyModifiers.MOD_ALT, User32.VK.VK_UP),
+            ["VolumeDown"] = HotKeyModel.BuildSettingValue(User32.HotKeyModifiers.MOD_CONTROL | User32.HotKeyModifiers.MOD_ALT, User32.VK.VK_DOWN),
             ["ShowHideLyric"] = HotKeyModel.BuildSettingValue(User32.HotKeyModifiers.MOD_CONTROL | User32.HotKeyModifiers.MOD_ALT, User32.VK.VK_D),
             ["LockUnlock"] = HotKeyModel.BuildSettingValue(User32.HotKeyModifiers.MOD_CONTROL | User32.HotKeyModifiers.MOD_ALT, User32.VK.VK_E),
             ["OpenPlayer"] = HotKeyModel.BuildSettingValue(User32.HotKeyModifiers.MOD_CONTROL | User32.HotKeyModifiers.MOD_ALT, User32.VK.VK_H),
@@ -29,18 +31,22 @@ namespace HotLyric.Win32.Models
 
         public HotKeyManager(SettingsWindowViewModel settingViewModel)
         {
-            PlayPauseKeyModel = new HotKeyModel("PlayPause");
-            PrevMediaKeyModel = new HotKeyModel("PrevMedia");
-            NextMediaKeyModel = new HotKeyModel("NextMedia");
-            ShowHideLyricKeyModel = new HotKeyModel("ShowHideLyric");
-            LockUnlockKeyModel = new HotKeyModel("LockUnlock");
-            OpenPlayerKeyModel = new HotKeyModel("OpenPlayer");
+            PlayPauseKeyModel = new HotKeyModel("PlayPause", "播放/暂停");
+            PrevMediaKeyModel = new HotKeyModel("PrevMedia", "上一曲");
+            NextMediaKeyModel = new HotKeyModel("NextMedia", "下一曲");
+            VolumeUpKeyModel = new HotKeyModel("VolumeUp", "加大音量");
+            VolumeDownKeyModel = new HotKeyModel("VolumeDown", "减小音量");
+            ShowHideLyricKeyModel = new HotKeyModel("ShowHideLyric", "显示/隐藏歌词");
+            LockUnlockKeyModel = new HotKeyModel("LockUnlock", "锁定/解锁歌词");
+            OpenPlayerKeyModel = new HotKeyModel("OpenPlayer", "显示播放器");
 
             hotKeyModels = new[]
             {
                 PlayPauseKeyModel,
                 PrevMediaKeyModel,
                 NextMediaKeyModel,
+                VolumeUpKeyModel,
+                VolumeDownKeyModel,
                 ShowHideLyricKeyModel,
                 LockUnlockKeyModel,
                 OpenPlayerKeyModel,
@@ -63,6 +69,10 @@ namespace HotLyric.Win32.Models
         public HotKeyModel PrevMediaKeyModel { get; }
 
         public HotKeyModel NextMediaKeyModel { get; }
+
+        public HotKeyModel VolumeUpKeyModel { get; }
+
+        public HotKeyModel VolumeDownKeyModel { get; }
 
         public HotKeyModel ShowHideLyricKeyModel { get; }
 
@@ -156,6 +166,8 @@ namespace HotLyric.Win32.Models
             OnPropertyChanged(nameof(PlayPauseKeyModel));
             OnPropertyChanged(nameof(PrevMediaKeyModel));
             OnPropertyChanged(nameof(NextMediaKeyModel));
+            OnPropertyChanged(nameof(VolumeUpKeyModel));
+            OnPropertyChanged(nameof(VolumeDownKeyModel));
             OnPropertyChanged(nameof(ShowHideLyricKeyModel));
             OnPropertyChanged(nameof(LockUnlockKeyModel));
             OnPropertyChanged(nameof(OpenPlayerKeyModel));

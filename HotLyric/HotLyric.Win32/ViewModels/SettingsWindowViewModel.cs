@@ -926,7 +926,14 @@ namespace HotLyric.Win32.ViewModels
                 var activated = IsActivated(App.Current.SettingsView);
                 if (activated)
                 {
-                    install = FocusManager.GetFocusedElement(App.Current.SettingsView!.Content.XamlRoot) is not HotKeyInputBox;
+                    try
+                    {
+                        if (App.Current.SettingsView?.Content.XamlRoot != null)
+                        {
+                            install = FocusManager.GetFocusedElement(App.Current.SettingsView!.Content.XamlRoot) is not HotKeyInputBox;
+                        }
+                    }
+                    catch { }
                 }
                 else
                 {

@@ -330,7 +330,10 @@ namespace HotLyric.Win32.Base
 
             backdropSurface.SourceSize = size;
 
-            var borderThickness = 1f;
+            var scaledBorderThickness = 1d;
+            var borderThicknessPixel = (int)Math.Round(scaledBorderThickness * dpi / 96);
+
+            var borderThickness = (float)(borderThicknessPixel * 96d / dpi);
             borderShape.StrokeThickness = borderThickness;
 
             if (backgroundShadowHostSurface != null && backgroundShadowHostSurfaceVisual != null)

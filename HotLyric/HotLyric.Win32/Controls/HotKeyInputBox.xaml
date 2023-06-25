@@ -74,6 +74,9 @@
                                         <ObjectAnimationUsingKeyFrames Storyboard.TargetName="PreviewTextBlock" Storyboard.TargetProperty="Foreground">
                                             <DiscreteObjectKeyFrame KeyTime="0" Value="{ThemeResource TextControlForegroundFocused}" />
                                         </ObjectAnimationUsingKeyFrames>
+                                        <ObjectAnimationUsingKeyFrames Storyboard.TargetName="ClearButton" Storyboard.TargetProperty="Visibility">
+                                            <DiscreteObjectKeyFrame KeyTime="0" Value="Visible" />
+                                        </ObjectAnimationUsingKeyFrames>
                                     </Storyboard>
                                 </VisualState>
 
@@ -94,17 +97,28 @@
                               HorizontalAlignment="Stretch" 
                               VerticalAlignment="Stretch" 
                               Margin="{TemplateBinding BorderThickness}">
-                            
+
+                            <Grid.ColumnDefinitions>
+                                <ColumnDefinition Width="*" />
+                                <ColumnDefinition Width="Auto" />
+                            </Grid.ColumnDefinitions>
+
                             <TextBlock x:Name="PlaceholderTextBlock"
                                 Text="Xg"
                                 Foreground="{x:Null}"
                                 IsHitTestVisible="False"
                                 AutomationProperties.AccessibilityView="Raw" />
-                            
+
                             <TextBlock x:Name="PreviewTextBlock" 
                                        Foreground="{TemplateBinding Foreground}" 
                                        AutomationProperties.AccessibilityView="Raw"
                                        TextTrimming="CharacterEllipsis" />
+
+                            <Button x:Name="ClearButton" Margin="0,-2,-2,-2" Padding="6,0" IsTabStop="False"
+                                    FontFamily="{ThemeResource SymbolThemeFontFamily}" FontSize="12" Content="&#xE106;"
+                                    HorizontalAlignment="Right" VerticalAlignment="Stretch"
+                                    HorizontalContentAlignment="Center" VerticalContentAlignment="Center"
+                                    Visibility="Collapsed"/>
                         </Grid>
                     </Grid>
                 </ControlTemplate>

@@ -14,9 +14,10 @@ namespace HotLyric.Win32.Models
 {
     public partial class HotKeyModel : ObservableObject
     {
-        public HotKeyModel(string hotKeyName)
+        public HotKeyModel(string hotKeyName, string displayName)
         {
             HotKeyName = hotKeyName;
+            DisplayName = displayName;
         }
 
         [ObservableProperty]
@@ -29,6 +30,8 @@ namespace HotLyric.Win32.Models
         private bool isEnabled;
 
         public string HotKeyName { get; }
+
+        public string DisplayName { get; }
 
         public void Update(VirtualKeyModifiers modifiers, VirtualKey key)
         {
@@ -52,11 +55,11 @@ namespace HotLyric.Win32.Models
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static HotKeyModel CreateFromSettingValue(string hotKeyName, int settingValue)
+        public static HotKeyModel CreateFromSettingValue(string hotKeyName, string displayName, int settingValue)
         {
             var (modifiers, key) = GetKeyFromSettingValue(settingValue);
 
-            return new HotKeyModel(hotKeyName)
+            return new HotKeyModel(hotKeyName, displayName)
             {
                 Key = key,
                 Modifiers = modifiers

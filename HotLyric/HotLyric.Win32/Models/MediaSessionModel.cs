@@ -182,7 +182,7 @@ namespace HotLyric.Win32.Models
             return new MediaSessionModel(session)
             {
                 appTitle = title,
-                appIcon = image ?? new BitmapImage(new Uri("pack://application:,,,/HotLyric.Win32;component/Assets/HotLyricIcon.png")),
+                appIcon = image ?? new BitmapImage(new Uri("ms-appx:///Assets/HotLyricIcon.png")),
                 mediaProperties = mediaProperties,
             };
         }

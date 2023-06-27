@@ -47,6 +47,7 @@ namespace HotLyric.Win32.Controls
             this.InitializeComponent();
 
             lyricLines = new LyricLines();
+            lyricLines.PauseStateChanged += LyricLines_PauseStateChanged;
 
             themeColors = CreateDefaultColors();
 
@@ -184,6 +185,8 @@ namespace HotLyric.Win32.Controls
                 {
                     sender.lyricLines.Lyric = (Lyric?)a.NewValue;
 
+                    sender.Paused = sender.lyricLines.Paused;
+
                     sender.TrimDevice();
                 }
             }));
@@ -205,14 +208,20 @@ namespace HotLyric.Win32.Controls
                 {
                     if (a.NewValue is TimeSpan newValue)
                     {
+                        var lyricEmpty = false;
                         lock (sender.lyricLines.DrawingLocker)
                         {
                             sender.lyricLines.Position = newValue;
                             sender.lastPosition = newValue;
                             sender.totalTimeOffset = sender.totalTime;
+
+                            lyricEmpty = sender.lyricLines.IsEmpty;
                         }
 
-                        sender.DrawOneFrameWhenPaused();
+                        if (!lyricEmpty)
+                        {
+                            sender.DrawOneFrameWhenPaused();
+                        }
                     }
                 }
             }));
@@ -367,6 +376,11 @@ namespace HotLyric.Win32.Controls
             DrawOneFrameWhenPaused();
         }
 
+        private void LyricLines_PauseStateChanged(object? sender, EventArgs e)
+        {
+            DrawOneFrameWhenPaused();
+        }
+
         private void Refresh()
         {
             lock (lyricLines.DrawingLocker)
@@ -425,7 +439,7 @@ namespace HotLyric.Win32.Controls
                 var textShadowEnabled = propObserver[TextShadowEnabledProperty]!.GetValueOrDefault<bool>();
                 var theme = propObserver[ThemeProperty]!.GetValueOrDefault<LyricThemeView>();
                 var fontFamily = propObserver[LyricFontFamilyProperty]!.GetValueOrDefault<string>();
-                var paused = propObserver[PausedProperty]!.GetValueOrDefault<bool>();
+                var paused = lyricLines.Paused && propObserver[PausedProperty]!.GetValueOrDefault<bool>();
                 var fontWeight = propObserver[FontWeightProperty]!.GetValueOrDefault<FontWeight>();
                 var fontStyle = propObserver[FontStyleProperty]!.GetValueOrDefault<FontStyle>();
 
@@ -613,7 +627,6 @@ namespace HotLyric.Win32.Controls
             TimeSpan mediaDuration;
             bool textOpacityMask;
 
-
             lock (lyricLines.DrawingLocker)
             {
                 drawingLine = this.drawingMainLine;
@@ -624,7 +637,7 @@ namespace HotLyric.Win32.Controls
                 lineSpace = propObserver[LineSpaceProperty]!.GetValueOrDefault<double>();
                 clipToPadding = propObserver[ClipToPaddingProperty]!.GetValueOrDefault<bool>();
                 lowFrameRateMode = propObserver[LowFrameRateModeProperty]!.GetValueOrDefault<bool>();
-                paused = propObserver[PausedProperty]!.GetValueOrDefault<bool>();
+                paused = lyricLines.Paused && propObserver[PausedProperty]!.GetValueOrDefault<bool>();
 
                 progressAnimationMode = propObserver[ProgressAnimationModeProperty]!.GetValueOrDefault<LyricControlProgressAnimationMode>();
                 scrollAnimationMode = propObserver[ScrollAnimationModeProperty]!.GetValueOrDefault<LyricControlScrollAnimationMode>();
@@ -843,7 +856,7 @@ namespace HotLyric.Win32.Controls
         {
             if (isLoaded && lyricLines?.DrawingLocker != null)
             {
-                var paused = propObserver[PausedProperty]!.GetValueOrDefault<bool>();
+                var paused = lyricLines.Paused && propObserver[PausedProperty]!.GetValueOrDefault<bool>();
 
                 if (paused)
                 {

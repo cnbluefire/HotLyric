@@ -17,6 +17,7 @@ namespace HotLyric.Win32.Controls
             private Lyric? lyric;
             private bool skipEmptyLine = true;
             private bool isTranslateEnabled;
+            private bool paused;
 
             internal LyricLines()
             {
@@ -38,6 +39,8 @@ namespace HotLyric.Win32.Controls
                         lyric = value;
                         UpdateLines();
                     }
+
+                    UpdatePauseState();
                 }
             }
 
@@ -85,11 +88,13 @@ namespace HotLyric.Win32.Controls
 
             public bool Paused
             {
-                get
+                get => paused;
+                private set
                 {
-                    lock (DrawingLocker)
+                    if (paused != value)
                     {
-                        return MainLine == null && SecondaryLine == null && RemovingLine == null;
+                        paused = value;
+                        PauseStateChanged?.Invoke(this, EventArgs.Empty);
                     }
                 }
             }
@@ -119,24 +124,29 @@ namespace HotLyric.Win32.Controls
                         SecondaryLine = null;
                         RemovingLine = null;
                         SecondaryLineIsTranslate = false;
+                        UpdatePauseState();
                     }
                     else
                     {
                         if (lyric.IsEmpty)
                         {
-                            if (!string.IsNullOrEmpty(lyric.SongName))
+                            if (MainLine == null)
                             {
-                                MainLine = new SongInfoLyricLine(lyric.SongName);
-                                SecondaryLine = new SongInfoLyricLine(lyric.Artists ?? "");
-                                SecondaryLineIsTranslate = false;
-                                RemovingLine = null;
-                            }
-                            else
-                            {
-                                MainLine = lyric.Content.GetCurrentOrNextLine(TimeSpan.Zero, true);
-                                SecondaryLine = null;
-                                SecondaryLineIsTranslate = false;
-                                RemovingLine = null;
+                                if (!string.IsNullOrEmpty(lyric.SongName))
+                                {
+                                    MainLine = new SongInfoLyricLine(lyric.SongName);
+                                    SecondaryLine = new SongInfoLyricLine(lyric.Artists ?? "");
+                                    SecondaryLineIsTranslate = false;
+                                    RemovingLine = null;
+                                }
+                                else
+                                {
+                                    MainLine = lyric.Content.GetCurrentOrNextLine(TimeSpan.Zero, true);
+                                    SecondaryLine = null;
+                                    SecondaryLineIsTranslate = false;
+                                    RemovingLine = null;
+                                }
+                                UpdatePauseState();
                             }
                         }
                         else
@@ -193,6 +203,8 @@ namespace HotLyric.Win32.Controls
                             SecondaryLine = secondaryLine;
                             RemovingLine = removingLine;
                             SecondaryLineIsTranslate = secondaryLineIsTranslate;
+
+                            UpdatePauseState();
                         }
                     }
                 }
@@ -216,6 +228,19 @@ namespace HotLyric.Win32.Controls
                 if (line != null) return (line, false);
 
                 return default;
+            }
+
+            public event EventHandler? PauseStateChanged;
+
+
+            private void UpdatePauseState()
+            {
+                bool newValue = false;
+                lock (DrawingLocker)
+                {
+                    newValue = IsEmpty || (MainLine == null && SecondaryLine == null && RemovingLine == null);
+                }
+                Paused = newValue;
             }
 
             private class SongInfoLyricLine : ILyricLine

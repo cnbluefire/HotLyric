@@ -168,6 +168,7 @@ namespace HotLyric.Win32.ViewModels
         private AsyncRelayCommand? openStorePageCmd;
         private AsyncRelayCommand? feedbackCmd;
         private AsyncRelayCommand? checkUpdateCmd;
+        private AsyncRelayCommand? openLogFolderCmd;
         private AsyncRelayCommand? thirdPartyNoticeCmd;
         private AsyncRelayCommand? githubCmd;
         private AsyncRelayCommand? fontSizeCmd;
@@ -535,6 +536,24 @@ namespace HotLyric.Win32.ViewModels
             }
 
         }, () => !CheckUpdateCmd.IsRunning));
+
+        public AsyncRelayCommand OpenLogFolderCmd => openLogFolderCmd ?? (openLogFolderCmd = new AsyncRelayCommand(async () =>
+        {
+            try
+            {
+                var folder = await StorageFolder.GetFolderFromPathAsync(
+                    System.IO.Path.Combine(
+                        ApplicationData.Current.LocalCacheFolder.Path,
+                        "Local",
+                        "Logs"));
+
+                await Launcher.LaunchFolderAsync(folder);
+            }
+            catch (Exception ex)
+            {
+                LogHelper.LogError(ex);
+            }
+        }));
 
         public AsyncRelayCommand ThirdPartyNoticeCmd => thirdPartyNoticeCmd ?? (thirdPartyNoticeCmd = new AsyncRelayCommand(async () =>
         {

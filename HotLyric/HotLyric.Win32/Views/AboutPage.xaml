@@ -37,12 +37,13 @@
                                     <Run Text="{Binding Author,Mode=OneWay}"/>
                                 </TextBlock>
                             </StackPanel>
-                            <StackPanel Orientation="Horizontal" HorizontalAlignment="Left" VerticalAlignment="Center" Margin="0,6,0,0">
+                            <control:WrapPanel Margin="0,6,0,0" HorizontalSpacing="8" VerticalSpacing="8">
                                 <Button Content="第三方通知" Background="#33666666" Padding="8,4" Command="{Binding ThirdPartyNoticeCmd}"/>
-                                <Button Content="检查更新" Margin="8,0,0,0" Background="#33666666" Padding="8,4" Command="{Binding CheckUpdateCmd}" />
-                                <Button Content="反馈问题" Margin="8,0,0,0" Background="#33666666" Padding="8,4" Command="{Binding FeedbackCmd}"/>
-                                <Button Content="GitHub" Margin="8,0,0,0" Background="#33666666" Padding="8,4" Command="{Binding GithubCmd}"/>
-                            </StackPanel>
+                                <Button Content="检查更新" Background="#33666666" Padding="8,4" Command="{Binding CheckUpdateCmd}" />
+                                <Button Content="日志文件夹" Background="#33666666" Padding="8,4" Command="{Binding OpenLogFolderCmd}"/>
+                                <Button Content="反馈问题" Background="#33666666" Padding="8,4" Command="{Binding FeedbackCmd}"/>
+                                <Button Content="GitHub" Background="#33666666" Padding="8,4" Command="{Binding GithubCmd}"/>
+                            </control:WrapPanel>
                         </StackPanel>
                     </ContentControl>
                 </ContentControl>

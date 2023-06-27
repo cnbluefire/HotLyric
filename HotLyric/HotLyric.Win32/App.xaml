@@ -91,7 +91,7 @@
                             <Grid VerticalAlignment="Center">
                                 <Grid.ColumnDefinitions>
                                     <ColumnDefinition Width="Auto" />
-                                    <ColumnDefinition Width="Auto" />
+                                    <ColumnDefinition Width="*" />
                                 </Grid.ColumnDefinitions>
                                 <FontIcon Glyph="{Binding RelativeSource={RelativeSource Mode=TemplatedParent},Path=Tag}" FontSize="16" Margin="{StaticResource IconMargin}" VerticalAlignment="Center" />
                                 <ContentPresenter Grid.Column="1" Content="{TemplateBinding Content}" VerticalAlignment="Center" />

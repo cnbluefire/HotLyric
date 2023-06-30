@@ -14,6 +14,7 @@ using WinRT;
 using Windows.ApplicationModel;
 using Microsoft.UI.Xaml.Input;
 using HotLyric.Win32.Controls;
+using Microsoft.UI.Xaml.Media;
 
 namespace HotLyric.Win32.Views
 {
@@ -28,19 +29,11 @@ namespace HotLyric.Win32.Views
 
             if (Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported())
             {
-                Backdrop = new MicaSystemBackdrop();
+                SystemBackdrop = new MicaBackdrop();
             }
             else
             {
-                Backdrop = new AcrylicSystemBackdrop()
-                {
-                    LightTintColor = Windows.UI.Color.FromArgb(0xff, 0xd3, 0xd3, 0xd3),
-                    LightFallbackColor = Windows.UI.Color.FromArgb(0xff, 0xd3, 0xd3, 0xd3),
-                    LightLuminosityOpacity = 0.95,
-                    DarkTintColor = Windows.UI.Color.FromArgb(0xff, 0x54, 0x54, 0x54),
-                    DarkFallbackColor = Windows.UI.Color.FromArgb(0xff, 0x54, 0x54, 0x54),
-                    DarkLuminosityOpacity = 0.95,
-                };
+                SystemBackdrop = new DesktopAcrylicBackdrop();
 
                 AcrylicBackground.Opacity = 0.4;
             }

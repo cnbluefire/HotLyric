@@ -185,8 +185,6 @@ namespace HotLyric.Win32.Controls
                 {
                     sender.lyricLines.Lyric = (Lyric?)a.NewValue;
 
-                    sender.Paused = sender.lyricLines.Paused;
-
                     sender.TrimDevice();
                 }
             }));
@@ -378,7 +376,9 @@ namespace HotLyric.Win32.Controls
 
         private void LyricLines_PauseStateChanged(object? sender, EventArgs e)
         {
-            DrawOneFrameWhenPaused();
+            DispatcherQueue.TryEnqueue(
+                Microsoft.UI.Dispatching.DispatcherQueuePriority.High, 
+                DrawOneFrameWhenPaused);
         }
 
         private void Refresh()
@@ -439,7 +439,7 @@ namespace HotLyric.Win32.Controls
                 var textShadowEnabled = propObserver[TextShadowEnabledProperty]!.GetValueOrDefault<bool>();
                 var theme = propObserver[ThemeProperty]!.GetValueOrDefault<LyricThemeView>();
                 var fontFamily = propObserver[LyricFontFamilyProperty]!.GetValueOrDefault<string>();
-                var paused = lyricLines.Paused && propObserver[PausedProperty]!.GetValueOrDefault<bool>();
+                var paused = lyricLines.Paused || propObserver[PausedProperty]!.GetValueOrDefault<bool>();
                 var fontWeight = propObserver[FontWeightProperty]!.GetValueOrDefault<FontWeight>();
                 var fontStyle = propObserver[FontStyleProperty]!.GetValueOrDefault<FontStyle>();
 
@@ -637,7 +637,7 @@ namespace HotLyric.Win32.Controls
                 lineSpace = propObserver[LineSpaceProperty]!.GetValueOrDefault<double>();
                 clipToPadding = propObserver[ClipToPaddingProperty]!.GetValueOrDefault<bool>();
                 lowFrameRateMode = propObserver[LowFrameRateModeProperty]!.GetValueOrDefault<bool>();
-                paused = lyricLines.Paused && propObserver[PausedProperty]!.GetValueOrDefault<bool>();
+                paused = lyricLines.Paused || propObserver[PausedProperty]!.GetValueOrDefault<bool>();
 
                 progressAnimationMode = propObserver[ProgressAnimationModeProperty]!.GetValueOrDefault<LyricControlProgressAnimationMode>();
                 scrollAnimationMode = propObserver[ScrollAnimationModeProperty]!.GetValueOrDefault<LyricControlScrollAnimationMode>();
@@ -856,7 +856,7 @@ namespace HotLyric.Win32.Controls
         {
             if (isLoaded && lyricLines?.DrawingLocker != null)
             {
-                var paused = lyricLines.Paused && propObserver[PausedProperty]!.GetValueOrDefault<bool>();
+                var paused = lyricLines.Paused || propObserver[PausedProperty]!.GetValueOrDefault<bool>();
 
                 if (paused)
                 {

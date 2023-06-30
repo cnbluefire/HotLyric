@@ -110,7 +110,7 @@ namespace HotLyric.Win32.Base
             exStyle |= (uint)(User32.WindowStylesEx.WS_EX_NOACTIVATE);
         }
 
-        public static void SetWindowTransparentStyle(WindowId windowId) =>
+        public static void SetWindowTransparentStyle(Microsoft.UI.WindowId windowId) =>
             SetWindowTransparentStyle(unchecked((nint)windowId.Value));
 
         public static void SetWindowTransparentStyle(nint handle)

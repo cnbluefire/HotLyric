@@ -199,7 +199,7 @@ namespace HotLyric.Win32.Base
         {
             if (window != null)
             {
-                var handle = (nint)window.GetAppWindow().Id.Value;
+                var handle = (nint)window.AppWindow.Id.Value;
                 desktopWindowTarget = CreateDesktopWindowTarget(handle);
                 windowManager = WindowManager.Get(window);
                 windowManager.WindowMessageReceived += WindowManager_WindowMessageReceived;
@@ -307,7 +307,7 @@ namespace HotLyric.Win32.Base
                 || window == null) return;
 
             var dpi = window.GetDpiForWindow();
-            var pixelSize = window.GetAppWindow().Size;
+            var pixelSize = window.AppWindow.Size;
 
             var width = pixelSize.Width * 96 / dpi - Margin.Left - Margin.Right;
             var height = pixelSize.Height * 96 / dpi - Margin.Top - Margin.Bottom;
@@ -438,7 +438,7 @@ namespace HotLyric.Win32.Base
         {
             if (window != null)
             {
-                var size = window.GetAppWindow().Size;
+                var size = window.AppWindow.Size;
                 var dpi = window.GetDpiForWindow();
 
                 var width = size.Width * 96f / dpi;

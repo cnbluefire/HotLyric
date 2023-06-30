@@ -213,7 +213,7 @@ namespace HotLyric.Win32.Utils
                 x = originalWindowRect.X + offsetX;
                 y = originalWindowRect.Y + offsetY;
 
-                window.GetAppWindow().Move(new Windows.Graphics.PointInt32(x, y));
+                window.AppWindow.Move(new Windows.Graphics.PointInt32(x, y));
 
             }
             else
@@ -223,7 +223,7 @@ namespace HotLyric.Win32.Utils
 
                 (x, y, cx, cy, var flag2) = GetNewWindowPosition(window, draggingEdge, originalWindowRect, offsetX, offsetY);
 
-                window.GetAppWindow().MoveAndResize(new Windows.Graphics.RectInt32(x, y, cx, cy));
+                window.AppWindow.MoveAndResize(new Windows.Graphics.RectInt32(x, y, cx, cy));
             }
         }
 

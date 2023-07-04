@@ -451,11 +451,6 @@ namespace HotLyric.Win32.Base
                 var dpi = window.GetDpiForWindow();
                 var scale = dpi / 96f;
                 rootVisual.Scale = new Vector3(scale, scale, 1);
-
-                if (acrylicHelper != null)
-                {
-                    acrylicHelper.NoiseScaleRatio = scale;
-                }
             }
 
             UpdateRootVisualSize();

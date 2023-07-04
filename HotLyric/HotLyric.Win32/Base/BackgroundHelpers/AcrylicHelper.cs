@@ -28,6 +28,8 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
 {
     public class AcrylicHelper : IDisposable, INotifyPropertyChanged
     {
+        internal static readonly bool IsHostBackdropBrushSupported = Environment.OSVersion.Version >= new Version(10, 0, 22000, 0);
+
         #region Default Values
 
         public static readonly Color DefaultTintColor = Color.FromArgb(255, 249, 249, 249);
@@ -81,12 +83,24 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
                 "TintColorEffectWithoutAlpha.Color",
                 "TintColorOpacityEffect.Opacity",
                 "TintColorWithoutAlphaOpacityEffect.Opacity",
-                "GaussianBlurEffect.BlurAmount"
+                "GaussianBlurEffect.BlurAmount",
             });
 
             var brush = factory.CreateBrush();
 
-            var backdropSource = compositor.CreateBackdropBrush();
+            CompositionBackdropBrush backdropSource;
+
+            if (IsHostBackdropBrushSupported)
+            {
+                backdropSource = compositor.CreateHostBackdropBrush();
+                brush.Properties.InsertScalar("GaussianBlurEffect.BlurAmount", 20);
+            }
+            else
+            {
+                backdropSource = compositor.CreateBackdropBrush();
+                brush.Properties.InsertScalar("GaussianBlurEffect.BlurAmount", (float)blurAmount);
+            }
+
             brush.SetSourceParameter("source", backdropSource);
             brush.SetSourceParameter("noise", noiseBrush);
 
@@ -145,6 +159,8 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
             get => blurAmount;
             set
             {
+                if (IsHostBackdropBrushSupported) return;
+
                 if (SetProperty(ref blurAmount, value))
                 {
                     brush.Properties.InsertScalar("GaussianBlurEffect.BlurAmount", (float)blurAmount);
@@ -365,7 +381,7 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
                                 Background = new GaussianBlurEffect()
                                 {
                                     Name = "GaussianBlurEffect",
-                                    BlurAmount = defaultBlurAmount,
+                                    BlurAmount = 0,
                                     Source = new CompositionEffectSourceParameter("source"),
                                     BorderMode = EffectBorderMode.Hard
                                 },

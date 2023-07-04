@@ -19,6 +19,8 @@ namespace HotLyric.Win32.Base
 {
     public class WindowAcrylicContext : IDisposable
     {
+        private static readonly bool IsPixelSnappingEnabledSupported = Environment.OSVersion.Version >= new Version(10, 0, 20384, 0);
+
         private const float MaxBlurRadius = 72;
         private readonly WindowAcrylicController windowAcrylicController;
 
@@ -273,8 +275,20 @@ namespace HotLyric.Win32.Base
             acrylicHelper = new AcrylicHelper();
 
             hostBackdropVisual = WindowsCompositionHelper.Compositor.CreateSpriteVisual();
-            hostBackdropVisual.Brush = acrylicHelper.Brush;
             hostBackdropVisual.RelativeSizeAdjustment = Vector2.One;
+
+            var acrylicVisual = WindowsCompositionHelper.Compositor.CreateSpriteVisual();
+            acrylicVisual.Brush = acrylicHelper.Brush;
+            acrylicVisual.RelativeSizeAdjustment = Vector2.One;
+            hostBackdropVisual.Children.InsertAtTop(acrylicVisual);
+
+            if (AcrylicHelper.IsHostBackdropBrushSupported)
+            {
+                var fixVisual = WindowsCompositionHelper.Compositor.CreateSpriteVisual();
+                fixVisual.Brush = WindowsCompositionHelper.Compositor.CreateColorBrush(Windows.UI.Color.FromArgb(255, 0, 0, 0)); ;
+                fixVisual.RelativeSizeAdjustment = Vector2.One;
+                hostBackdropVisual.Children.InsertAtBottom(fixVisual);
+            }
 
             hostBackdropGeometry = compositor.CreatePathGeometry();
 
@@ -294,6 +308,11 @@ namespace HotLyric.Win32.Base
             borderVisual = compositor.CreateShapeVisual();
             borderVisual.RelativeSizeAdjustment = Vector2.One;
             borderVisual.Shapes.Add(borderShape);
+
+            if (IsPixelSnappingEnabledSupported)
+            {
+                borderVisual.IsPixelSnappingEnabled = true;
+            }
         }
 
         private void UpdateVisualSize()
@@ -330,11 +349,19 @@ namespace HotLyric.Win32.Base
 
             backdropSurface.SourceSize = size;
 
-            var scaledBorderThickness = 1d;
-            var borderThicknessPixel = (int)Math.Round(scaledBorderThickness * dpi / 96);
+            var borderThickness = 1f;
 
-            var borderThickness = (float)(borderThicknessPixel * 96d / dpi);
-            borderShape.StrokeThickness = borderThickness;
+            if (IsPixelSnappingEnabledSupported)
+            {
+                borderShape.StrokeThickness = borderThickness;
+            }
+            else
+            {
+                var borderThicknessPixel = (int)Math.Round(borderThickness * dpi / 96);
+
+                borderThickness = (float)(borderThicknessPixel * 96d / dpi);
+                borderShape.StrokeThickness = borderThickness;
+            }
 
             if (backgroundShadowHostSurface != null && backgroundShadowHostSurfaceVisual != null)
             {

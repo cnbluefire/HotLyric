@@ -62,6 +62,11 @@ namespace HotLyric.Win32.Base
 
         private AcrylicHelper? acrylicHelper;
 
+        internal const string scaleAnimationSize = "12f";
+        internal static readonly TimeSpan opacityAnimationDuration = TimeSpan.FromSeconds(0.27);
+        private ExpressionAnimation centerPointBind;
+        private ExpressionAnimation scaleBind;
+
         public WindowAcrylicContext(WindowAcrylicController windowAcrylicController)
         {
             this.windowAcrylicController = windowAcrylicController;
@@ -85,10 +90,16 @@ namespace HotLyric.Win32.Base
 
             rootVisual.Children.InsertAtTop(blurAndShadowContainer);
 
+            centerPointBind = compositor.CreateExpressionAnimation("Vector3(this.Target.Size.X / 2, this.Target.Size.Y / 2, 0)");
+            blurAndShadowContainer.StartAnimation("CenterPoint", centerPointBind);
+
+            scaleBind = compositor.CreateExpressionAnimation($"Vector3(({scaleAnimationSize} / this.Target.Size.X) * (1 - this.Target.Opacity) + 1, ({scaleAnimationSize} / this.Target.Size.Y) * (1 - this.Target.Opacity) + 1, 1)");
+            blurAndShadowContainer.StartAnimation("Scale", scaleBind);
+
             var imp = compositor.CreateImplicitAnimationCollection();
             var opacityAn = compositor.CreateScalarKeyFrameAnimation();
             opacityAn.InsertExpressionKeyFrame(1, "this.FinalValue");
-            opacityAn.Duration = TimeSpan.FromSeconds(0.2);
+            opacityAn.Duration = opacityAnimationDuration;
             opacityAn.Target = "Opacity";
             imp[opacityAn.Target] = opacityAn;
             blurAndShadowContainer.ImplicitAnimations = imp;
@@ -137,7 +148,18 @@ namespace HotLyric.Win32.Base
         public double Opacity
         {
             get => blurAndShadowContainer.Opacity;
-            set => blurAndShadowContainer.Opacity = (float)value;
+            set
+            {
+                var v = (float)value;
+                if (blurAndShadowContainer.Opacity != v)
+                {
+                    if (blurAndShadowContainer.Opacity == 0)
+                    {
+                        acrylicHelper?.FlushBrush();
+                    }
+                    blurAndShadowContainer.Opacity = v;
+                }
+            }
         }
 
         public bool Visible

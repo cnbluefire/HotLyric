@@ -97,6 +97,9 @@ namespace HotLyric.Win32.Views
         }
 
         private System.Drawing.Icon? appIcon;
+        private ExpressionAnimation? centerPointBind;
+        private ExpressionAnimation? scaleBind;
+
 
         public WindowTopmostHelper? TopmostHelper { get; private set; }
 
@@ -434,9 +437,20 @@ namespace HotLyric.Win32.Views
 
         #endregion Element Events
 
+        #region xBindFunctions
+        
+        private int TitleColumnSpan(bool isTitleButtonVisible)
+        {
+            return isTitleButtonVisible ? 1 : 3;
+        }
+        
+        #endregion xBindFunctions
+
         private void InitBorderAndTitleOpacityAnimation()
         {
-            var visual = ElementCompositionPreview.GetElementVisual(TitleContainer);
+            var scaleAnimationSize = "32f";
+         
+            var visual = ElementCompositionPreview.GetElementVisual(NonContentPanel);
 
             var compositor = visual.Compositor;
 
@@ -444,12 +458,19 @@ namespace HotLyric.Win32.Views
 
             var animation = compositor.CreateScalarKeyFrameAnimation();
             animation.InsertExpressionKeyFrame(1, "this.FinalValue");
-            animation.Duration = TimeSpan.FromSeconds(0.2);
+            animation.Duration = WindowAcrylicContext.opacityAnimationDuration;
             animation.Target = "Opacity";
 
             imp[animation.Target] = animation;
 
             visual.ImplicitAnimations = imp;
+
+            centerPointBind = compositor.CreateExpressionAnimation("Vector3(this.Target.Size.X / 2, this.Target.Size.Y / 2, 0)");
+            visual.StartAnimation("CenterPoint", centerPointBind);
+
+            scaleBind = compositor.CreateExpressionAnimation($"Vector3(({scaleAnimationSize} / this.Target.Size.X) * (1 - this.Target.Opacity) + 1, ({scaleAnimationSize} / this.Target.Size.Y) * (1 - this.Target.Opacity) + 1, 1)");
+            visual.StartAnimation("Scale", scaleBind);
+
         }
 
 
@@ -466,6 +487,5 @@ namespace HotLyric.Win32.Views
 
             this.SetIcon(appIcon.GetIconId());
         }
-
     }
 }

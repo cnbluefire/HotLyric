@@ -63,6 +63,8 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
         private CompositionScopedBatch? switchTransitionBatch;
 
         private CompositionSurfaceBrush noiseBrush;
+        private CompositionBackdropBrush backdropBrush;
+        private CompositionColorBrush flushBrush;
         private bool disposedValue;
 
         public AcrylicHelper()
@@ -86,22 +88,22 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
                 "GaussianBlurEffect.BlurAmount",
             });
 
-            var brush = factory.CreateBrush();
+            flushBrush = compositor.CreateColorBrush(Color.FromArgb(0, 255, 255, 255));
 
-            CompositionBackdropBrush backdropSource;
+            var brush = factory.CreateBrush();
 
             if (IsHostBackdropBrushSupported)
             {
-                backdropSource = compositor.CreateHostBackdropBrush();
+                backdropBrush = compositor.CreateHostBackdropBrush();
                 brush.Properties.InsertScalar("GaussianBlurEffect.BlurAmount", 20);
             }
             else
             {
-                backdropSource = compositor.CreateBackdropBrush();
+                backdropBrush = compositor.CreateBackdropBrush();
                 brush.Properties.InsertScalar("GaussianBlurEffect.BlurAmount", (float)blurAmount);
             }
 
-            brush.SetSourceParameter("source", backdropSource);
+            brush.SetSourceParameter("source", backdropBrush);
             brush.SetSourceParameter("noise", noiseBrush);
 
             this.brush = brush;
@@ -205,6 +207,14 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
             }
 
             PropertyChanged?.Invoke(this, new PropertyChangedEventArgs(propName));
+        }
+
+        internal void FlushBrush()
+        {
+            if (disposedValue) throw new ObjectDisposedException(nameof(AcrylicHelper));
+
+            brush.SetSourceParameter("source", flushBrush);
+            brush.SetSourceParameter("source", backdropBrush);
         }
 
         public event PropertyChangedEventHandler? PropertyChanged;

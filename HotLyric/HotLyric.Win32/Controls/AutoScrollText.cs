@@ -85,6 +85,35 @@ namespace HotLyric.Win32.Controls
 
 
 
+        public bool Paused
+        {
+            get { return (bool)GetValue(PausedProperty); }
+            set { SetValue(PausedProperty, value); }
+        }
+
+        // Using a DependencyProperty as the backing store for Paused.  This enables animation, styling, binding, etc...
+        public static readonly DependencyProperty PausedProperty =
+            DependencyProperty.Register("Paused", typeof(bool), typeof(AutoScrollText), new PropertyMetadata(false, (s, a) =>
+            {
+                if (s is AutoScrollText sender && !Equals(a.NewValue, a.OldValue))
+                {
+                    var controller1 = sender.visual1?.TryGetAnimationController("Offset.X");
+                    var controller2 = sender.visual2?.TryGetAnimationController("Offset.X");
+
+                    if (a.NewValue is true)
+                    {
+                        controller1?.Pause();
+                        controller2?.Pause();
+                    }
+                    else
+                    {
+                        sender.UpdateScrollState();
+                    }
+                }
+            }));
+
+
+
         private void OnVisibilityPropertyChanged(DependencyObject sender, DependencyProperty dp)
         {
             UpdateScrollState();
@@ -161,14 +190,14 @@ namespace HotLyric.Win32.Controls
                     (float)ContentPresenter.ActualWidth,
                     (float)ContentPresenter.ActualHeight);
 
-                if (TextBlock != null
+                if (!Paused
+                    && TextBlock != null
                     && scrollVisual != null
                     && ContentPresenter != null
                     && LayoutRoot != null
                     && ContentPresenter.ActualWidth > LayoutRoot.ActualWidth)
                 {
                     var compositor = scrollVisual.Compositor;
-
 
                     if (linearEasingFunc == null)
                     {
@@ -199,7 +228,6 @@ namespace HotLyric.Win32.Controls
                 }
                 else
                 {
-
                     if (visual1 != null)
                     {
                         visual1.StopAnimation("Offset.X");
@@ -210,6 +238,9 @@ namespace HotLyric.Win32.Controls
                         visual2.StopAnimation("Offset.X");
                         visual2.IsVisible = false;
                     }
+
+                    visual1Animation = null;
+                    visual2Animation = null;
                 }
             }
         }

@@ -377,7 +377,7 @@ namespace HotLyric.Win32.Controls
         private void LyricLines_PauseStateChanged(object? sender, EventArgs e)
         {
             DispatcherQueue.TryEnqueue(
-                Microsoft.UI.Dispatching.DispatcherQueuePriority.High, 
+                Microsoft.UI.Dispatching.DispatcherQueuePriority.High,
                 DrawOneFrameWhenPaused);
         }
 
@@ -830,7 +830,12 @@ namespace HotLyric.Win32.Controls
                         drawingLine.Draw(args.DrawingSession, new LyricDrawingParameters(playProgress, scaleProgress, lowFrameRateMode, progressAnimationMode, colors));
 
                     }
-                    catch (Exception ex) when (!sender.Device.IsDeviceLost(ex.HResult))
+                    catch (Exception ex) when (sender.Device.IsDeviceLost(ex.HResult))
+                    {
+                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                        sender.Device.RaiseDeviceLost();
+                    }
+                    catch (Exception ex)
                     {
                         HotLyric.Win32.Utils.LogHelper.LogError(ex);
                     }

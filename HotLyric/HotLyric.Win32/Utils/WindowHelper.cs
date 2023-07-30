@@ -12,7 +12,8 @@ using Vanara.PInvoke;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Media.Imaging;
 using Microsoft.UI.Xaml;
-using WinUIEx;
+using Microsoft.UI;
+using BlueFire.Toolkit.WinUI3.Extensions;
 
 namespace HotLyric.Win32.Utils
 {

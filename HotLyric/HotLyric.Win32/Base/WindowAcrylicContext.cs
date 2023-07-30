@@ -5,7 +5,6 @@ using System.Text;
 using System.Threading.Tasks;
 using Vanara.PInvoke;
 using Windows.UI.Composition.Desktop;
-using WinUIEx;
 using WinRT;
 using System.Reflection.Metadata;
 using Windows.UI.Composition;
@@ -14,6 +13,9 @@ using Microsoft.Graphics.Canvas.Geometry;
 using HotLyric.Win32.Utils;
 using HotLyric.Win32.Base.BackgroundHelpers;
 using Microsoft.UI.Xaml;
+using BlueFire.Toolkit.WinUI3.WindowBase;
+using Microsoft.UI;
+using BlueFire.Toolkit.WinUI3.Extensions;
 
 namespace HotLyric.Win32.Base
 {
@@ -223,10 +225,9 @@ namespace HotLyric.Win32.Base
         {
             if (window != null)
             {
-                var handle = (nint)window.AppWindow.Id.Value;
-                desktopWindowTarget = CreateDesktopWindowTarget(handle);
+                desktopWindowTarget = CreateDesktopWindowTarget(window.GetWindowHandle());
                 windowManager = WindowManager.Get(window);
-                windowManager.WindowMessageReceived += WindowManager_WindowMessageReceived;
+                windowManager!.WindowMessageReceived += WindowManager_WindowMessageReceived;
 
                 desktopWindowTarget.Root = rootVisual;
 
@@ -434,21 +435,21 @@ namespace HotLyric.Win32.Base
         #region Update Size
 
         [System.Diagnostics.DebuggerNonUserCode]
-        private unsafe void WindowManager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
+        private unsafe void WindowManager_WindowMessageReceived(object? sender, WindowMessageReceivedEventArgs e)
         {
             if (window != null)
             {
-                if (e.Message.MessageId == (uint)User32.WindowMessage.WM_DPICHANGED)
+                if (e.MessageId == (uint)User32.WindowMessage.WM_DPICHANGED)
                 {
                     window.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateRootVisualScale);
                 }
-                else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_SIZE)
+                else if (e.MessageId == (uint)User32.WindowMessage.WM_SIZE)
                 {
                     window.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateRootVisualSize);
                 }
-                else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_WINDOWPOSCHANGED)
+                else if (e.MessageId == (uint)User32.WindowMessage.WM_WINDOWPOSCHANGED)
                 {
-                    var wndpos = (User32.WINDOWPOS*)e.Message.LParam.ToPointer();
+                    var wndpos = (User32.WINDOWPOS*)e.LParam.ToPointer();
                     var flag = wndpos->flags;
 
                     if ((flag & (User32.SetWindowPosFlags.SWP_NOSIZE)) == 0)
@@ -456,7 +457,7 @@ namespace HotLyric.Win32.Base
                         window.DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Normal, UpdateRootVisualSize);
                     }
                 }
-                else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_SHOWWINDOW)
+                else if (e.MessageId == (uint)User32.WindowMessage.WM_SHOWWINDOW)
                 {
                     if (window.Visible)
                     {

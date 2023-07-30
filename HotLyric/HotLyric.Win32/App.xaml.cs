@@ -13,7 +13,6 @@ using Vanara.PInvoke;
 using Windows.Data.Xml.Dom;
 using Windows.UI.Notifications;
 using Microsoft.UI.Xaml;
-using WinUIEx;
 using Microsoft.UI.Dispatching;
 using HotLyric.Win32.Base.BackgroundHelpers;
 using HotLyric.Win32.Views;
@@ -65,7 +64,7 @@ namespace HotLyric.Win32
         {
             LyricView = new Views.LyricView();
 
-            LyricView.Show();
+            LyricView.AppWindow.Show();
         }
 
         private async Task CheckUpdateAsync()
@@ -199,7 +198,7 @@ namespace HotLyric.Win32
                 notifyIcon?.Dispose();
                 notifyIcon = null;
 
-                LyricView?.Close();
+                LyricView?.XamlWindow?.Close();
                 LyricView = null;
 
                 ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession = null;

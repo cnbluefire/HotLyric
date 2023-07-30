@@ -1,4 +1,7 @@
-﻿using HotLyric.Win32.Utils;
+﻿using BlueFire.Toolkit.WinUI3.Extensions;
+using BlueFire.Toolkit.WinUI3.SystemBackdrops;
+using BlueFire.Toolkit.WinUI3.WindowBase;
+using HotLyric.Win32.Utils;
 using Microsoft.UI;
 using Microsoft.UI.Composition;
 using System;
@@ -11,43 +14,35 @@ using System.Threading.Tasks;
 using Vanara.PInvoke;
 using Windows.UI;
 using WinRT;
-using WinUIEx;
 
 namespace HotLyric.Win32.Base
 {
-    public class TransparentWindow : WinUIEx.WindowEx
+    public class TransparentWindow : WindowEx
     {
-        private static COLORREF WindowBackgroundColor;
-
-        static TransparentWindow()
-        {
-            WindowBackgroundColor = User32.GetSysColor(SystemColorIndex.COLOR_WINDOW);
-        }
-
         public TransparentWindow()
         {
-            var handle = this.GetWindowHandle();
+            var handle = AppWindow.GetWindowHandle();
 
-            SetWindowTransparentStyle(handle);
+            var style = (uint)User32.GetWindowLongAuto(handle, User32.WindowLongFlags.GWL_STYLE).ToInt64();
+            var exStyle = (uint)User32.GetWindowLongAuto(handle, User32.WindowLongFlags.GWL_EXSTYLE).ToInt64();
+            UpdateStyleValue(ref style, ref exStyle);
+            User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_STYLE, (nint)style);
+            User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_EXSTYLE, (nint)exStyle);
 
-            var manager = WindowManager.Get(this);
-            manager.WindowMessageReceived += Manager_WindowMessageReceived;
+            var manager = WindowManager.Get(this.AppWindow);
+            manager!.WindowMessageReceived += Manager_WindowMessageReceived;
 
-            var brushHost = this.As<ICompositionSupportsSystemBackdrop>();
-            if (brushHost != null)
-            {
-                brushHost.SystemBackdrop = WindowsCompositionHelper.Compositor.CreateColorBrush(Color.FromArgb(0, 255, 255, 255));
-            }
+            this.SystemBackdrop = new TransparentBackdrop();
         }
 
-        private unsafe void Manager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
+        private unsafe void Manager_WindowMessageReceived(WindowManager sender, WindowMessageReceivedEventArgs e)
         {
-            if (e.Message.MessageId == (uint)User32.WindowMessage.WM_STYLECHANGING)
+            if (e.MessageId == (uint)User32.WindowMessage.WM_STYLECHANGING)
             {
-                var style = ((STYLESTRUCT*)e.Message.LParam.ToPointer())->styleNew;
+                var style = ((STYLESTRUCT*)e.LParam.ToPointer())->styleNew;
                 var tmp = 0u;
 
-                if (e.Message.WParam.ToUInt64() == unchecked((ulong)User32.WindowLongFlags.GWL_STYLE))
+                if (e.WParam.ToUInt64() == unchecked((ulong)User32.WindowLongFlags.GWL_STYLE))
                 {
                     UpdateStyleValue(ref style, ref tmp);
                 }
@@ -56,41 +51,11 @@ namespace HotLyric.Win32.Base
                     UpdateStyleValue(ref tmp, ref style);
                 }
 
-                ((STYLESTRUCT*)e.Message.LParam.ToPointer())->styleNew = style;
+                ((STYLESTRUCT*)e.LParam.ToPointer())->styleNew = style;
 
                 e.Handled = true;
             }
-            else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_DISPLAYCHANGE)
-            {
-                var dpi = this.GetDpiForWindow();
-                OnDisplayChanged(dpi);
-            }
-            else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_DESTROY)
-            {
-                var manager = WindowManager.Get(this);
-                manager.WindowMessageReceived -= Manager_WindowMessageReceived;
-            }
-            else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_ERASEBKGND)
-            {
-                if (User32.GetClientRect(e.Message.Hwnd, out var rect))
-                {
-                    using var brush = Gdi32.CreateSolidBrush(new COLORREF(0, 0, 0));
-                    User32.FillRect((nint)e.Message.WParam, rect, brush);
-                    e.Result = 1;
-                    e.Handled = true;
-                }
-            }
-            else if (e.Message.MessageId == (uint)User32.WindowMessage.WM_DWMCOMPOSITIONCHANGED)
-            {
-                SetDwmProperties(e.Message.Hwnd);
-            }
         }
-
-        protected virtual void OnDisplayChanged(uint dpi)
-        {
-
-        }
-
 
         [StructLayout(LayoutKind.Sequential)]
         private struct STYLESTRUCT
@@ -106,51 +71,7 @@ namespace HotLyric.Win32.Base
 
             exStyle &= ~(uint)(User32.WindowStylesEx.WS_EX_APPWINDOW);
             exStyle |= (uint)(User32.WindowStylesEx.WS_EX_TOOLWINDOW);
-            exStyle |= (uint)(User32.WindowStylesEx.WS_EX_LAYERED);
             exStyle |= (uint)(User32.WindowStylesEx.WS_EX_NOACTIVATE);
-        }
-
-        public static void SetWindowTransparentStyle(Microsoft.UI.WindowId windowId) =>
-            SetWindowTransparentStyle(unchecked((nint)windowId.Value));
-
-        public static void SetWindowTransparentStyle(nint handle)
-        {
-            uint style = 0;
-            uint exStyle = 0;
-
-            try
-            {
-                style = (uint)User32.GetWindowLongAuto(handle, User32.WindowLongFlags.GWL_STYLE);
-                exStyle = (uint)User32.GetWindowLongAuto(handle, User32.WindowLongFlags.GWL_EXSTYLE);
-            }
-            catch { }
-
-            UpdateStyleValue(ref style, ref exStyle);
-
-            User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_STYLE, (nint)style);
-            User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_EXSTYLE, (nint)exStyle);
-
-            if (WindowBackgroundColor.ToArgb() != 0)
-            {
-                User32.SetLayeredWindowAttributes(handle, WindowBackgroundColor, 255, User32.LayeredWindowAttributes.LWA_COLORKEY);
-            }
-            else
-            {
-                User32.SetLayeredWindowAttributes(handle, default, 255, User32.LayeredWindowAttributes.LWA_ALPHA);
-            }
-
-            SetDwmProperties(handle);
-        }
-
-        private static void SetDwmProperties(nint handle)
-        {
-            DwmApi.DwmExtendFrameIntoClientArea(handle, new DwmApi.MARGINS(0));
-            using var rgn = Gdi32.CreateRectRgn(-2, -2, -1, -1);
-            DwmApi.DwmEnableBlurBehindWindow(handle, new DwmApi.DWM_BLURBEHIND(true)
-            {
-                dwFlags = DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_ENABLE | DwmApi.DWM_BLURBEHIND_Mask.DWM_BB_BLURREGION,
-                hRgnBlur = rgn
-            });
         }
     }
 }

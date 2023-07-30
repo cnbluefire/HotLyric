@@ -6,7 +6,6 @@ using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
 using Microsoft.UI.Xaml.Controls;
-using WinUIEx;
 using Microsoft.UI.Xaml.Media.Animation;
 using HotLyric.Win32.Utils;
 using Microsoft.UI.Composition;
@@ -15,6 +14,7 @@ using Windows.ApplicationModel;
 using Microsoft.UI.Xaml.Input;
 using HotLyric.Win32.Controls;
 using Microsoft.UI.Xaml.Media;
+using BlueFire.Toolkit.WinUI3.WindowBase;
 
 namespace HotLyric.Win32.Views
 {
@@ -24,8 +24,8 @@ namespace HotLyric.Win32.Views
         {
             InitializeComponent();
 
-            ExtendsContentIntoTitleBar = true;
-            SetTitleBar(Titlebar);
+            XamlWindow.ExtendsContentIntoTitleBar = true;
+            XamlWindow.SetTitleBar(Titlebar);
 
             if (Microsoft.UI.Composition.SystemBackdrops.MicaController.IsSupported())
             {
@@ -39,24 +39,7 @@ namespace HotLyric.Win32.Views
             }
 
             AppWindow.Closing += AppWindow_Closing;
-            this.Activated += SettingsView_Activated;
-
-            _ = InitIconAsync();
-        }
-
-        private System.Drawing.Icon? appIcon;
-
-        private async Task InitIconAsync()
-        {
-            var dpi = this.GetDpiForWindow();
-
-            appIcon = await IconHelper.CreateIconAsync(
-                Package.Current.Logo,
-                IconHelper.GetSmallIconSize(),
-                dpi / 96d,
-                default);
-
-            this.SetIcon(appIcon.GetIconId());
+            XamlWindow.Activated += SettingsView_Activated;
         }
 
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)

@@ -15,7 +15,6 @@ using System.Threading.Tasks;
 using Vanara.Extensions;
 using Vanara.PInvoke;
 using Windows.UI.Xaml;
-using WinUIEx;
 using WinRT;
 using System.Runtime.InteropServices;
 using Microsoft.UI.Windowing;
@@ -26,6 +25,9 @@ using System.Diagnostics;
 using Microsoft.Win32;
 using System.Reflection.Metadata;
 using Windows.ApplicationModel;
+using Microsoft.UI;
+using BlueFire.Toolkit.WinUI3.WindowBase;
+using BlueFire.Toolkit.WinUI3.Extensions;
 
 namespace HotLyric.Win32.Views
 {
@@ -44,11 +46,11 @@ namespace HotLyric.Win32.Views
             ContentRoot.PointerEntered += ContentRoot_PointerEntered;
             ContentRoot.PointerExited += ContentRoot_PointerExited;
 
-            AcrylicController.Window = this;
+            AcrylicController.Window = this.XamlWindow;
 
-            this.IsAlwaysOnTop = true;
+            WindowHelper.SetTopmost(this.XamlWindow, true);
 
-            TopmostHelper = new WindowTopmostHelper(this);
+            //TopmostHelper = new WindowTopmostHelper(this.XamlWindow);
 
             if (WindowBoundsHelper.TryGetWindowBounds("lyric", out var x, out var y, out var width, out var height))
             {
@@ -67,7 +69,7 @@ namespace HotLyric.Win32.Views
             VM.PropertyChanged += VM_PropertyChanged;
 
             this.AppWindow.Closing += AppWindow_Closing;
-            this.Closed += LyricView_Closed;
+            this.XamlWindow.Closed += LyricView_Closed;
 
             DispatcherQueue.TryEnqueue(Microsoft.UI.Dispatching.DispatcherQueuePriority.Low, () =>
             {
@@ -89,14 +91,8 @@ namespace HotLyric.Win32.Views
                 AcrylicController.Visible = true;
                 LayoutRoot.Opacity = 1;
             });
-
-            var manager = WindowManager.Get(this);
-            manager.WindowMessageReceived += Manager_WindowMessageReceived;
-
-            _ = InitIconAsync();
         }
 
-        private System.Drawing.Icon? appIcon;
         private ExpressionAnimation? centerPointBind;
         private ExpressionAnimation? scaleBind;
 
@@ -121,13 +117,13 @@ namespace HotLyric.Win32.Views
 
         private void UpdateActualMinimized()
         {
-            if (VM.ActualMinimized && this.Visible)
+            if (VM.ActualMinimized && this.XamlWindow.Visible)
             {
-                this.Hide();
+                this.AppWindow.Hide();
             }
-            else if (!VM.ActualMinimized && !this.Visible)
+            else if (!VM.ActualMinimized && !this.XamlWindow.Visible)
             {
-                this.Show();
+                this.AppWindow.Show();
 
                 if (!ActivationArgumentsHelper.RedirectMode)
                 {
@@ -135,9 +131,7 @@ namespace HotLyric.Win32.Views
                     {
                         if (AppWindow.IsVisible)
                         {
-                            var handle = this.GetWindowHandle();
-
-                            if (WindowBoundsHelper.IsWindowOutsideScreen(handle))
+                            if (WindowBoundsHelper.IsWindowOutsideScreen(this.GetWindowHandle()))
                             {
                                 ResetWindowBounds(false);
                             }
@@ -149,8 +143,8 @@ namespace HotLyric.Win32.Views
 
         private void UpdateTransparent()
         {
-            WindowHelper.SetLayeredWindow(this, VM.IsTransparent);
-            WindowHelper.SetTransparent(this, VM.IsTransparent);
+            WindowHelper.SetLayeredWindow(this.XamlWindow, VM.IsTransparent);
+            WindowHelper.SetTransparent(this.XamlWindow, VM.IsTransparent);
         }
 
         #endregion View Model Property Changed
@@ -177,9 +171,6 @@ namespace HotLyric.Win32.Views
 
         private void ReleaseResources()
         {
-            var manager = WindowManager.Get(this);
-            manager.WindowMessageReceived -= Manager_WindowMessageReceived;
-
             VM.PropertyChanged -= VM_PropertyChanged;
 
             this.AppWindow.Changed -= AppWindow_Changed;
@@ -197,7 +188,7 @@ namespace HotLyric.Win32.Views
         {
             var size = AppWindow.Size;
 
-            var dpi = this.GetDpiForWindow();
+            var dpi = this.WindowDpi;
             var minWidthPixel = (int)(MinWidth * dpi / 96);
             var minHeightPixel = (int)(MinHeight * dpi / 96);
 
@@ -241,13 +232,16 @@ namespace HotLyric.Win32.Views
         {
             if (args.DidSizeChange || args.DidPositionChange)
             {
-                User32.GetWindowRect(this.GetWindowHandle(), out var rect);
+                var handle = this.GetWindowHandle();
+                User32.GetWindowRect(handle, out var rect);
                 WindowBoundsHelper.SetWindowBounds("lyric", rect.Left, rect.Top, rect.Width, rect.Height);
             }
         }
 
-        protected override void OnDisplayChanged(uint dpi)
+        protected override void OnDpiChanged(WindowExDpiChangedEventArgs args)
         {
+            base.OnDpiChanged(args);
+
             if (!AppWindow.IsVisible) return;
             if (ActivationArgumentsHelper.RedirectMode) return;
 
@@ -266,21 +260,20 @@ namespace HotLyric.Win32.Views
             });
         }
 
-
-        private void Manager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
+        protected override void OnWindowMessageReceived(WindowMessageReceivedEventArgs e)
         {
-            if (e.Message.MessageId == (uint)User32.WindowMessage.WM_ENDSESSION)
+            base.OnWindowMessageReceived(e);
+            if (e.MessageId == (uint)User32.WindowMessage.WM_ENDSESSION)
             {
                 LogHelper.LogInfo("WM_ENDSESSION");
                 e.Handled = true;
-                e.Result = 0;
+                e.LResult = 0;
                 DispatcherQueue.TryEnqueue(() =>
                 {
                     App.Current.Exit();
                 });
             }
         }
-
 
         #endregion Window Proc
 
@@ -313,7 +306,7 @@ namespace HotLyric.Win32.Views
         {
             e.Handled = true;
 
-            _ = this.DragMoveAsync(e);
+            _ = this.XamlWindow.DragMoveAsync(e);
         }
 
 
@@ -366,8 +359,10 @@ namespace HotLyric.Win32.Views
 
         private bool IsMouseInsideWindow()
         {
+            var handle = this.GetWindowHandle();
+
             if (AppWindow.IsVisible
-                && User32.GetWindowRect(this.GetWindowHandle(), out var rect)
+                && User32.GetWindowRect(handle, out var rect)
                 && User32.GetCursorPos(out var point))
             {
                 var rect2 = (System.Drawing.Rectangle)rect;
@@ -385,7 +380,7 @@ namespace HotLyric.Win32.Views
 
         private void ResizePanel_DraggerPointerPressed(Controls.ResizePanel sender, Controls.ResizePanelDraggerPressedEventArgs args)
         {
-            _ = this.DragResizeAsync(args.PointerEventArgs, args.Edge);
+            _ = this.XamlWindow.DragResizeAsync(args.PointerEventArgs, args.Edge);
         }
 
         private void ContentRoot_SizeChanged(object sender, SizeChangedEventArgs e)
@@ -438,18 +433,18 @@ namespace HotLyric.Win32.Views
         #endregion Element Events
 
         #region xBindFunctions
-        
+
         private int TitleColumnSpan(bool isTitleButtonVisible)
         {
             return isTitleButtonVisible ? 1 : 3;
         }
-        
+
         #endregion xBindFunctions
 
         private void InitBorderAndTitleOpacityAnimation()
         {
             var scaleAnimationSize = "32f";
-         
+
             var visual = ElementCompositionPreview.GetElementVisual(NonContentPanel);
 
             var compositor = visual.Compositor;
@@ -473,19 +468,5 @@ namespace HotLyric.Win32.Views
 
         }
 
-
-
-        private async Task InitIconAsync()
-        {
-            var dpi = this.GetDpiForWindow();
-
-            appIcon = await IconHelper.CreateIconAsync(
-                Package.Current.Logo,
-                IconHelper.GetSmallIconSize(),
-                dpi / 96d,
-                default);
-
-            this.SetIcon(appIcon.GetIconId());
-        }
     }
 }

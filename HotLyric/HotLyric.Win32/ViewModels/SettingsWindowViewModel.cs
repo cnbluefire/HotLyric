@@ -1,4 +1,5 @@
-﻿using HotLyric.Win32.Controls;
+﻿using BlueFire.Toolkit.WinUI3.Extensions;
+using HotLyric.Win32.Controls;
 using HotLyric.Win32.Models;
 using HotLyric.Win32.Utils;
 using HotLyric.Win32.Views;
@@ -25,9 +26,10 @@ using Microsoft.UI.Xaml;
 using HotLyric.Win32.Controls.LyricControlDrawingData;
 using Newtonsoft.Json.Linq;
 using WinRT;
-using WinUIEx;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
+using Microsoft.UI;
+using Vanara.PInvoke;
 
 namespace HotLyric.Win32.ViewModels
 {
@@ -484,12 +486,12 @@ namespace HotLyric.Win32.ViewModels
             try
             {
                 var ownerWindow = App.Current.SettingsView;
-                if (ownerWindow?.Visible != true) return;
+                if (ownerWindow?.XamlWindow?.Visible != true) return;
 
                 var updateResult = await ApplicationHelper.CheckUpdateAsync();
 
                 ownerWindow = App.Current.SettingsView;
-                if (ownerWindow?.Visible != true) return;
+                if (ownerWindow?.XamlWindow?.Visible != true) return;
 
                 if (updateResult.HasUpdate)
                 {
@@ -567,7 +569,7 @@ namespace HotLyric.Win32.ViewModels
                     {
                         var ownerWindow = App.Current.SettingsView;
 
-                        if (ownerWindow?.Visible != true) return;
+                        if (ownerWindow?.XamlWindow?.Visible != true) return;
 
                         var contentDialog = new ContentDialog()
                         {
@@ -609,7 +611,7 @@ namespace HotLyric.Win32.ViewModels
         {
             var ownerWindow = App.Current.SettingsView;
 
-            if (ownerWindow?.Visible != true) return;
+            if (ownerWindow?.XamlWindow?.Visible != true) return;
 
             var contentDialog = new ContentDialog()
             {
@@ -737,7 +739,7 @@ namespace HotLyric.Win32.ViewModels
             }
 
             var ownerWindow = App.Current.SettingsView;
-            if (ownerWindow?.Visible == true)
+            if (ownerWindow?.XamlWindow?.Visible == true)
             {
                 var contentDialog = new ContentDialog()
                 {
@@ -874,7 +876,8 @@ namespace HotLyric.Win32.ViewModels
             try
             {
                 App.Current.SettingsView.Activate();
-                App.Current.SettingsView.SetForegroundWindow();
+
+                App.Current.SettingsView?.SetForegroundWindow();
             }
             catch (Exception ex)
             {
@@ -940,9 +943,9 @@ namespace HotLyric.Win32.ViewModels
         {
             bool install = false;
 
-            if (!App.Current.Exiting && IsHotKeyEnabled)
+            if (!App.Current.Exiting && IsHotKeyEnabled && App.Current.SettingsView != null)
             {
-                var activated = IsActivated(App.Current.SettingsView);
+                var activated = IsActivated(App.Current.SettingsView.XamlWindow);
                 if (activated)
                 {
                     try
@@ -972,7 +975,7 @@ namespace HotLyric.Win32.ViewModels
             static bool IsActivated(Microsoft.UI.Xaml.Window? _window) =>
                 _window != null
                     && _window.Visible
-                    && Vanara.PInvoke.User32.GetForegroundWindow().DangerousGetHandle().ToInt64() == (long)_window.AppWindow.Id.Value;
+                    && Vanara.PInvoke.User32.GetForegroundWindow().DangerousGetHandle() == _window.GetWindowHandle();
         }
     }
 

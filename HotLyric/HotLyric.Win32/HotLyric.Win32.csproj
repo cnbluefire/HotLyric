@@ -36,7 +36,7 @@
 		<PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.15" />
 		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.15" />
 		<PackageReference Include="Win2D.WinUI3.EnableCanvasAnimatedControl" Version="$(Win2D_WinUI3_EnableCanvasAnimatedControl_Version)" />
-		<PackageReference Include="WinUIEx" Version="2.2.0" />
+		<!--<PackageReference Include="WinUIEx" Version="2.2.0" />-->
 		<Manifest Include="$(ApplicationManifest)" />
 	</ItemGroup>
 
@@ -48,6 +48,10 @@
 
 	<ItemGroup>
 	  <None Remove="Controls\HotKeyInputBox.xaml" />
+	</ItemGroup>
+
+	<ItemGroup>
+	  <ProjectReference Include="..\..\..\BlueFire.Toolkit\src\BlueFire.Toolkit\BlueFire.Toolkit.WinUI3\BlueFire.Toolkit.WinUI3.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

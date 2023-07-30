@@ -1,5 +1,4 @@
 ﻿<base:TransparentWindow
-    xmlns:winuiex="using:WinUIEx"
     x:Class="HotLyric.Win32.Views.LyricView"
     x:Name="RootWindow"
     xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
@@ -12,8 +11,7 @@
     xmlns:converter="using:HotLyric.Win32.Utils.Converters" xmlns:model="using:HotLyric.Win32.Models"
     mc:Ignorable="d"
     Width="500" Height="150"
-    MinWidth="360" MinHeight="100"
-    IsResizable="False" IsMaximizable="False" IsMinimizable="False">
+    MinWidth="360" MinHeight="100">
 
     <Grid x:Name="LayoutRoot" Background="Transparent" DataContext="{Binding Path=LyricWindowViewModel,Source={StaticResource Locator}}" Opacity="0"
           RequestedTheme="Dark">

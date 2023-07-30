@@ -1,6 +1,8 @@
-﻿using HotLyric.Win32.Controls;
+﻿using BlueFire.Toolkit.WinUI3.Extensions;
+using HotLyric.Win32.Controls;
 using HotLyric.Win32.Utils;
 using HotLyric.Win32.ViewModels;
+using Microsoft.UI;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using System;
@@ -8,7 +10,6 @@ using System.Collections.Generic;
 using System.Linq;
 using System.Text;
 using System.Threading.Tasks;
-using WinUIEx;
 
 namespace HotLyric.Win32.Views
 {

@@ -11,9 +11,11 @@ using Vanara.PInvoke;
 using Microsoft.UI.Input;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Input;
-using WinUIEx;
 using Windows.Foundation;
 using System.Numerics;
+using Microsoft.UI;
+using BlueFire.Toolkit.WinUI3.WindowBase;
+using BlueFire.Toolkit.WinUI3.Extensions;
 
 namespace HotLyric.Win32.Utils
 {
@@ -438,7 +440,7 @@ namespace HotLyric.Win32.Utils
                 var hwnd = window.GetWindowHandle();
                 if (User32.GetWindowRect(hwnd, out var wndRect) && User32.GetClientRect(hwnd, out var rect))
                 {
-                    var dpi = window.GetDpiForWindow();
+                    var dpi = User32.GetDpiForWindow(hwnd);
 
                     var matrix = Matrix3x2.CreateScale(dpi / 96f)
                         * Matrix3x2.CreateTranslation(wndRect.X + rect.X, wndRect.Y + rect.Y);

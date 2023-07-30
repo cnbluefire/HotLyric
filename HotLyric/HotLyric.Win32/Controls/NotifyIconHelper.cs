@@ -208,7 +208,7 @@ namespace HotLyric.Win32.Controls
                 var lyricHostWindow = App.Current.LyricView;
                 if (lyricHostWindow != null)
                 {
-                    lyricHostWindow.Close();
+                    lyricHostWindow.XamlWindow.Close();
                 }
                 App.Current.Exit();
             }

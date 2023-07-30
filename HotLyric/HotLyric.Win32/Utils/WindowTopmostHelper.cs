@@ -1,4 +1,7 @@
-﻿using Microsoft.UI.Dispatching;
+﻿using BlueFire.Toolkit.WinUI3.Extensions;
+using BlueFire.Toolkit.WinUI3.WindowBase;
+using Microsoft.UI;
+using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;
 using Microsoft.UI.Xaml;
 using System;
@@ -11,7 +14,6 @@ using System.Threading.Tasks;
 using System.Timers;
 using System.Windows;
 using Vanara.PInvoke;
-using WinUIEx;
 
 namespace HotLyric.Win32.Utils
 {
@@ -106,9 +108,9 @@ namespace HotLyric.Win32.Utils
             manager.WindowMessageReceived += Manager_WindowMessageReceived;
         }
 
-        unsafe private void Manager_WindowMessageReceived(object? sender, WinUIEx.Messaging.WindowMessageEventArgs e)
+        unsafe private void Manager_WindowMessageReceived(object? sender, WindowMessageReceivedEventArgs e)
         {
-            var msg = (User32.WindowMessage)e.Message.MessageId;
+            var msg = (User32.WindowMessage)e.MessageId;
 
             if (msg == User32.WindowMessage.WM_MOVE
                 || msg == User32.WindowMessage.WM_SIZE)
@@ -125,7 +127,7 @@ namespace HotLyric.Win32.Utils
             }
             else if (msg == User32.WindowMessage.WM_WINDOWPOSCHANGED)
             {
-                var pWindowPos = (User32.WINDOWPOS*)e.Message.LParam;
+                var pWindowPos = (User32.WINDOWPOS*)e.LParam;
                 if ((pWindowPos->flags & (User32.SetWindowPosFlags.SWP_NOMOVE | User32.SetWindowPosFlags.SWP_NOSIZE)) == 0)
                 {
                     windowBounds = null;

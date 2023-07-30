@@ -1,4 +1,5 @@
-﻿using HotLyric.Win32.Utils;
+﻿using BlueFire.Toolkit.WinUI3.WindowBase;
+using HotLyric.Win32.Utils;
 using System;
 using System.Linq;
 using System.Runtime.InteropServices;
@@ -35,6 +36,8 @@ namespace HotLyric.Win32
             XamlCheckProcessRequirements();
 
             global::WinRT.ComWrappersSupport.InitializeComWrappers();
+            WindowManager.Initialize();
+
             global::Microsoft.UI.Xaml.Application.Start((p) =>
             {
                 var context = new global::Microsoft.UI.Dispatching.DispatcherQueueSynchronizationContext(global::Microsoft.UI.Dispatching.DispatcherQueue.GetForCurrentThread());

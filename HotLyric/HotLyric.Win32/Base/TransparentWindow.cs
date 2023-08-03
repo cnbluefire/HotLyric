@@ -30,7 +30,11 @@ namespace HotLyric.Win32.Base
             User32.SetWindowLong(handle, User32.WindowLongFlags.GWL_EXSTYLE, (nint)exStyle);
 
             var manager = WindowManager.Get(this.AppWindow);
-            manager!.WindowMessageReceived += Manager_WindowMessageReceived;
+
+            if (manager != null)
+            {
+                manager.WindowMessageReceived += Manager_WindowMessageReceived;
+            }
 
             this.SystemBackdrop = new TransparentBackdrop();
         }

@@ -867,17 +867,24 @@ namespace HotLyric.Win32.Controls
                 {
                     lock (lyricLines.DrawingLocker)
                     {
+                        var device = CanvasControl.Device;
                         try
                         {
-                            CanvasControl.Device.Trim();
+                            device?.Trim();
                         }
-                        catch (Exception ex) when (!CanvasControl.Device.IsDeviceLost(ex.HResult))
+                        catch (Exception ex) when (device.IsDeviceLost(ex.HResult))
+                        {
+                            HotLyric.Win32.Utils.LogHelper.LogError(ex);
+                            device.RaiseDeviceLost();
+                        }
+                        catch (Exception ex)
                         {
                             HotLyric.Win32.Utils.LogHelper.LogError(ex);
                         }
                     }
                 }
-                GC.Collect();
+
+                //GC.Collect();
             }
         }
 

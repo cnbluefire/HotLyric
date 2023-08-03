@@ -226,8 +226,12 @@ namespace HotLyric.Win32.Base
             if (window != null)
             {
                 desktopWindowTarget = CreateDesktopWindowTarget(window.GetWindowHandle());
+
                 windowManager = WindowManager.Get(window);
-                windowManager!.WindowMessageReceived += WindowManager_WindowMessageReceived;
+                if (windowManager != null)
+                {
+                    windowManager.WindowMessageReceived += WindowManager_WindowMessageReceived;
+                }
 
                 desktopWindowTarget.Root = rootVisual;
 

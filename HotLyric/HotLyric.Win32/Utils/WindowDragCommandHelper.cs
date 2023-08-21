@@ -14,7 +14,7 @@ using Microsoft.UI.Xaml.Input;
 using Windows.Foundation;
 using System.Numerics;
 using Microsoft.UI;
-using BlueFire.Toolkit.WinUI3.WindowBase;
+using BlueFire.Toolkit.WinUI3;
 using BlueFire.Toolkit.WinUI3.Extensions;
 
 namespace HotLyric.Win32.Utils

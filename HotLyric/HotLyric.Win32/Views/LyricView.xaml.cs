@@ -26,7 +26,7 @@ using Microsoft.Win32;
 using System.Reflection.Metadata;
 using Windows.ApplicationModel;
 using Microsoft.UI;
-using BlueFire.Toolkit.WinUI3.WindowBase;
+using BlueFire.Toolkit.WinUI3;
 using BlueFire.Toolkit.WinUI3.Extensions;
 
 namespace HotLyric.Win32.Views

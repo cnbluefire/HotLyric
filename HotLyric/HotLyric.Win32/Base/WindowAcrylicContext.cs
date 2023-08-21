@@ -13,7 +13,7 @@ using Microsoft.Graphics.Canvas.Geometry;
 using HotLyric.Win32.Utils;
 using HotLyric.Win32.Base.BackgroundHelpers;
 using Microsoft.UI.Xaml;
-using BlueFire.Toolkit.WinUI3.WindowBase;
+using BlueFire.Toolkit.WinUI3;
 using Microsoft.UI;
 using BlueFire.Toolkit.WinUI3.Extensions;
 

@@ -8,7 +8,8 @@
     xmlns:base="using:HotLyric.Win32.Base"
     xmlns:canvas="using:Microsoft.Graphics.Canvas.UI.Xaml"
     xmlns:control="using:HotLyric.Win32.Controls" 
-    xmlns:converter="using:HotLyric.Win32.Utils.Converters" xmlns:model="using:HotLyric.Win32.Models"
+    xmlns:converter="using:HotLyric.Win32.Utils.Converters" 
+    xmlns:model="using:HotLyric.Win32.Models"
     mc:Ignorable="d"
     Width="500" Height="150"
     MinWidth="360" MinHeight="100">
@@ -153,7 +154,7 @@
                                 <ToolTip>
                                     <StackPanel Orientation="Vertical">
                                         <TextBlock TextAlignment="Center" Text="锁定歌词" />
-                                        <TextBlock TextAlignment="Center" Text="{x:Bind converter:BindUtils.HotKeyTip(VM.SettingViewModel.HotKeyManager.LockUnlockKeyModel),Mode=OneWay}" />
+                                        <TextBlock TextAlignment="Center" Text="{x:Bind converter:BindUtils.HotKeyTip(VM.SettingViewModel.HotKeyModels.LockUnlockKeyModel),Mode=OneWay}" />
                                     </StackPanel>
                                 </ToolTip>
                             </ToolTipService.ToolTip>
@@ -170,7 +171,7 @@
                                 <ToolTip>
                                     <StackPanel Orientation="Vertical">
                                         <TextBlock TextAlignment="Center" Text="隐藏" />
-                                        <TextBlock TextAlignment="Center" Text="{x:Bind converter:BindUtils.HotKeyTip(VM.SettingViewModel.HotKeyManager.ShowHideLyricKeyModel),Mode=OneWay}" />
+                                        <TextBlock TextAlignment="Center" Text="{x:Bind converter:BindUtils.HotKeyTip(VM.SettingViewModel.HotKeyModels.ShowHideLyricKeyModel),Mode=OneWay}" />
                                     </StackPanel>
                                 </ToolTip>
                             </ToolTipService.ToolTip>

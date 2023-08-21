@@ -33,7 +33,7 @@ namespace HotLyric.Win32.Views
 
         private void ResetHotKeyButton_Click(object sender, RoutedEventArgs e)
         {
-            VM.HotKeyManager.ResetToDefaultSettings();
+            VM.HotKeyModels.ResetToDefaultSettings();
         }
     }
 }

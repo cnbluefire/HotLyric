@@ -30,6 +30,7 @@ using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Input;
 using Microsoft.UI;
 using Vanara.PInvoke;
+using BlueFire.Toolkit.WinUI3.Input;
 
 namespace HotLyric.Win32.ViewModels
 {
@@ -144,7 +145,7 @@ namespace HotLyric.Win32.ViewModels
 
             autoResetWindowPos = LoadSetting(AutoResetWindowPosSettingsKey, true);
 
-            hotKeyManager = new HotKeyManager(this);
+            hotKeyModels = new HotKeyModels(this);
             isHotKeyEnabled = LoadSetting(IsHotKeyEnabledSettingsKey, true);
         }
 
@@ -184,7 +185,7 @@ namespace HotLyric.Win32.ViewModels
         private bool hideOnPaused;
         private bool autoResetWindowPos;
         private AsyncRelayCommand? spotifySetLanguage;
-        private HotKeyManager hotKeyManager;
+        private HotKeyModels hotKeyModels;
         private bool isHotKeyEnabled;
 
         public StartupTaskHelper StartupTaskHelper { get; }
@@ -775,7 +776,7 @@ namespace HotLyric.Win32.ViewModels
         }, () => !SpotifySetLanguage.IsRunning));
 
 
-        public HotKeyManager HotKeyManager => hotKeyManager;
+        public HotKeyModels HotKeyModels => hotKeyModels ;
 
         public bool IsHotKeyEnabled
         {
@@ -784,7 +785,7 @@ namespace HotLyric.Win32.ViewModels
             {
                 if (ChangeSettings(ref isHotKeyEnabled, value, IsHotKeyEnabledSettingsKey))
                 {
-                    UpdateHotKeyManagerState();
+                    HotKeyManager.IsEnabled = value;
                 }
             }
         }
@@ -937,45 +938,6 @@ namespace HotLyric.Win32.ViewModels
                     ViewModelLocator.Instance.LyricWindowViewModel.ShowBackgroundTransient(TimeSpan.FromSeconds(2));
                 }
             }
-        }
-
-        public void UpdateHotKeyManagerState()
-        {
-            bool install = false;
-
-            if (!App.Current.Exiting && IsHotKeyEnabled && App.Current.SettingsView != null)
-            {
-                var activated = IsActivated(App.Current.SettingsView.XamlWindow);
-                if (activated)
-                {
-                    try
-                    {
-                        if (App.Current.SettingsView?.Content.XamlRoot != null)
-                        {
-                            install = FocusManager.GetFocusedElement(App.Current.SettingsView!.Content.XamlRoot) is not HotKeyInputBox;
-                        }
-                    }
-                    catch { }
-                }
-                else
-                {
-                    install = true;
-                }
-            }
-
-            if (install)
-            {
-                HotKeyManager.Install();
-            }
-            else
-            {
-                HotKeyManager.Uninstall();
-            }
-
-            static bool IsActivated(Microsoft.UI.Xaml.Window? _window) =>
-                _window != null
-                    && _window.Visible
-                    && Vanara.PInvoke.User32.GetForegroundWindow().DangerousGetHandle() == _window.GetWindowHandle();
         }
     }
 

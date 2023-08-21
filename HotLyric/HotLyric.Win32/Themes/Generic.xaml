@@ -6,6 +6,5 @@
     <ResourceDictionary.MergedDictionaries>
         <ResourceDictionary Source="ms-appx:///Controls/ResizePanel.xaml" />
         <ResourceDictionary Source="ms-appx:///Controls/AutoScrollText.xaml" />
-        <ResourceDictionary Source="ms-appx:///Controls/HotKeyInputBox.xaml" />
     </ResourceDictionary.MergedDictionaries>
 </ResourceDictionary>

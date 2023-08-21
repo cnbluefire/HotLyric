@@ -14,7 +14,7 @@ using Windows.ApplicationModel;
 using Microsoft.UI.Xaml.Input;
 using HotLyric.Win32.Controls;
 using Microsoft.UI.Xaml.Media;
-using BlueFire.Toolkit.WinUI3.WindowBase;
+using BlueFire.Toolkit.WinUI3;
 
 namespace HotLyric.Win32.Views
 {
@@ -39,15 +39,12 @@ namespace HotLyric.Win32.Views
             }
 
             AppWindow.Closing += AppWindow_Closing;
-            XamlWindow.Activated += SettingsView_Activated;
         }
 
         private void AppWindow_Closing(Microsoft.UI.Windowing.AppWindow sender, Microsoft.UI.Windowing.AppWindowClosingEventArgs args)
         {
             args.Cancel = true;
             sender.Hide();
-
-            VM.UpdateHotKeyManagerState();
         }
 
         public SettingsWindowViewModel VM => (SettingsWindowViewModel)LayoutRoot.DataContext;
@@ -107,32 +104,6 @@ namespace HotLyric.Win32.Views
                     ContentFrame.Navigate(typeof(AboutPage), null, new DrillInNavigationTransitionInfo());
                     break;
             }
-
-            VM.UpdateHotKeyManagerState();
-        }
-
-        private void SettingsView_Activated(object sender, Microsoft.UI.Xaml.WindowActivatedEventArgs args)
-        {
-            FocusManager.GotFocus -= FocusManager_GotFocus;
-            FocusManager.LostFocus -= FocusManager_LostFocus;
-
-            if (args.WindowActivationState != Microsoft.UI.Xaml.WindowActivationState.Deactivated)
-            {
-                FocusManager.GotFocus += FocusManager_GotFocus;
-                FocusManager.LostFocus += FocusManager_LostFocus;
-            }
-
-            VM.UpdateHotKeyManagerState();
-        }
-
-        private void FocusManager_LostFocus(object? sender, FocusManagerLostFocusEventArgs e)
-        {
-            VM.UpdateHotKeyManagerState();
-        }
-
-        private void FocusManager_GotFocus(object? sender, FocusManagerGotFocusEventArgs e)
-        {
-            VM.UpdateHotKeyManagerState();
         }
     }
 }

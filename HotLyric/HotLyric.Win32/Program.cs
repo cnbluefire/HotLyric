@@ -36,7 +36,6 @@ namespace HotLyric.Win32
             XamlCheckProcessRequirements();
 
             global::WinRT.ComWrappersSupport.InitializeComWrappers();
-            WindowManager.Initialize();
 
             global::Microsoft.UI.Xaml.Application.Start((p) =>
             {

@@ -17,6 +17,7 @@ using Microsoft.UI.Dispatching;
 using HotLyric.Win32.Base.BackgroundHelpers;
 using HotLyric.Win32.Views;
 using Microsoft.UI.Xaml.Input;
+using BlueFire.Toolkit.WinUI3.Input;
 
 namespace HotLyric.Win32
 {
@@ -43,9 +44,7 @@ namespace HotLyric.Win32
 
             ViewModelLocator.Instance.SettingsWindowViewModel.TryShowReadMeOnStartup();
 
-            ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyManager.HotKeyInvoked += HotKeyManager_HotKeyInvoked;
-
-            ViewModelLocator.Instance.SettingsWindowViewModel.UpdateHotKeyManagerState();
+            ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyModels.HotKeyInvoked += HotKeyModels_HotKeyInvoked; ;
         }
 
         public static new App Current => (App)Application.Current;
@@ -102,17 +101,11 @@ namespace HotLyric.Win32
         }
 
 
-        private void HotKeyManager_HotKeyInvoked(Models.HotKeyManager sender, Models.HotKeyManagerHotKeyInvokedEventArgs args)
+        private void HotKeyModels_HotKeyInvoked(Models.HotKeyModels sender, Models.HotKeyManagerHotKeyInvokedEventArgs args)
         {
             DispatcherQueue.TryEnqueue(() =>
             {
                 if (Exiting) return;
-
-                var settingsXamlRoot = SettingsView?.Content.XamlRoot;
-                if (settingsXamlRoot != null)
-                {
-                    if (FocusManager.GetFocusedElement(settingsXamlRoot) is HotKeyInputBox) return;
-                }
 
                 if (args.HotKeyModel.HotKeyName == "PlayPause")
                 {
@@ -142,15 +135,15 @@ namespace HotLyric.Win32
                 }
                 else if (args.HotKeyModel.HotKeyName == "VolumeUp")
                 {
-                    HotKeyHelper.SendKey(User32.VK.VK_VOLUME_UP, false);
+                    KeyboardHelper.SendKey(VirtualKeys.VK_VOLUME_UP, false);
                     System.Threading.Thread.Sleep(20);
-                    HotKeyHelper.SendKey(User32.VK.VK_VOLUME_UP, true);
+                    KeyboardHelper.SendKey(VirtualKeys.VK_VOLUME_UP, true);
                 }
                 else if (args.HotKeyModel.HotKeyName == "VolumeDown")
                 {
-                    HotKeyHelper.SendKey(User32.VK.VK_VOLUME_DOWN, false);
+                    KeyboardHelper.SendKey(VirtualKeys.VK_VOLUME_DOWN, false);
                     System.Threading.Thread.Sleep(20);
-                    HotKeyHelper.SendKey(User32.VK.VK_VOLUME_DOWN, true);
+                    KeyboardHelper.SendKey(VirtualKeys.VK_VOLUME_DOWN, true);
                 }
                 else if (args.HotKeyModel.HotKeyName == "ShowHideLyric")
                 {
@@ -192,8 +185,6 @@ namespace HotLyric.Win32
             try
             {
                 Exiting = true;
-
-                ViewModelLocator.Instance.SettingsWindowViewModel.UpdateHotKeyManagerState();
 
                 notifyIcon?.Dispose();
                 notifyIcon = null;

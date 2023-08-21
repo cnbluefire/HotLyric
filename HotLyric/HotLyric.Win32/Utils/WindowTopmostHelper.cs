@@ -1,5 +1,5 @@
 ﻿using BlueFire.Toolkit.WinUI3.Extensions;
-using BlueFire.Toolkit.WinUI3.WindowBase;
+using BlueFire.Toolkit.WinUI3;
 using Microsoft.UI;
 using Microsoft.UI.Dispatching;
 using Microsoft.UI.Windowing;

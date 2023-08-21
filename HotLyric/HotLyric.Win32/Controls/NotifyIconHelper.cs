@@ -126,13 +126,13 @@ namespace HotLyric.Win32.Controls
         {
             transparentMenuItem.Text = GetMenuItemText(
                 "锁定歌词",
-                ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyManager.LockUnlockKeyModel);
+                ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyModels.LockUnlockKeyModel);
 
-            static string GetMenuItemText(string _text, Models.HotKeyModel _hotKeyModel)
+            static string GetMenuItemText(string _text, Models.HotKey _hotKey)
             {
-                if (_hotKeyModel != null && _hotKeyModel.IsEnabled)
+                if (_hotKey != null && _hotKey.HotKeyModel.IsEnabled)
                 {
-                    var _hotKeyText = HotKeyHelper.MapKeyToString(_hotKeyModel.Modifiers, _hotKeyModel.Key, true);
+                    var _hotKeyText = _hotKey.HotKeyModel.ToString(true);
 
                     if (!string.IsNullOrEmpty(_hotKeyText)) return $"{_text} [{_hotKeyText}]";
                 }

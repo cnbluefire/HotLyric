@@ -7,7 +7,9 @@
       xmlns:utils="using:HotLyric.Win32.Utils" 
       xmlns:converter="using:HotLyric.Win32.Utils.Converters" 
       xmlns:control="using:HotLyric.Win32.Controls" 
-      xmlns:muxc="using:Microsoft.UI.Xaml.Controls" xmlns:model="using:HotLyric.Win32.Models">
+      xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
+      xmlns:model="using:HotLyric.Win32.Models"
+      xmlns:toolkitControl="using:BlueFire.Toolkit.WinUI3.Controls">
 
     <Grid x:Name="LayoutRoot" DataContext="{Binding Path=SettingsWindowViewModel, Source={StaticResource Locator}}">
         <VisualStateManager.VisualStateGroups>
@@ -86,7 +88,7 @@
                                 <Setter Property="IsTabStop" Value="False" />
                                 <Setter Property="ContentTemplate">
                                     <Setter.Value>
-                                        <DataTemplate x:DataType="model:HotKeyModel">
+                                        <DataTemplate x:DataType="model:HotKey">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="120" />
@@ -94,14 +96,14 @@
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
                                                 <TextBlock Text="{x:Bind DisplayName,Mode=OneWay}" VerticalAlignment="Center" />
-                                                <control:HotKeyInputBox VerticalAlignment="Center" Grid.Column="1"
-                                                                        VirtualKey="{x:Bind Key,Mode=TwoWay}"
-                                                                        Modifiers="{x:Bind Modifiers,Mode=TwoWay}"/>
+                                                <toolkitControl:HotKeyInputBox 
+                                                    VerticalAlignment="Center" Grid.Column="1"
+                                                    HotKeyModel="{x:Bind HotKeyModel,Mode=OneWay}"/>
                                                 <FontIcon Glyph="&#xE946;" FontSize="16" 
                                                           Grid.Column="2"
                                                           Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" 
                                                           ToolTipService.ToolTip="{StaticResource HotKeyDisabledText}" 
-                                                          Visibility="{x:Bind converter:BindUtils.NotVisible(IsEnabled),Mode=OneWay}"/>
+                                                          Visibility="{x:Bind model:HotKey.IsRegisterFailed(HotKeyModel.Status),Mode=OneWay}"/>
 
                                             </Grid>
                                         </DataTemplate>
@@ -110,35 +112,35 @@
                             </Style>
                         </StackPanel.Resources>
 
-                        <ContentControl Content="{x:Bind VM.HotKeyManager.PlayPauseKeyModel,Mode=OneWay}" 
+                        <ContentControl Content="{x:Bind VM.HotKeyModels.PlayPauseKeyModel,Mode=OneWay}" 
                                         IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
                                         Style="{StaticResource HotKeyControlStyle}" />
 
-                        <ContentControl Content="{x:Bind VM.HotKeyManager.PrevMediaKeyModel,Mode=OneWay}" 
+                        <ContentControl Content="{x:Bind VM.HotKeyModels.PrevMediaKeyModel,Mode=OneWay}" 
                                         IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
                                         Style="{StaticResource HotKeyControlStyle}" />
 
-                        <ContentControl Content="{x:Bind VM.HotKeyManager.NextMediaKeyModel,Mode=OneWay}" 
+                        <ContentControl Content="{x:Bind VM.HotKeyModels.NextMediaKeyModel,Mode=OneWay}" 
                                         IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
                                         Style="{StaticResource HotKeyControlStyle}" />
 
-                        <ContentControl Content="{x:Bind VM.HotKeyManager.VolumeUpKeyModel,Mode=OneWay}" 
+                        <ContentControl Content="{x:Bind VM.HotKeyModels.VolumeUpKeyModel,Mode=OneWay}" 
                                         IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
                                         Style="{StaticResource HotKeyControlStyle}" />
 
-                        <ContentControl Content="{x:Bind VM.HotKeyManager.VolumeDownKeyModel,Mode=OneWay}" 
+                        <ContentControl Content="{x:Bind VM.HotKeyModels.VolumeDownKeyModel,Mode=OneWay}" 
                                         IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
                                         Style="{StaticResource HotKeyControlStyle}" />
 
-                        <ContentControl Content="{x:Bind VM.HotKeyManager.ShowHideLyricKeyModel,Mode=OneWay}" 
+                        <ContentControl Content="{x:Bind VM.HotKeyModels.ShowHideLyricKeyModel,Mode=OneWay}" 
                                         IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
                                         Style="{StaticResource HotKeyControlStyle}" />
 
-                        <ContentControl Content="{x:Bind VM.HotKeyManager.LockUnlockKeyModel,Mode=OneWay}" 
+                        <ContentControl Content="{x:Bind VM.HotKeyModels.LockUnlockKeyModel,Mode=OneWay}" 
                                         IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
                                         Style="{StaticResource HotKeyControlStyle}" />
 
-                        <ContentControl Content="{x:Bind VM.HotKeyManager.OpenPlayerKeyModel,Mode=OneWay}" 
+                        <ContentControl Content="{x:Bind VM.HotKeyModels.OpenPlayerKeyModel,Mode=OneWay}" 
                                         IsEnabled="{x:Bind VM.IsHotKeyEnabled,Mode=OneWay}"
                                         Style="{StaticResource HotKeyControlStyle}" />
 

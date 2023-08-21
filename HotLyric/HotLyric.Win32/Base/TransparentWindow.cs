@@ -1,6 +1,6 @@
 ﻿using BlueFire.Toolkit.WinUI3.Extensions;
 using BlueFire.Toolkit.WinUI3.SystemBackdrops;
-using BlueFire.Toolkit.WinUI3.WindowBase;
+using BlueFire.Toolkit.WinUI3;
 using HotLyric.Win32.Utils;
 using Microsoft.UI;
 using Microsoft.UI.Composition;

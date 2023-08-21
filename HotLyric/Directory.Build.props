@@ -1,6 +1,6 @@
 <Project>
 	<PropertyGroup>
-		<Microsoft_WindowsAppSDK_Version>1.4.230628000-preview1</Microsoft_WindowsAppSDK_Version>
+		<Microsoft_WindowsAppSDK_Version>1.4.230811000-preview2</Microsoft_WindowsAppSDK_Version>
 		<Microsoft_Windows_SDK_BuildTools_Version>10.0.22621.756</Microsoft_Windows_SDK_BuildTools_Version>
 		<Win2D_WinUI3_EnableCanvasAnimatedControl_Version>1.1.0-preview1</Win2D_WinUI3_EnableCanvasAnimatedControl_Version>
 		<DirectNCore_Version>1.13.1</DirectNCore_Version>

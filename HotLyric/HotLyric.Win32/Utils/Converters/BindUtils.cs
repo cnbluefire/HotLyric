@@ -20,10 +20,10 @@ namespace HotLyric.Win32.Utils.Converters
 
         public static Visibility NotVisible(bool value) => Visible(!value);
 
-        public static string HotKeyTip(HotKeyModel? hotKeyModel)
+        public static string HotKeyTip(HotKey? hotKey)
         {
-            if (hotKeyModel == null) return "";
-            return HotKeyHelper.MapKeyToString(hotKeyModel.Modifiers, hotKeyModel.Key);
+            if (hotKey == null) return "";
+            return hotKey.HotKeyModel.ToString();
         }
     }
 }

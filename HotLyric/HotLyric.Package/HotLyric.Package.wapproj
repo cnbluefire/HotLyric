@@ -106,6 +106,9 @@
     <PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="$(Microsoft_Windows_SDK_BuildTools_Version)">
       <IncludeAssets>build</IncludeAssets>
     </PackageReference>
+	<PackageReference Include="BlueFire.Toolkit.WinUI3" Version="$(BlueFire_Toolkit_WinUI3_Version)">
+	  <IncludeAssets>build</IncludeAssets>
+	</PackageReference>
   </ItemGroup>
   <Import Project="$(WapProjPath)\Microsoft.DesktopBridge.targets" />
 </Project>

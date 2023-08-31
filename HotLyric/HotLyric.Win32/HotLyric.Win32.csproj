@@ -19,6 +19,7 @@
 	</PropertyGroup>
 
 	<ItemGroup>
+		<PackageReference Include="BlueFire.Toolkit.WinUI3" Version="$(BlueFire_Toolkit_WinUI3_Version)" />
 		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
 		<PackageReference Include="DirectNCore" Version="$(DirectNCore_Version)" />
@@ -36,7 +37,6 @@
 		<PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.15" />
 		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.15" />
 		<PackageReference Include="Win2D.WinUI3.EnableCanvasAnimatedControl" Version="$(Win2D_WinUI3_EnableCanvasAnimatedControl_Version)" />
-		<!--<PackageReference Include="WinUIEx" Version="2.2.0" />-->
 		<Manifest Include="$(ApplicationManifest)" />
 	</ItemGroup>
 
@@ -44,10 +44,6 @@
 		<None Remove="Extensions\**\HotLyric.Extensions.exp" />
 		<None Remove="Extensions\**\HotLyric.Extensions.lib" />
 		<None Remove="Extensions\**\HotLyric.Extensions.pdb" />
-	</ItemGroup>
-
-	<ItemGroup>
-	  <ProjectReference Include="..\..\..\BlueFire.Toolkit\src\BlueFire.Toolkit\BlueFire.Toolkit.WinUI3\BlueFire.Toolkit.WinUI3.csproj" />
 	</ItemGroup>
 
 	<ItemGroup>

@@ -1,4 +1,6 @@
-﻿using Microsoft.Graphics.Canvas;
+﻿using BlueFire.Toolkit.WinUI3.Text;
+using HotLyric.Win32.Utils;
+using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
 using Microsoft.UI.Text;
 using System;
@@ -30,11 +32,14 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             var renderImpl = new LyricTextLineRendererImpl(resourceCreator, textString, fontFamily, fontWeight, fontStyle);
 
             glyphRuns = renderImpl.GlyphRuns;
+            PrimaryFontFamily = renderImpl.PrimaryFontFamily;
             textLayoutSize = renderImpl.TextLayoutSize;
             textDrawSize = renderImpl.TextDrawSize;
         }
 
         public IReadOnlyList<LyricDrawingTextGlyphRun> GlyphRuns => !disposedValue ? glyphRuns : throw new ObjectDisposedException(nameof(LyricDrawingTextGlyphRunGroup));
+
+        public string PrimaryFontFamily { get; }
 
         public Size TextLayoutSize => !disposedValue ? textLayoutSize : throw new ObjectDisposedException(nameof(LyricDrawingTextGlyphRunGroup));
 
@@ -98,7 +103,6 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             {
                 using (var textFormat = new CanvasTextFormat()
                 {
-                    FontFamily = fontFamily,
                     HorizontalAlignment = CanvasHorizontalAlignment.Left,
                     VerticalAlignment = CanvasVerticalAlignment.Top,
                     OpticalAlignment = CanvasOpticalAlignment.Default,
@@ -110,20 +114,35 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
                     Options = CanvasDrawTextOptions.EnableColorFont,
                     WordWrapping = CanvasWordWrapping.NoWrap,
                 })
-                using (var textLayout = new CanvasTextLayout(resourceCreator, textString, textFormat, 0, 0))
                 {
-                    this.textLayout = textLayout;
-                    glyphRuns = new List<LyricDrawingTextGlyphRun>();
+                    PrimaryFontFamily = "";
 
-                    var layoutBounds = textLayout.LayoutBounds;
-                    var drawBounds = textLayout.DrawBounds;
+                    CanvasTextFormatHelper.SetFontFamilySource(
+                        textFormat,
+                        fontFamily,
+                        CultureInfoUtils.DefaultUICulture.Name,
+                        (_textFormat, _fontFamily) =>
+                        {
+                            _textFormat.FontFamily = _fontFamily;
+                            PrimaryFontFamily = _fontFamily;
+                        },
+                        uri => new CanvasFontSet(uri));
 
-                    TextLayoutSize = new Size(layoutBounds.Width, layoutBounds.Height);
-                    TextDrawSize = new Size(Math.Max(0, drawBounds.Width), Math.Max(0, drawBounds.Height));
+                    using (var textLayout = new CanvasTextLayout(resourceCreator, textString, textFormat, 0, 0))
+                    {
+                        this.textLayout = textLayout;
+                        glyphRuns = new List<LyricDrawingTextGlyphRun>();
 
-                    textLayout.DrawToTextRenderer(this, 0, 0);
+                        var layoutBounds = textLayout.LayoutBounds;
+                        var drawBounds = textLayout.DrawBounds;
 
-                    this.textLayout = null;
+                        TextLayoutSize = new Size(layoutBounds.Width, layoutBounds.Height);
+                        TextDrawSize = new Size(Math.Max(0, drawBounds.Width), Math.Max(0, drawBounds.Height));
+
+                        textLayout.DrawToTextRenderer(this, 0, 0);
+
+                        this.textLayout = null;
+                    }
                 }
             }
 
@@ -132,6 +151,8 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             public Size TextLayoutSize { get; private set; }
 
             public Size TextDrawSize { get; private set; }
+
+            public string PrimaryFontFamily { get; private set; }
 
             public void DrawGlyphRun(Vector2 point, CanvasFontFace fontFace, float fontSize, CanvasGlyph[] glyphs, bool isSideways, uint bidiLevel, object brush, CanvasTextMeasuringMode measuringMode, string localeName, string textString, int[] clusterMapIndices, uint characterIndex, CanvasGlyphOrientation glyphOrientation)
             {

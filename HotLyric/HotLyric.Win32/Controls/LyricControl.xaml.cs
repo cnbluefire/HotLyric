@@ -535,7 +535,7 @@ namespace HotLyric.Win32.Controls
                     }
                 }
 
-                var sizeType = LyricDrawingLineTextSizeType.LayoutSize;
+                var sizeType = LyricDrawingLineTextSizeType.FontHeight;
 
                 if (lyricLines.MainLine != drawingMainLine?.LyricLine || drawingMainLine?.Size != mainLineSize)
                 {

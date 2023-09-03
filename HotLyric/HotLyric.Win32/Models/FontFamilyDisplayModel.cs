@@ -11,12 +11,13 @@ using Microsoft.UI.Text;
 using Microsoft.UI.Xaml;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media;
+using System.Xml.Linq;
 
 namespace HotLyric.Win32.Models
 {
     public class FontFamilyDisplayModel : IEquatable<FontFamilyDisplayModel>, IComparable<FontFamilyDisplayModel>
     {
-        public const string GlobalUserInterface = "Global User Interface";
+        public static FontFamilyDisplayModel EmptyModel { get; } = new FontFamilyDisplayModel("", "空", 0);
 
         private static IReadOnlyList<FontFamilyDisplayModel>? allFamilies;
         private static object locker = new object();
@@ -40,23 +41,11 @@ namespace HotLyric.Win32.Models
             }
         }
 
-        private FontFamilyDisplayModel(string name)
+        private FontFamilyDisplayModel(string source, string displayName, int order)
         {
-            if (name == GlobalUserInterface)
-            {
-                Source = FontFamily.XamlAutoFontFamily.Source;
-                DisplayName = "默认UI字体";
-                Order = 0;
-
-                if (Source == "Segoe UI")
-                {
-                    isItalicStyleAvailable = true;
-                }
-            }
-            else
-            {
-                throw new ArgumentException(nameof(name));
-            }
+            Source = source;
+            DisplayName = displayName;
+            Order = order;
 
             hashCode = HashCode.Combine(Source, DisplayName, Order);
         }
@@ -72,11 +61,11 @@ namespace HotLyric.Win32.Models
             {
                 // 当前UI为中文，将可能存在中文字体名的字体提取到顶部
 
-                Order = (name != displayName) ? 1 : 2;
+                Order = (name != displayName) ? 2 : 3;
             }
             else
             {
-                Order = 2;
+                Order = 3;
             }
 
             hashCode = HashCode.Combine(Source, DisplayName, Order);
@@ -149,12 +138,14 @@ namespace HotLyric.Win32.Models
                 if (names.Length == displayNames.Length) break;
             }
 
-            var models = new FontFamilyDisplayModel[names.Length + 1];
-            models[0] = new FontFamilyDisplayModel(GlobalUserInterface);
+            var models = new FontFamilyDisplayModel[names.Length + 3];
+            models[0] = new FontFamilyDisplayModel("SYSTEM-UI", "默认UI字体", 0);
+            models[1] = new FontFamilyDisplayModel("UI-SERIF", "默认衬线体", 0);
+            models[2] = new FontFamilyDisplayModel("UI-SANS-SERIF", "默认非衬线体", 0);
 
             for (int i = 0; i < names.Length; i++)
             {
-                models[i + 1] = new FontFamilyDisplayModel(names[i], displayNames[i], locale[0]);
+                models[i + 3] = new FontFamilyDisplayModel(names[i], displayNames[i], locale[0]);
             }
 
             Array.Sort(models);

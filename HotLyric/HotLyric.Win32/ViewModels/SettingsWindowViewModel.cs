@@ -44,6 +44,7 @@ namespace HotLyric.Win32.ViewModels
         private const string TextShadowEnabledSettingKey = "Settings_TextShadowEnabled";
         private const string TextStrokeTypeSettingKey = "Settings_TextStrokeType";
         private const string LyricFontFamilySettingKey = "Settings_LyricFontFamily";
+        private const string LyricSecondaryFontFamilySettingKey = "Settings_LyricSecondaryFontFamily";
         private const string LyricFontStyleSettingKey = "Settings_LyricFontStyle";
         private const string LyricFontWeightSettingKey = "Settings_LyricFontWeight";
         private const string SecondRowSettingKey = "Settings_SecondRow";
@@ -96,6 +97,14 @@ namespace HotLyric.Win32.ViewModels
 
             allFontFamilies = FontFamilyDisplayModel.AllFamilies;
 
+            var _allFontFamiliesWithEmpty = new List<FontFamilyDisplayModel>()
+            {
+                FontFamilyDisplayModel.EmptyModel
+            };
+            _allFontFamiliesWithEmpty.AddRange(FontFamilyDisplayModel.AllFamilies);
+
+            allFontFamiliesWithEmpty = _allFontFamiliesWithEmpty;
+
             lyricFontFamilySource = LoadSetting(LyricFontFamilySettingKey, "");
             lyricFontFamily = allFontFamilies.FirstOrDefault(c => c.Source == lyricFontFamilySource);
 
@@ -103,6 +112,15 @@ namespace HotLyric.Win32.ViewModels
             {
                 lyricFontFamily = allFontFamilies[0];
                 lyricFontFamilySource = lyricFontFamily.Source;
+            }
+
+            lyricSecondaryFontFamilySource = LoadSetting(LyricSecondaryFontFamilySettingKey, "");
+            lyricSecondaryFontFamily = allFontFamiliesWithEmpty.FirstOrDefault(c => c.Source == lyricSecondaryFontFamilySource);
+
+            if (lyricSecondaryFontFamily == null)
+            {
+                lyricSecondaryFontFamily = allFontFamiliesWithEmpty[0];
+                lyricSecondaryFontFamilySource = lyricSecondaryFontFamily.Source;
             }
 
             isLyricFontItalicStyleEnabled = LoadSetting(LyricFontStyleSettingKey, Windows.UI.Text.FontStyle.Normal) != Windows.UI.Text.FontStyle.Normal;
@@ -163,8 +181,11 @@ namespace HotLyric.Win32.ViewModels
         private LyricThemeView customizeTheme;
         private bool themeIsPresetVisible;
         private string? lyricFontFamilySource;
+        private FontFamilyDisplayModel? lyricSecondaryFontFamily;
+        private string? lyricSecondaryFontFamilySource;
         private FontFamilyDisplayModel? lyricFontFamily;
         private IReadOnlyList<FontFamilyDisplayModel> allFontFamilies;
+        private IReadOnlyList<FontFamilyDisplayModel> allFontFamiliesWithEmpty;
         private bool isLyricFontItalicStyleEnabled;
         private bool isLyricFontBoldWeightEnabled;
         private AsyncRelayCommand? clearCacheCmd;
@@ -298,7 +319,9 @@ namespace HotLyric.Win32.ViewModels
             set => SetProperty(ref themeIsPresetVisible, value);
         }
 
-        public IReadOnlyList<FontFamilyDisplayModel> AllFontFamilies => allFontFamilies.ToArray();
+        public IReadOnlyList<FontFamilyDisplayModel> AllFontFamilies => allFontFamilies;
+
+        public IReadOnlyList<FontFamilyDisplayModel> AllFontFamiliesWithEmpty => allFontFamilies;
 
         public FontFamilyDisplayModel? LyricFontFamily
         {
@@ -308,10 +331,25 @@ namespace HotLyric.Win32.ViewModels
                 if (SetProperty(ref lyricFontFamily, value))
                 {
                     ChangeSettings(ref lyricFontFamilySource, value?.Source ?? "", LyricFontFamilySettingKey);
+                    OnPropertyChanged(nameof(LyricFontFamilySource));
                 }
             }
         }
 
+        public FontFamilyDisplayModel? LyricSecondaryFontFamily
+        {
+            get => lyricSecondaryFontFamily;
+            set
+            {
+                if (SetProperty(ref lyricSecondaryFontFamily, value))
+                {
+                    ChangeSettings(ref lyricSecondaryFontFamilySource, value?.Source ?? "", LyricSecondaryFontFamilySettingKey);
+                    OnPropertyChanged(nameof(LyricFontFamilySource));
+                }
+            }
+        }
+
+        public string LyricFontFamilySource => $"{lyricFontFamilySource}, {lyricSecondaryFontFamilySource}";
 
         public bool IsLyricFontItalicStyleEnabled
         {
@@ -776,7 +814,7 @@ namespace HotLyric.Win32.ViewModels
         }, () => !SpotifySetLanguage.IsRunning));
 
 
-        public HotKeyModels HotKeyModels => hotKeyModels ;
+        public HotKeyModels HotKeyModels => hotKeyModels;
 
         public bool IsHotKeyEnabled
         {

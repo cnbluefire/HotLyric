@@ -10,6 +10,7 @@ using Windows.Foundation;
 using System.Runtime.CompilerServices;
 using System.Numerics;
 using HotLyric.Win32.Utils.LyricFiles;
+using BlueFire.Toolkit.WinUI3.Text;
 
 namespace HotLyric.Win32.Controls.LyricControlDrawingData
 {
@@ -53,6 +54,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
         {
             LyricDrawingLineTextSizeType.DrawSize => glyphRunGroup.TextDrawSize,
             LyricDrawingLineTextSizeType.LayoutSize => glyphRunGroup.TextLayoutSize,
+            LyricDrawingLineTextSizeType.FontHeight => GetTextSizeByFontHeight(),
             _ => throw new ArgumentException(nameof(TextSizeType))
         };
 
@@ -199,6 +201,21 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             drawingSession.Transform = oldMatrix;
         }
 
+        private Size GetTextSizeByFontHeight()
+        {
+            var width = glyphRunGroup.TextLayoutSize.Width;
+            var height = glyphRunGroup.TextLayoutSize.Height;
+
+            var prop = SystemFontHelper.GetFontProperties(glyphRunGroup.PrimaryFontFamily);
+
+            if (prop != null)
+            {
+                height = (prop.Ascent + prop.Descent + prop.LineGap) * 10;
+            }
+
+            return new Size(width, height);
+        }
+
         protected override void DisposeCore(bool disposing)
         {
             glyphRunGroup?.Dispose();
@@ -250,7 +267,8 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
     internal enum LyricDrawingLineTextSizeType
     {
         LayoutSize,
-        DrawSize
+        DrawSize,
+        FontHeight
     }
 
     internal struct LyricDrawingParameters

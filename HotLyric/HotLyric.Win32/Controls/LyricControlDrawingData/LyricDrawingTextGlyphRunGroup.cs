@@ -1,4 +1,5 @@
 ﻿using BlueFire.Toolkit.WinUI3.Text;
+using HotLyric.Win32.Models;
 using HotLyric.Win32.Utils;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Text;
@@ -24,12 +25,12 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
         private readonly FontWeight fontWeight;
         private readonly FontStyle fontStyle;
 
-        private LyricDrawingTextGlyphRunGroup(ICanvasResourceCreator resourceCreator, string textString, string fontFamily, FontWeight fontWeight, FontStyle fontStyle)
+        private LyricDrawingTextGlyphRunGroup(ICanvasResourceCreator resourceCreator, string textString, IReadOnlyList<CanvasFontFamily> fontFamilies, FontWeight fontWeight, FontStyle fontStyle)
         {
             this.fontWeight = fontWeight;
             this.fontStyle = fontStyle;
 
-            var renderImpl = new LyricTextLineRendererImpl(resourceCreator, textString, fontFamily, fontWeight, fontStyle);
+            var renderImpl = new LyricTextLineRendererImpl(resourceCreator, textString, fontFamilies, fontWeight, fontStyle);
 
             glyphRuns = renderImpl.GlyphRuns;
             PrimaryFontFamily = renderImpl.PrimaryFontFamily;
@@ -49,9 +50,9 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
         public FontStyle FontStyle => !disposedValue ? fontStyle : throw new ObjectDisposedException(nameof(LyricDrawingTextGlyphRunGroup));
 
-        public static LyricDrawingTextGlyphRunGroup Create(ICanvasResourceCreator resourceCreator, string textString, string fontFamily, FontWeight fontWeight, FontStyle fontStyle)
+        public static LyricDrawingTextGlyphRunGroup Create(ICanvasResourceCreator resourceCreator, string textString, IReadOnlyList<CanvasFontFamily> fontFamilies, FontWeight fontWeight, FontStyle fontStyle)
         {
-            return new LyricDrawingTextGlyphRunGroup(resourceCreator, textString, fontFamily, fontWeight, fontStyle);
+            return new LyricDrawingTextGlyphRunGroup(resourceCreator, textString, fontFamilies, fontWeight, fontStyle);
         }
 
         protected virtual void Dispose(bool disposing)
@@ -99,10 +100,11 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             private CanvasTextLayout? textLayout;
             private List<LyricDrawingTextGlyphRun> glyphRuns;
 
-            public LyricTextLineRendererImpl(ICanvasResourceCreator resourceCreator, string textString, string fontFamily, FontWeight fontWeight, FontStyle fontStyle)
+            public LyricTextLineRendererImpl(ICanvasResourceCreator resourceCreator, string textString, IReadOnlyList<CanvasFontFamily> fontFamilies, FontWeight fontWeight, FontStyle fontStyle)
             {
                 using (var textFormat = new CanvasTextFormat()
                 {
+                    FontFamily = null,
                     HorizontalAlignment = CanvasHorizontalAlignment.Left,
                     VerticalAlignment = CanvasVerticalAlignment.Top,
                     OpticalAlignment = CanvasOpticalAlignment.Default,
@@ -115,18 +117,13 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
                     WordWrapping = CanvasWordWrapping.NoWrap,
                 })
                 {
-                    PrimaryFontFamily = "";
-
-                    CanvasTextFormatHelper.SetFontFamilySource(
+                    CanvasTextFormatHelper.SetFallbackFontFamilies(
                         textFormat,
-                        fontFamily,
+                        fontFamilies,
                         CultureInfoUtils.DefaultUICulture.Name,
-                        (_textFormat, _fontFamily) =>
-                        {
-                            _textFormat.FontFamily = _fontFamily;
-                            PrimaryFontFamily = _fontFamily;
-                        },
                         uri => new CanvasFontSet(uri));
+
+                    PrimaryFontFamily = fontFamilies.First(c => c.IsMainFont).FontFamilyName;
 
                     using (var textLayout = new CanvasTextLayout(resourceCreator, textString, textFormat, 0, 0))
                     {

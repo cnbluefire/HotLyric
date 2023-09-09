@@ -24,6 +24,7 @@ using Windows.UI;
 using HotLyric.Win32.Models;
 using System.Globalization;
 using Windows.UI.Text;
+using BlueFire.Toolkit.WinUI3.Text;
 
 //https://go.microsoft.com/fwlink/?LinkId=234236 上介绍了“用户控件”项模板
 
@@ -38,6 +39,7 @@ namespace HotLyric.Win32.Controls
         private LyricDrawingTextColors themeColors;
         private LyricDrawingTextColors? colors;
         private EaseFunctionBase easingFunc;
+        private IReadOnlyList<CanvasFontFamily>? canvasFontFamilies;
 
         private LyricLines lyricLines;
         private bool isLoaded;
@@ -45,6 +47,8 @@ namespace HotLyric.Win32.Controls
         public LyricControl()
         {
             this.InitializeComponent();
+
+            LyricFontFamilySets = new FontFamilySets();
 
             lyricLines = new LyricLines();
             lyricLines.PauseStateChanged += LyricLines_PauseStateChanged;
@@ -84,7 +88,11 @@ namespace HotLyric.Win32.Controls
 
                 Refresh();
             });
-            propObserver[LyricFontFamilyProperty]?.AddHandler((s, a) => Refresh());
+            propObserver[LyricFontFamilySetsProperty]?.AddHandler((s, a) =>
+            {
+                canvasFontFamilies = ((a.NewValue as FontFamilySets) ?? new FontFamilySets()).BuildCanvasFontFamilies();
+                Refresh();
+            });
             propObserver[IsLyricTranslateEnabledProperty]?.AddHandler((s, a) =>
             {
                 if (lyricLines != null)
@@ -301,18 +309,17 @@ namespace HotLyric.Win32.Controls
         }
 
         public static readonly DependencyProperty ThemeProperty =
-            DependencyProperty.Register("Theme", typeof(LyricThemeView), typeof(LyricControlScrollAnimationMode), new PropertyMetadata(null));
+            DependencyProperty.Register("Theme", typeof(LyricThemeView), typeof(LyricControl), new PropertyMetadata(null));
 
 
-
-        public string? LyricFontFamily
+        public FontFamilySets LyricFontFamilySets
         {
-            get { return (string)GetValue(LyricFontFamilyProperty); }
-            set { SetValue(LyricFontFamilyProperty, value); }
+            get { return (FontFamilySets)GetValue(LyricFontFamilySetsProperty); }
+            set { SetValue(LyricFontFamilySetsProperty, value); }
         }
 
-        public static readonly DependencyProperty LyricFontFamilyProperty =
-            DependencyProperty.Register("LyricFontFamily", typeof(string), typeof(LyricThemeView), new PropertyMetadata(null));
+        public static readonly DependencyProperty LyricFontFamilySetsProperty =
+            DependencyProperty.Register("LyricFontFamilySets", typeof(FontFamilySets), typeof(LyricControl), new PropertyMetadata(null));
 
 
 
@@ -323,7 +330,7 @@ namespace HotLyric.Win32.Controls
         }
 
         public static readonly DependencyProperty IsLyricTranslateEnabledProperty =
-            DependencyProperty.Register("IsLyricTranslateEnabled", typeof(bool), typeof(LyricThemeView), new PropertyMetadata(false));
+            DependencyProperty.Register("IsLyricTranslateEnabled", typeof(bool), typeof(LyricControl), new PropertyMetadata(false));
 
 
 
@@ -334,7 +341,7 @@ namespace HotLyric.Win32.Controls
         }
 
         public static readonly DependencyProperty MediaDurationProperty =
-            DependencyProperty.Register("MediaDuration", typeof(TimeSpan), typeof(LyricThemeView), new PropertyMetadata(TimeSpan.Zero));
+            DependencyProperty.Register("MediaDuration", typeof(TimeSpan), typeof(LyricControl), new PropertyMetadata(TimeSpan.Zero));
 
 
 
@@ -345,7 +352,7 @@ namespace HotLyric.Win32.Controls
         }
 
         public static readonly DependencyProperty TextOpacityMaskProperty =
-            DependencyProperty.Register("TextOpacityMask", typeof(bool), typeof(LyricThemeView), new PropertyMetadata(true));
+            DependencyProperty.Register("TextOpacityMask", typeof(bool), typeof(LyricControl), new PropertyMetadata(true));
 
 
 
@@ -438,14 +445,16 @@ namespace HotLyric.Win32.Controls
                 var textStrokeType = propObserver[TextStrokeTypeProperty]!.GetValueOrDefault<LyricControlTextStrokeType>();
                 var textShadowEnabled = propObserver[TextShadowEnabledProperty]!.GetValueOrDefault<bool>();
                 var theme = propObserver[ThemeProperty]!.GetValueOrDefault<LyricThemeView>();
-                var fontFamily = propObserver[LyricFontFamilyProperty]!.GetValueOrDefault<string>();
                 var paused = lyricLines.Paused || propObserver[PausedProperty]!.GetValueOrDefault<bool>();
                 var fontWeight = propObserver[FontWeightProperty]!.GetValueOrDefault<FontWeight>();
                 var fontStyle = propObserver[FontStyleProperty]!.GetValueOrDefault<FontStyle>();
 
-                if (string.IsNullOrEmpty(fontFamily))
+                var fontFamilies = canvasFontFamilies;
+
+                if (fontFamilies == null)
                 {
-                    fontFamily = GetDefaultFontFamilyName();
+                    fontFamilies = new FontFamilySets().BuildCanvasFontFamilies();
+                    canvasFontFamilies = fontFamilies;
                 }
 
                 var controlSize = sender.Size;
@@ -548,7 +557,7 @@ namespace HotLyric.Win32.Controls
                             sender,
                             mainLineSize,
                             lyricLines.MainLine,
-                            fontFamily,
+                            fontFamilies,
                             fontWeight,
                             fontStyle,
                             LyricDrawingLineType.Classic,
@@ -572,7 +581,7 @@ namespace HotLyric.Win32.Controls
                             sender,
                             secondaryLineSize,
                             lyricLines.SecondaryLine,
-                            fontFamily,
+                            fontFamilies,
                             fontWeight,
                             fontStyle,
                             LyricDrawingLineType.Classic,
@@ -594,7 +603,7 @@ namespace HotLyric.Win32.Controls
                             sender,
                             removingLineSize,
                             lyricLines.RemovingLine,
-                            fontFamily,
+                            fontFamilies,
                             fontWeight,
                             fontStyle,
                             LyricDrawingLineType.Classic,
@@ -972,28 +981,6 @@ namespace HotLyric.Win32.Controls
                 StrokeColor2 = Colors.Black,
                 GlowColor2 = Color.FromArgb((byte)(0.25 * 255), 0, 0, 0),
             };
-
-        private static string? defaultFontFamilyName;
-
-        private static string GetDefaultFontFamilyName()
-        {
-            if (!string.IsNullOrEmpty(defaultFontFamilyName)) return defaultFontFamilyName;
-
-            var cultureName = CultureInfoUtils.DefaultUICulture.Name;
-            if (string.IsNullOrEmpty(cultureName)) cultureName = "en-us";
-
-            try
-            {
-                var fontGroup = new Windows.Globalization.Fonts.LanguageFontGroup(cultureName);
-                var font = fontGroup.UITextFont.FontFamily;
-                if (!string.IsNullOrEmpty(font)) return (defaultFontFamilyName = font);
-            }
-            catch (Exception ex)
-            {
-                HotLyric.Win32.Utils.LogHelper.LogError("GetDefaultFontFamilyName", ex);
-            }
-            return (defaultFontFamilyName = "Segoe UI");
-        }
     }
 
     public enum LyricControlLineMode

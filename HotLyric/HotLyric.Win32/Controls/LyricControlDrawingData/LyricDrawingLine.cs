@@ -11,6 +11,7 @@ using System.Runtime.CompilerServices;
 using System.Numerics;
 using HotLyric.Win32.Utils.LyricFiles;
 using BlueFire.Toolkit.WinUI3.Text;
+using HotLyric.Win32.Models;
 
 namespace HotLyric.Win32.Controls.LyricControlDrawingData
 {
@@ -28,7 +29,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             ICanvasResourceCreator resourceCreator,
             Size size,
             ILyricLine line,
-            string fontFamily,
+            IReadOnlyList<CanvasFontFamily> fontFamilies,
             Windows.UI.Text.FontWeight fontWeight,
             Windows.UI.Text.FontStyle fontStyle,
             LyricDrawingLineType type,
@@ -41,10 +42,10 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             TextSizeType = textSizeType;
             Size = size;
             LyricLine = line;
-            FontFamily = fontFamily;
+            FontFamilies = fontFamilies;
             Type = type;
             Alignment = alignment;
-            glyphRunGroup = LyricDrawingTextGlyphRunGroup.Create(resourceCreator, line.Text, FontFamily, fontWeight, fontStyle);
+            glyphRunGroup = LyricDrawingTextGlyphRunGroup.Create(resourceCreator, line.Text, fontFamilies, fontWeight, fontStyle);
             CreateLyricText();
             FontWeight = fontWeight;
             FontStyle = fontStyle;
@@ -64,7 +65,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
         public ILyricLine LyricLine { get; }
 
-        public string FontFamily { get; }
+        public IReadOnlyList<CanvasFontFamily> FontFamilies { get; }
 
         public Windows.UI.Text.FontWeight FontWeight { get; }
 

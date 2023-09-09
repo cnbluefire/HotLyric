@@ -44,7 +44,9 @@ namespace HotLyric.Win32.ViewModels
         private const string TextShadowEnabledSettingKey = "Settings_TextShadowEnabled";
         private const string TextStrokeTypeSettingKey = "Settings_TextStrokeType";
         private const string LyricFontFamilySettingKey = "Settings_LyricFontFamily";
-        private const string LyricSecondaryFontFamilySettingKey = "Settings_LyricSecondaryFontFamily";
+        private const string LyricWesternTextFontFamilySettingKey = "Settings_LyricWesternTextFontFamily";
+        private const string LyricJapaneseKanaFontFamilySettingKey = "Settings_LyricJapaneseKanaFontFamily";
+        private const string LyricKoreanHangulFontFamilySettingKey = "Settings_LyricKoreanHangulFontFamily";
         private const string LyricFontStyleSettingKey = "Settings_LyricFontStyle";
         private const string LyricFontWeightSettingKey = "Settings_LyricFontWeight";
         private const string SecondRowSettingKey = "Settings_SecondRow";
@@ -114,13 +116,33 @@ namespace HotLyric.Win32.ViewModels
                 lyricFontFamilySource = lyricFontFamily.Source;
             }
 
-            lyricSecondaryFontFamilySource = LoadSetting(LyricSecondaryFontFamilySettingKey, "");
-            lyricSecondaryFontFamily = allFontFamiliesWithEmpty.FirstOrDefault(c => c.Source == lyricSecondaryFontFamilySource);
+            lyricWesternTextFontFamilySource = LoadSetting(LyricWesternTextFontFamilySettingKey, "");
+            lyricWesternTextFontFamily = allFontFamiliesWithEmpty.FirstOrDefault(c => c.Source == lyricWesternTextFontFamilySource);
 
-            if (lyricSecondaryFontFamily == null)
+            if (lyricWesternTextFontFamily == null)
             {
-                lyricSecondaryFontFamily = allFontFamiliesWithEmpty[0];
-                lyricSecondaryFontFamilySource = lyricSecondaryFontFamily.Source;
+                lyricWesternTextFontFamily = FontFamilyDisplayModel.EmptyModel;
+                lyricWesternTextFontFamilySource = lyricWesternTextFontFamily.Source;
+            }
+
+
+            lyricJapaneseKanaFontFamilySource = LoadSetting(LyricJapaneseKanaFontFamilySettingKey, "");
+            lyricJapaneseKanaFontFamily = allFontFamiliesWithEmpty.FirstOrDefault(c => c.Source == lyricJapaneseKanaFontFamilySource);
+
+            if (lyricJapaneseKanaFontFamily == null)
+            {
+                lyricJapaneseKanaFontFamily = FontFamilyDisplayModel.EmptyModel;
+                lyricJapaneseKanaFontFamilySource = lyricJapaneseKanaFontFamily.Source;
+            }
+
+
+            lyricKoreanHangulFontFamilySource = LoadSetting(LyricKoreanHangulFontFamilySettingKey, "");
+            lyricKoreanHangulFontFamily = allFontFamiliesWithEmpty.FirstOrDefault(c => c.Source == lyricKoreanHangulFontFamilySource);
+
+            if (lyricKoreanHangulFontFamily == null)
+            {
+                lyricKoreanHangulFontFamily = FontFamilyDisplayModel.EmptyModel;
+                lyricKoreanHangulFontFamilySource = lyricKoreanHangulFontFamily.Source;
             }
 
             isLyricFontItalicStyleEnabled = LoadSetting(LyricFontStyleSettingKey, Windows.UI.Text.FontStyle.Normal) != Windows.UI.Text.FontStyle.Normal;
@@ -180,10 +202,19 @@ namespace HotLyric.Win32.ViewModels
         private LyricThemeView currentTheme;
         private LyricThemeView customizeTheme;
         private bool themeIsPresetVisible;
+
         private string? lyricFontFamilySource;
-        private FontFamilyDisplayModel? lyricSecondaryFontFamily;
-        private string? lyricSecondaryFontFamilySource;
         private FontFamilyDisplayModel? lyricFontFamily;
+
+        private string? lyricWesternTextFontFamilySource;
+        private FontFamilyDisplayModel? lyricWesternTextFontFamily;
+
+        private string? lyricJapaneseKanaFontFamilySource;
+        private FontFamilyDisplayModel? lyricJapaneseKanaFontFamily;
+
+        private string? lyricKoreanHangulFontFamilySource;
+        private FontFamilyDisplayModel? lyricKoreanHangulFontFamily;
+
         private IReadOnlyList<FontFamilyDisplayModel> allFontFamilies;
         private IReadOnlyList<FontFamilyDisplayModel> allFontFamiliesWithEmpty;
         private bool isLyricFontItalicStyleEnabled;
@@ -321,7 +352,7 @@ namespace HotLyric.Win32.ViewModels
 
         public IReadOnlyList<FontFamilyDisplayModel> AllFontFamilies => allFontFamilies;
 
-        public IReadOnlyList<FontFamilyDisplayModel> AllFontFamiliesWithEmpty => allFontFamilies;
+        public IReadOnlyList<FontFamilyDisplayModel> AllFontFamiliesWithEmpty => allFontFamiliesWithEmpty;
 
         public FontFamilyDisplayModel? LyricFontFamily
         {
@@ -331,25 +362,56 @@ namespace HotLyric.Win32.ViewModels
                 if (SetProperty(ref lyricFontFamily, value))
                 {
                     ChangeSettings(ref lyricFontFamilySource, value?.Source ?? "", LyricFontFamilySettingKey);
-                    OnPropertyChanged(nameof(LyricFontFamilySource));
+                    OnPropertyChanged(nameof(LyricFontFamilySet));
                 }
             }
         }
 
-        public FontFamilyDisplayModel? LyricSecondaryFontFamily
+        public FontFamilyDisplayModel? LyricWesternTextFontFamily
         {
-            get => lyricSecondaryFontFamily;
+            get => lyricWesternTextFontFamily;
             set
             {
-                if (SetProperty(ref lyricSecondaryFontFamily, value))
+                if (SetProperty(ref lyricWesternTextFontFamily, value))
                 {
-                    ChangeSettings(ref lyricSecondaryFontFamilySource, value?.Source ?? "", LyricSecondaryFontFamilySettingKey);
-                    OnPropertyChanged(nameof(LyricFontFamilySource));
+                    ChangeSettings(ref lyricWesternTextFontFamilySource, value?.Source ?? "", LyricWesternTextFontFamilySettingKey);
+                    OnPropertyChanged(nameof(LyricFontFamilySet));
                 }
             }
         }
 
-        public string LyricFontFamilySource => $"{lyricFontFamilySource}, {lyricSecondaryFontFamilySource}";
+        public FontFamilyDisplayModel? LyricJapaneseKanaFontFamily
+        {
+            get => lyricJapaneseKanaFontFamily;
+            set
+            {
+                if (SetProperty(ref lyricJapaneseKanaFontFamily, value))
+                {
+                    ChangeSettings(ref lyricJapaneseKanaFontFamilySource, value?.Source ?? "", LyricJapaneseKanaFontFamilySettingKey);
+                    OnPropertyChanged(nameof(LyricFontFamilySet));
+                }
+            }
+        }
+
+        public FontFamilyDisplayModel? LyricKoreanHangulFontFamily
+        {
+            get => lyricKoreanHangulFontFamily;
+            set
+            {
+                if (SetProperty(ref lyricKoreanHangulFontFamily, value))
+                {
+                    ChangeSettings(ref lyricKoreanHangulFontFamilySource, value?.Source ?? "", LyricKoreanHangulFontFamilySettingKey);
+                    OnPropertyChanged(nameof(LyricFontFamilySet));
+                }
+            }
+        }
+
+        public FontFamilySets LyricFontFamilySet => new FontFamilySets(
+            LyricFontFamily?.Source ?? "SYSTEM-UI",
+            LyricWesternTextFontFamily?.Source,
+            LyricJapaneseKanaFontFamily?.Source,
+            LyricKoreanHangulFontFamily?.Source);
+
 
         public bool IsLyricFontItalicStyleEnabled
         {

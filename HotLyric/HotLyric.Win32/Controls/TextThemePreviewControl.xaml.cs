@@ -20,6 +20,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI.Xaml.Media;
 using Microsoft.UI.Xaml.Navigation;
 using Windows.UI;
+using BlueFire.Toolkit.WinUI3.Text;
 
 //https://go.microsoft.com/fwlink/?LinkId=234236 上介绍了“用户控件”项模板
 
@@ -32,6 +33,8 @@ namespace HotLyric.Win32.Controls
 
         private SolidColorBrush backgroundBrush;
         private SolidColorBrush borderBrush;
+
+        private IReadOnlyList<CanvasFontFamily> canvasFontFamilies;
 
         public TextThemePreviewControl()
         {
@@ -46,6 +49,8 @@ namespace HotLyric.Win32.Controls
             BackgroundBorder.BorderBrush = borderBrush;
 
             colors = new LyricDrawingTextColors();
+
+            canvasFontFamilies = new FontFamilySets("SYSTEM-UI").BuildCanvasFontFamilies();
         }
 
         private void TextThemePreviewControl_Loaded(object sender, RoutedEventArgs e)
@@ -69,7 +74,7 @@ namespace HotLyric.Win32.Controls
                         args.DrawingSession,
                         sender.Size,
                         new SampleLine("字"),
-                        string.IsNullOrEmpty(FontFamily?.Source) ? "Microsoft Yahei UI" : FontFamily?.Source!,
+                        canvasFontFamilies,
                         FontWeight,
                         FontStyle,
                         LyricDrawingLineType.Classic,

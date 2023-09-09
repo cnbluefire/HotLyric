@@ -61,11 +61,11 @@ namespace HotLyric.Win32.Models
             {
                 // 当前UI为中文，将可能存在中文字体名的字体提取到顶部
 
-                Order = (name != displayName) ? 2 : 3;
+                Order = (name != displayName) ? 50 : 60;
             }
             else
             {
-                Order = 3;
+                Order = 60;
             }
 
             hashCode = HashCode.Combine(Source, DisplayName, Order);
@@ -139,9 +139,9 @@ namespace HotLyric.Win32.Models
             }
 
             var models = new FontFamilyDisplayModel[names.Length + 3];
-            models[0] = new FontFamilyDisplayModel("SYSTEM-UI", "默认UI字体", 0);
-            models[1] = new FontFamilyDisplayModel("UI-SERIF", "默认衬线体", 0);
-            models[2] = new FontFamilyDisplayModel("UI-SANS-SERIF", "默认非衬线体", 0);
+            models[0] = new FontFamilyDisplayModel("SYSTEM-UI", "默认UI字体", 1);
+            models[1] = new FontFamilyDisplayModel("UI-SERIF", "默认衬线体", 10);
+            models[2] = new FontFamilyDisplayModel("UI-SANS-SERIF", "默认非衬线体", 10);
 
             for (int i = 0; i < names.Length; i++)
             {

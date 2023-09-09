@@ -114,6 +114,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             var geometryScale = TextSize.Height == 0 ? 0 : Size.Height / TextSize.Height;
 
             var textWidth = TextSize.Width * geometryScale;
+            var textHeight = TextSize.Height * geometryScale;
 
             var scale = playProgress switch
             {
@@ -191,6 +192,12 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             }
 
             matrix *= Matrix3x2.CreateTranslation((float)offset, 0);
+
+            if (TextSizeType == LyricDrawingLineTextSizeType.FontHeight)
+            {
+                var actualLineHeight = glyphRunGroup.TextLayoutSize.Height * geometryScale;
+                matrix *= Matrix3x2.CreateTranslation(0, (float)(textHeight - actualLineHeight));
+            }
 
             drawingSession.Transform = matrix;
 

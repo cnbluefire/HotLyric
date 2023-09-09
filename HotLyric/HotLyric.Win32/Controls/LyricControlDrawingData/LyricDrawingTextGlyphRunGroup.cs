@@ -172,7 +172,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
                         var advance = curGlyphs.Sum(c => c.Advance);
 
                         textLayout!.GetCaretPosition((int)(charIndex + characterIndex), false, out var region);
-
+                        
                         var glyphRun = new LyricDrawingTextGlyphRun()
                         {
                             Point = new Vector2(x, y),

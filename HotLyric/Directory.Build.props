@@ -4,6 +4,6 @@
 		<Microsoft_Windows_SDK_BuildTools_Version>10.0.22621.756</Microsoft_Windows_SDK_BuildTools_Version>
 		<Win2D_WinUI3_EnableCanvasAnimatedControl_Version>1.1.0-preview1</Win2D_WinUI3_EnableCanvasAnimatedControl_Version>
 		<DirectNCore_Version>1.13.1</DirectNCore_Version>
-		<BlueFire_Toolkit_WinUI3_Version>0.0.3-preview.1</BlueFire_Toolkit_WinUI3_Version>
+		<BlueFire_Toolkit_WinUI3_Version>0.0.3-preview.4</BlueFire_Toolkit_WinUI3_Version>
 	</PropertyGroup>
 </Project>

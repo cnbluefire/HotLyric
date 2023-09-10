@@ -66,7 +66,8 @@ namespace HotLyric.Win32.Models
                 {
                     list.Add(new CanvasFontFamily(WesternTextFontFamily)
                     {
-                        UnicodeRanges = CanvasTextFormatHelper.GetMergedUnicodeRange(WesternTextUnicodeRange, fontProperties.UnicodeRanges)
+                        UnicodeRanges = CanvasTextFormatHelper.GetMergedUnicodeRange(WesternTextUnicodeRange, fontProperties.UnicodeRanges),
+                        ScaleFactor = 1,
                     });
                 }
             }
@@ -78,7 +79,8 @@ namespace HotLyric.Win32.Models
                 {
                     list.Add(new CanvasFontFamily(JapaneseKanaFontFamily)
                     {
-                        UnicodeRanges = JapaneseKanaUnicodeRange
+                        UnicodeRanges = JapaneseKanaUnicodeRange,
+                        ScaleFactor = 1,
                     });
                 }
             }
@@ -90,14 +92,16 @@ namespace HotLyric.Win32.Models
                 {
                     list.Add(new CanvasFontFamily(KoreanHangulFontFamily)
                     {
-                        UnicodeRanges = KoreanHangulUnicodeRange
+                        UnicodeRanges = KoreanHangulUnicodeRange,
+                        ScaleFactor = 1,
                     });
                 }
             }
 
             list.Add(new CanvasFontFamily(PrimaryFontFamily)
             {
-                IsMainFont = true
+                IsMainFont = true,
+                ScaleFactor = 1,
             });
 
             return list;

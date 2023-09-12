@@ -151,9 +151,7 @@
                                 FontWeight="Bold" Text=" Windows " /><Run Text="、" /><Run 
                                 FontWeight="Bold" Text=" Ctrl " /><Run Text="、" /><Run 
                                 FontWeight="Bold" Text=" Alt " /><Run Text="、" /><Run 
-                                FontWeight="Bold" Text=" Shift " /><Run Text="开头的快捷键才有效。" /><LineBreak /><Run 
-                                Text="使用" /><Run 
-                                FontWeight="Bold" Text=" Tab " /><Run Text="键移除快捷键。" />
+                                FontWeight="Bold" Text=" Shift " /><Run Text="开头的快捷键才有效。" />
                         </TextBlock>
 
                     </StackPanel>

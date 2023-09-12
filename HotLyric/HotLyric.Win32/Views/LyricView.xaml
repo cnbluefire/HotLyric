@@ -10,6 +10,7 @@
     xmlns:control="using:HotLyric.Win32.Controls" 
     xmlns:converter="using:HotLyric.Win32.Utils.Converters" 
     xmlns:model="using:HotLyric.Win32.Models"
+    xmlns:toolkitControl="using:BlueFire.Toolkit.WinUI3.Controls"
     mc:Ignorable="d"
     Width="500" Height="150"
     MinWidth="360" MinHeight="100">
@@ -105,11 +106,13 @@
                             </Button.Resources>
                             <FontIcon FontSize="12" Glyph="&#xE10C;" Foreground="{Binding LyricTheme.ForegroundBrush}"/>
                         </Button>
-                        <control:AutoScrollText Grid.Column="2" VerticalAlignment="Center" Paused="{x:Bind converter:BindUtils.BooleanReverse(VM.IsBackgroundVisible),Mode=OneWay}"
-											    ToolTipService.ToolTip="{Binding MediaModel.DisplayText}">
+                        <toolkitControl:AutoScrollView 
+                            Grid.Column="2" VerticalAlignment="Center" 
+                            IsPlaying="{x:Bind VM.IsBackgroundActualVisible,Mode=OneWay}"
+							ToolTipService.ToolTip="{Binding MediaModel.DisplayText}">
                             <TextBlock Text="{Binding MediaModel.DisplayText}" TextAlignment="Center" Margin="2,0"
                                        Foreground="{Binding LyricTheme.ForegroundBrush}" />
-                        </control:AutoScrollText>
+                        </toolkitControl:AutoScrollView>
                     </Grid>
 
                     <StackPanel Orientation="Horizontal" Grid.Column="1"

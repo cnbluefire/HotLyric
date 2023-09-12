@@ -19,6 +19,7 @@ using System.Windows.Input;
 using Windows.UI.Xaml;
 using Microsoft.UI.Xaml;
 using HotLyric.Win32.Controls.LyricControlDrawingData;
+using HotLyric.Win32.Base;
 
 namespace HotLyric.Win32.ViewModels
 {
@@ -42,6 +43,12 @@ namespace HotLyric.Win32.ViewModels
                 OnPropertyChanged(nameof(IsBackgroundVisible));
                 OnPropertyChanged(nameof(IsTitleButtonVisible));
                 OnPropertyChanged(nameof(LyricOpacity));
+            };
+
+            isBackgroundActualVisible = new DelayValueHolder<bool>(WindowAcrylicContext.opacityAnimationDuration);
+            isBackgroundActualVisible.ValueChanged += (s, a) =>
+            {
+                OnPropertyChanged(nameof(IsBackgroundActualVisible));
             };
 
             isMinimizedByPause = new DelayValueHolder<bool>(true, TimeSpan.FromSeconds(2));
@@ -96,6 +103,7 @@ namespace HotLyric.Win32.ViewModels
         private Windows.UI.Text.FontWeight fontWeight;
 
         private AsyncRelayCommand? onlyUseTimerHelpCmd;
+        private DelayValueHolder<bool> isBackgroundActualVisible;
 
         public SettingsWindowViewModel SettingViewModel => settingVm;
 
@@ -164,6 +172,8 @@ namespace HotLyric.Win32.ViewModels
         }
 
         public bool IsBackgroundVisible => !ActualMinimized && (IsMouseOver || IsBackgroundTransientVisible || AlwaysShowBackground);
+
+        public bool IsBackgroundActualVisible => isBackgroundActualVisible.Value;
 
         public bool IsMinimized
         {
@@ -622,6 +632,23 @@ namespace HotLyric.Win32.ViewModels
         }, () => SelectedSession?.Session is SMTCSession session && session.PositionMode == SMTCAppPositionMode.OnlyUseTimer && !OnlyUseTimerHelpCmd.IsRunning));
 
         public bool OnlyUseTimerHelpButtonVisible => OnlyUseTimerHelpCmd.CanExecute(null);
+
+        protected override void OnPropertyChanged(PropertyChangedEventArgs e)
+        {
+            base.OnPropertyChanged(e);
+
+            if (e.PropertyName == nameof(IsBackgroundVisible))
+            {
+                if (IsBackgroundVisible)
+                {
+                    isBackgroundActualVisible.Value = true;
+                }
+                else
+                {
+                    isBackgroundActualVisible.SetValueDelay(false);
+                }
+            }
+        }
 
         private void PowerModeHelper_PropertiesChanged(object? sender, EventArgs e)
         {

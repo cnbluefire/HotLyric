@@ -12,6 +12,7 @@ using System.Numerics;
 using HotLyric.Win32.Utils.LyricFiles;
 using BlueFire.Toolkit.WinUI3.Text;
 using HotLyric.Win32.Models;
+using HotLyric.Win32.Utils;
 
 namespace HotLyric.Win32.Controls.LyricControlDrawingData
 {
@@ -196,7 +197,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             if (TextSizeType == LyricDrawingLineTextSizeType.FontHeight)
             {
                 var actualLineHeight = glyphRunGroup.TextLayoutSize.Height * geometryScale;
-                matrix *= Matrix3x2.CreateTranslation(0, (float)(textHeight - actualLineHeight));
+                matrix *= Matrix3x2.CreateTranslation(0, (float)(textHeight - actualLineHeight) / 2);
             }
 
             drawingSession.Transform = matrix;
@@ -214,7 +215,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             var width = glyphRunGroup.TextLayoutSize.Width;
             var height = glyphRunGroup.TextLayoutSize.Height;
 
-            var prop = SystemFontHelper.GetFontProperties(glyphRunGroup.PrimaryFontFamily);
+            var prop = SystemFontHelper.GetFontProperties(glyphRunGroup.PrimaryFontFamily, CultureInfoUtils.DefaultUICulture.Name);
 
             if (prop != null)
             {

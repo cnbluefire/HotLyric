@@ -77,20 +77,16 @@
                         </Border>
                     </Grid>
                 </ContentControl>-->
-
                 <muxc:Expander Style="{StaticResource ExpanderCardStyle}" MinHeight="66" HorizontalAlignment="Stretch" Margin="0,4,0,0" IsExpanded="True">
                     <muxc:Expander.Header>
                         <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE185;" Content="文字设置" Margin="-4,0,0,0" />
                     </muxc:Expander.Header>
                     <Grid Margin="40,0,16,0" RowSpacing="16" ColumnSpacing="16">
                         <Grid.ColumnDefinitions>
-                            <ColumnDefinition Width="Auto" MinWidth="92" />
+                            <ColumnDefinition Width="Auto" MinWidth="84" />
                             <ColumnDefinition Width="*" />
                         </Grid.ColumnDefinitions>
                         <Grid.RowDefinitions>
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
-                            <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
                             <RowDefinition Height="Auto" />
@@ -122,54 +118,66 @@
                             </ComboBox.ItemTemplate>
                         </ComboBox>
 
-                        <Grid Grid.Row="3" Grid.ColumnSpan="2"  RowSpacing="16" ColumnSpacing="16">
-                            <Grid.ColumnDefinitions>
-                                <ColumnDefinition Width="Auto" MinWidth="92" />
-                                <ColumnDefinition Width="*" />
-                            </Grid.ColumnDefinitions>
-                            <Grid.RowDefinitions>
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                                <RowDefinition Height="Auto" />
-                            </Grid.RowDefinitions>
+                        <TextBlock Grid.Row="3" Text="调整字号" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <Button Grid.Row="3" Grid.Column="1" Content="帮助" Command="{Binding FontSizeCmd}" />
 
-                            <TextBlock Grid.Row="0" Text="主要字体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                            <ComboBox Grid.Row="0" Grid.Column="1" x:Name="FontFamilyComboBox" ItemsSource="{Binding AllFontFamilies}" SelectedItem="{Binding LyricFontFamily,Mode=TwoWay}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding DisplayName}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
+                    </Grid>
+                </muxc:Expander>
 
-                            <TextBlock Grid.Row="1" Text="西文字体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                            <ComboBox Grid.Row="1" Grid.Column="1" x:Name="WesternTextFontFamilyComboBox" ItemsSource="{Binding AllFontFamiliesWithEmpty}" SelectedItem="{Binding LyricWesternTextFontFamily,Mode=TwoWay}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding DisplayName}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
+                <muxc:Expander Style="{StaticResource ExpanderCardStyle}" MinHeight="66" HorizontalAlignment="Stretch" Margin="0,4,0,0" IsExpanded="True">
+                    <muxc:Expander.Header>
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE18E;" Content="字体设置" Margin="-4,0,0,0" />
+                    </muxc:Expander.Header>
+                    <Grid Margin="40,0,16,0" RowSpacing="16" ColumnSpacing="16">
+                        <Grid.ColumnDefinitions>
+                            <ColumnDefinition Width="Auto" MinWidth="84" />
+                            <ColumnDefinition Width="*" />
+                        </Grid.ColumnDefinitions>
+                        <Grid.RowDefinitions>
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                            <RowDefinition Height="Auto" />
+                        </Grid.RowDefinitions>
 
-                            <TextBlock Grid.Row="2" Text="日语假名字体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                            <ComboBox Grid.Row="2" Grid.Column="1" x:Name="JapaneseKanaFontFamilyComboBox" ItemsSource="{Binding AllFontFamiliesWithEmpty}" SelectedItem="{Binding LyricJapaneseKanaFontFamily,Mode=TwoWay}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding DisplayName}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
+                        <TextBlock Grid.Row="0" Text="主要字体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <ComboBox Grid.Row="0" Grid.Column="1" x:Name="FontFamilyComboBox" ItemsSource="{Binding AllFontFamilies}" SelectedItem="{Binding LyricFontFamily,Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
-                            <TextBlock Grid.Row="3" Text="朝鲜谚文字体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                            <ComboBox Grid.Row="3" Grid.Column="1" x:Name="KoreanHangulFontFamilyComboBox" ItemsSource="{Binding AllFontFamiliesWithEmpty}" SelectedItem="{Binding LyricKoreanHangulFontFamily,Mode=TwoWay}">
-                                <ComboBox.ItemTemplate>
-                                    <DataTemplate>
-                                        <TextBlock Text="{Binding DisplayName}" />
-                                    </DataTemplate>
-                                </ComboBox.ItemTemplate>
-                            </ComboBox>
-                        </Grid>
+                        <TextBlock Grid.Row="1" Text="西文字体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <ComboBox Grid.Row="1" Grid.Column="1" x:Name="WesternTextFontFamilyComboBox" ItemsSource="{Binding AllFontFamiliesWithEmpty}" SelectedItem="{Binding LyricWesternTextFontFamily,Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="2" Text="日语假名字体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <ComboBox Grid.Row="2" Grid.Column="1" x:Name="JapaneseKanaFontFamilyComboBox" ItemsSource="{Binding AllFontFamiliesWithEmpty}" SelectedItem="{Binding LyricJapaneseKanaFontFamily,Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
+
+                        <TextBlock Grid.Row="3" Text="朝鲜谚文字体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
+                        <ComboBox Grid.Row="3" Grid.Column="1" x:Name="KoreanHangulFontFamilyComboBox" ItemsSource="{Binding AllFontFamiliesWithEmpty}" SelectedItem="{Binding LyricKoreanHangulFontFamily,Mode=TwoWay}">
+                            <ComboBox.ItemTemplate>
+                                <DataTemplate>
+                                    <TextBlock Text="{Binding DisplayName}" />
+                                </DataTemplate>
+                            </ComboBox.ItemTemplate>
+                        </ComboBox>
 
                         <TextBlock Grid.Row="4" Text="粗体" VerticalAlignment="Center" HorizontalAlignment="Right"/>
                         <Border Grid.Row="4" Grid.Column="1" MaxWidth="40" HorizontalAlignment="Left">
@@ -180,9 +188,6 @@
                         <Border Grid.Row="5" Grid.Column="1" MaxWidth="40" HorizontalAlignment="Left">
                             <ToggleSwitch Margin="0,-4,0,-5" IsOn="{Binding IsLyricFontItalicStyleEnabled,Mode=TwoWay}" />
                         </Border>
-
-                        <TextBlock Grid.Row="6" Text="调整字号" VerticalAlignment="Center" HorizontalAlignment="Right"/>
-                        <Button Grid.Row="6" Grid.Column="1" Content="帮助" Command="{Binding FontSizeCmd}" />
 
                     </Grid>
                 </muxc:Expander>

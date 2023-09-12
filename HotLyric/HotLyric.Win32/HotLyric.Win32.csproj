@@ -20,22 +20,22 @@
 
 	<ItemGroup>
 		<PackageReference Include="BlueFire.Toolkit.WinUI3" Version="$(BlueFire_Toolkit_WinUI3_Version)" />
-		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.0" />
+		<PackageReference Include="CommunityToolkit.Mvvm" Version="8.2.1" />
 		<PackageReference Include="CommunityToolkit.WinUI.UI.Controls.Markdown" Version="7.1.2" />
 		<PackageReference Include="DirectNCore" Version="$(DirectNCore_Version)" />
 		<PackageReference Include="Fastenshtein" Version="1.0.0.8" />
-		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.108" />
+		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.116" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="$(Microsoft_WindowsAppSDK_Version)" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="$(Microsoft_Windows_SDK_BuildTools_Version)" />
 		<PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="NLog" Version="5.2.0" />
+		<PackageReference Include="NLog" Version="5.2.4" />
 		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
-		<PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.15" />
-		<PackageReference Include="Vanara.PInvoke.Security" Version="3.4.15" />
-		<PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.15" />
-		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.15" />
+		<PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.16" />
+		<PackageReference Include="Vanara.PInvoke.Security" Version="3.4.16" />
+		<PackageReference Include="Vanara.PInvoke.SHCore" Version="3.4.16" />
+		<PackageReference Include="Vanara.PInvoke.User32" Version="3.4.16" />
 		<PackageReference Include="Win2D.WinUI3.EnableCanvasAnimatedControl" Version="$(Win2D_WinUI3_EnableCanvasAnimatedControl_Version)" />
 		<Manifest Include="$(ApplicationManifest)" />
 	</ItemGroup>

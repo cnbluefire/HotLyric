@@ -50,7 +50,7 @@ namespace HotLyric.Win32.Views
 
             WindowHelper.SetTopmost(this.XamlWindow, true);
 
-            //TopmostHelper = new WindowTopmostHelper(this.XamlWindow);
+            TopmostHelper = new WindowTopmostHelper(this.XamlWindow);
 
             if (WindowBoundsHelper.TryGetWindowBounds("lyric", out var x, out var y, out var width, out var height))
             {

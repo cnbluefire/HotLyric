@@ -44,7 +44,7 @@ namespace HotLyric.Win32
 
             ViewModelLocator.Instance.SettingsWindowViewModel.TryShowReadMeOnStartup();
 
-            ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyModels.HotKeyInvoked += HotKeyModels_HotKeyInvoked; ;
+            HotKeyManager.HotKeyInvoked += HotKeyManager_HotKeyInvoked;
         }
 
         public static new App Current => (App)Application.Current;
@@ -101,13 +101,13 @@ namespace HotLyric.Win32
         }
 
 
-        private void HotKeyModels_HotKeyInvoked(Models.HotKeyModels sender, Models.HotKeyManagerHotKeyInvokedEventArgs args)
+        private void HotKeyManager_HotKeyInvoked(HotKeyInvokedEventArgs args)
         {
             DispatcherQueue.TryEnqueue(() =>
             {
                 if (Exiting) return;
 
-                if (args.HotKeyModel.HotKeyName == "PlayPause")
+                if (args.Model.Id == "PlayPause")
                 {
                     var session = ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession?.Session;
 
@@ -123,37 +123,37 @@ namespace HotLyric.Win32
                         }
                     }
                 }
-                else if (args.HotKeyModel.HotKeyName == "PrevMedia")
+                else if (args.Model.Id == "PrevMedia")
                 {
                     ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession?.Session?
                         .SkipPreviousCommand?.Execute(null);
                 }
-                else if (args.HotKeyModel.HotKeyName == "NextMedia")
+                else if (args.Model.Id == "NextMedia")
                 {
                     ViewModelLocator.Instance.LyricWindowViewModel.SelectedSession?.Session?
                         .SkipNextCommand?.Execute(null);
                 }
-                else if (args.HotKeyModel.HotKeyName == "VolumeUp")
+                else if (args.Model.Id == "VolumeUp")
                 {
                     KeyboardHelper.SendKey(VirtualKeys.VK_VOLUME_UP, false);
                     System.Threading.Thread.Sleep(20);
                     KeyboardHelper.SendKey(VirtualKeys.VK_VOLUME_UP, true);
                 }
-                else if (args.HotKeyModel.HotKeyName == "VolumeDown")
+                else if (args.Model.Id == "VolumeDown")
                 {
                     KeyboardHelper.SendKey(VirtualKeys.VK_VOLUME_DOWN, false);
                     System.Threading.Thread.Sleep(20);
                     KeyboardHelper.SendKey(VirtualKeys.VK_VOLUME_DOWN, true);
                 }
-                else if (args.HotKeyModel.HotKeyName == "ShowHideLyric")
+                else if (args.Model.Id == "ShowHideLyric")
                 {
                     ViewModelLocator.Instance.LyricWindowViewModel.IsMinimized = !ViewModelLocator.Instance.LyricWindowViewModel.IsMinimized;
                 }
-                else if (args.HotKeyModel.HotKeyName == "LockUnlock")
+                else if (args.Model.Id == "LockUnlock")
                 {
                     notifyIcon?.ToggleWindowTransparent();
                 }
-                else if (args.HotKeyModel.HotKeyName == "OpenPlayer")
+                else if (args.Model.Id == "OpenPlayer")
                 {
                     ViewModelLocator.Instance.LyricWindowViewModel.OpenCurrentSessionAppCmd.Execute(null);
                 }

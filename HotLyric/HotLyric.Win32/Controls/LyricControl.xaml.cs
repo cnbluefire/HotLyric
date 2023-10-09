@@ -39,7 +39,6 @@ namespace HotLyric.Win32.Controls
         private LyricDrawingTextColors themeColors;
         private LyricDrawingTextColors? colors;
         private EaseFunctionBase easingFunc;
-        private IReadOnlyList<CanvasFontFamily>? canvasFontFamilies;
 
         private LyricLines lyricLines;
         private bool isLoaded;
@@ -90,7 +89,6 @@ namespace HotLyric.Win32.Controls
             });
             propObserver[LyricFontFamilySetsProperty]?.AddHandler((s, a) =>
             {
-                canvasFontFamilies = ((a.NewValue as FontFamilySets) ?? new FontFamilySets()).BuildCanvasFontFamilies();
                 Refresh();
             });
             propObserver[IsLyricTranslateEnabledProperty]?.AddHandler((s, a) =>
@@ -449,12 +447,11 @@ namespace HotLyric.Win32.Controls
                 var fontWeight = propObserver[FontWeightProperty]!.GetValueOrDefault<FontWeight>();
                 var fontStyle = propObserver[FontStyleProperty]!.GetValueOrDefault<FontStyle>();
 
-                var fontFamilies = canvasFontFamilies;
+                var fontFamilies = propObserver[LyricFontFamilySetsProperty]!.GetValueOrDefault<FontFamilySets>();
 
                 if (fontFamilies == null)
                 {
-                    fontFamilies = new FontFamilySets().BuildCanvasFontFamilies();
-                    canvasFontFamilies = fontFamilies;
+                    fontFamilies = new FontFamilySets();
                 }
 
                 var controlSize = sender.Size;

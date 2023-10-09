@@ -1,4 +1,5 @@
-﻿using HotLyric.Win32.Models;
+﻿using BlueFire.Toolkit.WinUI3.Input;
+using HotLyric.Win32.Models;
 using Microsoft.UI.Xaml;
 using System;
 using System.Collections.Generic;
@@ -20,10 +21,10 @@ namespace HotLyric.Win32.Utils.Converters
 
         public static Visibility NotVisible(bool value) => Visible(!value);
 
-        public static string HotKeyTip(HotKey? hotKey)
+        public static string HotKeyTip(HotKeyModel? hotKeyModel)
         {
-            if (hotKey == null) return "";
-            return hotKey.HotKeyModel.ToString();
+            if (hotKeyModel == null) return "";
+            return hotKeyModel.ToString();
         }
     }
 }

@@ -3,22 +3,34 @@ using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
+using System.Threading;
 using System.Threading.Tasks;
 
 namespace HotLyric.Win32.Models
 {
     public class FontFamilySets : IEquatable<FontFamilySets>
     {
+        private static volatile int globalId = 1;
+        public static string CurrentCompositeFontFamilyName { get; private set; } = "";
+
+        private string compositeFontFamilyName;
         private int _hashCode;
 
-        public FontFamilySets(string primaryFontFamily = "SYSTEM-UI", string? westernTextFontFamily = null, string? japaneseKanaFontFamily = null, string? koreanHangulFontFamily = null)
+        public FontFamilySets(string primaryFontFamily = "SYSTEM-UI", string? westernTextFontFamily = null, string? japaneseKanaFontFamily = null, string? koreanHangulFontFamily = null, bool register = true)
         {
             PrimaryFontFamily = primaryFontFamily;
             WesternTextFontFamily = westernTextFontFamily;
             JapaneseKanaFontFamily = japaneseKanaFontFamily;
             KoreanHangulFontFamily = koreanHangulFontFamily;
 
-            _hashCode = HashCode.Combine(primaryFontFamily, westernTextFontFamily, japaneseKanaFontFamily, koreanHangulFontFamily);
+            compositeFontFamilyName = $"CompositeFont_{Interlocked.Increment(ref globalId)}";
+
+            _hashCode = HashCode.Combine(primaryFontFamily, westernTextFontFamily, japaneseKanaFontFamily, koreanHangulFontFamily, compositeFontFamilyName);
+
+            if (register)
+            {
+                RegisterCompositeFont();
+            }
         }
 
         public string PrimaryFontFamily { get; } = "SYSTEM-UI";
@@ -38,6 +50,7 @@ namespace HotLyric.Win32.Models
         /// </summary>
         public string? KoreanHangulFontFamily { get; }
 
+        public string CompositeFontFamilyName => compositeFontFamilyName;
 
         public bool Equals(FontFamilySets? other)
         {
@@ -45,7 +58,8 @@ namespace HotLyric.Win32.Models
                 && PrimaryFontFamily == other.PrimaryFontFamily
                 && WesternTextFontFamily == other.WesternTextFontFamily
                 && JapaneseKanaFontFamily == other.JapaneseKanaFontFamily
-                && KoreanHangulFontFamily == other.KoreanHangulFontFamily;
+                && KoreanHangulFontFamily == other.KoreanHangulFontFamily
+                && CompositeFontFamilyName == other.CompositeFontFamilyName;
         }
 
         public override bool Equals(object? obj)
@@ -55,58 +69,47 @@ namespace HotLyric.Win32.Models
 
         public override int GetHashCode() => _hashCode;
 
-        public IReadOnlyList<CanvasFontFamily> BuildCanvasFontFamilies()
+        private void RegisterCompositeFont()
         {
-            var list = new List<CanvasFontFamily>();
-
-            if (!string.IsNullOrEmpty(WesternTextFontFamily))
+            if (!string.IsNullOrEmpty(CurrentCompositeFontFamilyName))
             {
-                var fontProperties = SystemFontHelper.GetFontProperties(WesternTextFontFamily);
-                if (fontProperties != null)
-                {
-                    list.Add(new CanvasFontFamily(WesternTextFontFamily)
-                    {
-                        UnicodeRanges = CanvasTextFormatHelper.GetMergedUnicodeRange(WesternTextUnicodeRange, fontProperties.UnicodeRanges),
-                        ScaleFactor = 1,
-                    });
-                }
+                CompositeFontManager.Unregister(CurrentCompositeFontFamilyName);
+                CurrentCompositeFontFamilyName = "";
             }
 
-            if (!string.IsNullOrEmpty(JapaneseKanaFontFamily))
+            if (!string.IsNullOrEmpty(WesternTextFontFamily)
+                || !string.IsNullOrEmpty(JapaneseKanaFontFamily)
+                || !string.IsNullOrEmpty(KoreanHangulFontFamily))
             {
-                var fontProperties = SystemFontHelper.GetFontProperties(JapaneseKanaFontFamily);
-                if (fontProperties != null)
+                var compositeFont = new CompositeFontFamily()
                 {
-                    list.Add(new CanvasFontFamily(JapaneseKanaFontFamily)
+                    FontFamilyName = CompositeFontFamilyName,
+                    FamilyMaps = new[]
                     {
-                        UnicodeRanges = JapaneseKanaUnicodeRange,
-                        ScaleFactor = 1,
-                    });
+                        new CompositeFontFamilyMap()
+                        {
+                            Target = WesternTextFontFamily,
+                            UnicodeRanges = WesternTextUnicodeRange
+                        },
+                        new CompositeFontFamilyMap()
+                        {
+                            Target = JapaneseKanaFontFamily,
+                            UnicodeRanges = JapaneseKanaUnicodeRange
+                        },
+                        new CompositeFontFamilyMap()
+                        {
+                            Target = KoreanHangulFontFamily,
+                            UnicodeRanges = KoreanHangulUnicodeRange
+                        },
+                    }
+                };
+
+                if (CompositeFontManager.Register(compositeFont))
+                {
+                    CurrentCompositeFontFamilyName = CompositeFontFamilyName;
                 }
             }
-
-            if (!string.IsNullOrEmpty(KoreanHangulFontFamily))
-            {
-                var fontProperties = SystemFontHelper.GetFontProperties(KoreanHangulFontFamily);
-                if (fontProperties != null)
-                {
-                    list.Add(new CanvasFontFamily(KoreanHangulFontFamily)
-                    {
-                        UnicodeRanges = KoreanHangulUnicodeRange,
-                        ScaleFactor = 1,
-                    });
-                }
-            }
-
-            list.Add(new CanvasFontFamily(PrimaryFontFamily)
-            {
-                IsMainFont = true,
-                ScaleFactor = 1,
-            });
-
-            return list;
         }
-
 
         internal static readonly UnicodeRange[] WesternTextUnicodeRange = new[]
         {

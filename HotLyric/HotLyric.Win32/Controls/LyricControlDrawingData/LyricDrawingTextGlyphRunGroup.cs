@@ -25,7 +25,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
         private readonly FontWeight fontWeight;
         private readonly FontStyle fontStyle;
 
-        private LyricDrawingTextGlyphRunGroup(ICanvasResourceCreator resourceCreator, string textString, IReadOnlyList<CanvasFontFamily> fontFamilies, FontWeight fontWeight, FontStyle fontStyle)
+        private LyricDrawingTextGlyphRunGroup(ICanvasResourceCreator resourceCreator, string textString, FontFamilySets fontFamilies, FontWeight fontWeight, FontStyle fontStyle)
         {
             this.fontWeight = fontWeight;
             this.fontStyle = fontStyle;
@@ -33,14 +33,11 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             var renderImpl = new LyricTextLineRendererImpl(resourceCreator, textString, fontFamilies, fontWeight, fontStyle);
 
             glyphRuns = renderImpl.GlyphRuns;
-            PrimaryFontFamily = renderImpl.PrimaryFontFamily;
             textLayoutSize = renderImpl.TextLayoutSize;
             textDrawSize = renderImpl.TextDrawSize;
         }
 
         public IReadOnlyList<LyricDrawingTextGlyphRun> GlyphRuns => !disposedValue ? glyphRuns : throw new ObjectDisposedException(nameof(LyricDrawingTextGlyphRunGroup));
-
-        public string PrimaryFontFamily { get; }
 
         public Size TextLayoutSize => !disposedValue ? textLayoutSize : throw new ObjectDisposedException(nameof(LyricDrawingTextGlyphRunGroup));
 
@@ -50,7 +47,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
         public FontStyle FontStyle => !disposedValue ? fontStyle : throw new ObjectDisposedException(nameof(LyricDrawingTextGlyphRunGroup));
 
-        public static LyricDrawingTextGlyphRunGroup Create(ICanvasResourceCreator resourceCreator, string textString, IReadOnlyList<CanvasFontFamily> fontFamilies, FontWeight fontWeight, FontStyle fontStyle)
+        public static LyricDrawingTextGlyphRunGroup Create(ICanvasResourceCreator resourceCreator, string textString, FontFamilySets fontFamilies, FontWeight fontWeight, FontStyle fontStyle)
         {
             return new LyricDrawingTextGlyphRunGroup(resourceCreator, textString, fontFamilies, fontWeight, fontStyle);
         }
@@ -100,7 +97,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             private CanvasTextLayout? textLayout;
             private List<LyricDrawingTextGlyphRun> glyphRuns;
 
-            public LyricTextLineRendererImpl(ICanvasResourceCreator resourceCreator, string textString, IReadOnlyList<CanvasFontFamily> fontFamilies, FontWeight fontWeight, FontStyle fontStyle)
+            public LyricTextLineRendererImpl(ICanvasResourceCreator resourceCreator, string textString, FontFamilySets fontFamilies, FontWeight fontWeight, FontStyle fontStyle)
             {
                 using (var textFormat = new CanvasTextFormat()
                 {
@@ -117,13 +114,17 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
                     WordWrapping = CanvasWordWrapping.NoWrap,
                 })
                 {
-                    CanvasTextFormatHelper.SetFallbackFontFamilies(
+                    var fontFamily = FontFamilySets.CurrentCompositeFontFamilyName;
+                    if (string.IsNullOrEmpty(fontFamily))
+                    {
+                        fontFamily = fontFamilies.PrimaryFontFamily;
+                    }
+
+                    CanvasTextFormatHelper.SetFontFamilySource(
                         textFormat,
-                        fontFamilies,
+                        fontFamily,
                         CultureInfoUtils.DefaultUICulture.Name,
                         uri => new CanvasFontSet(uri));
-
-                    PrimaryFontFamily = fontFamilies.First(c => c.IsMainFont).FontFamilyName;
 
                     using (var textLayout = new CanvasTextLayout(resourceCreator, textString, textFormat, 0, 0))
                     {
@@ -148,8 +149,6 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             public Size TextLayoutSize { get; private set; }
 
             public Size TextDrawSize { get; private set; }
-
-            public string PrimaryFontFamily { get; private set; }
 
             public void DrawGlyphRun(Vector2 point, CanvasFontFace fontFace, float fontSize, CanvasGlyph[] glyphs, bool isSideways, uint bidiLevel, object brush, CanvasTextMeasuringMode measuringMode, string localeName, string textString, int[] clusterMapIndices, uint characterIndex, CanvasGlyphOrientation glyphOrientation)
             {

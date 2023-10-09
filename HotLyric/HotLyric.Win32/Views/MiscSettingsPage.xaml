@@ -9,6 +9,7 @@
       xmlns:control="using:HotLyric.Win32.Controls" 
       xmlns:muxc="using:Microsoft.UI.Xaml.Controls" 
       xmlns:model="using:HotLyric.Win32.Models"
+      xmlns:toolkitInput="using:BlueFire.Toolkit.WinUI3.Input"
       xmlns:toolkitControl="using:BlueFire.Toolkit.WinUI3.Controls">
 
     <Grid x:Name="LayoutRoot" DataContext="{Binding Path=SettingsWindowViewModel, Source={StaticResource Locator}}">
@@ -88,22 +89,22 @@
                                 <Setter Property="IsTabStop" Value="False" />
                                 <Setter Property="ContentTemplate">
                                     <Setter.Value>
-                                        <DataTemplate x:DataType="model:HotKey">
+                                        <DataTemplate x:DataType="toolkitInput:HotKeyModel">
                                             <Grid>
                                                 <Grid.ColumnDefinitions>
                                                     <ColumnDefinition Width="120" />
                                                     <ColumnDefinition Width="Auto" />
                                                     <ColumnDefinition Width="*" />
                                                 </Grid.ColumnDefinitions>
-                                                <TextBlock Text="{x:Bind DisplayName,Mode=OneWay}" VerticalAlignment="Center" />
+                                                <TextBlock Text="{x:Bind Label,Mode=OneWay}" VerticalAlignment="Center" />
                                                 <toolkitControl:HotKeyInputBox 
                                                     VerticalAlignment="Center" Grid.Column="1"
-                                                    HotKeyModel="{x:Bind HotKeyModel,Mode=OneWay}"/>
+                                                    HotKeyModel="{x:Bind Mode=OneWay}"/>
                                                 <FontIcon Glyph="&#xE946;" FontSize="16" 
                                                           Grid.Column="2"
                                                           Margin="12,0,0,0" HorizontalAlignment="Left" VerticalAlignment="Center" 
                                                           ToolTipService.ToolTip="{StaticResource HotKeyDisabledText}" 
-                                                          Visibility="{x:Bind model:HotKey.IsRegisterFailed(HotKeyModel.Status),Mode=OneWay}"/>
+                                                          Visibility="{x:Bind model:HotKey.IsRegisterFailed(Status),Mode=OneWay}"/>
 
                                             </Grid>
                                         </DataTemplate>

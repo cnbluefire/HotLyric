@@ -129,7 +129,7 @@ namespace HotLyric.Win32.Controls
                 "锁定歌词",
                 ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyModels.LockUnlockKeyModel);
 
-            static string GetMenuItemText(string _text, HotKeyModel _hotKey)
+            static string GetMenuItemText(string _text, HotKeyModel? _hotKey)
             {
                 if (_hotKey != null && _hotKey.IsEnabled)
                 {

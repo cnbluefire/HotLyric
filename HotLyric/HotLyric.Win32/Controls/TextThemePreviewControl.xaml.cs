@@ -70,7 +70,7 @@ namespace HotLyric.Win32.Controls
                         args.DrawingSession,
                         sender.Size,
                         new SampleLine("×Ö"),
-                        new FontFamilySets(register: false),
+                        new FontFamilySets(),
                         FontWeight,
                         FontStyle,
                         LyricDrawingLineType.Classic,

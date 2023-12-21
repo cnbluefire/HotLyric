@@ -34,8 +34,6 @@ namespace HotLyric.Win32.Controls
         private SolidColorBrush backgroundBrush;
         private SolidColorBrush borderBrush;
 
-        private IReadOnlyList<CanvasFontFamily> canvasFontFamilies;
-
         public TextThemePreviewControl()
         {
             this.InitializeComponent();
@@ -49,8 +47,6 @@ namespace HotLyric.Win32.Controls
             BackgroundBorder.BorderBrush = borderBrush;
 
             colors = new LyricDrawingTextColors();
-
-            canvasFontFamilies = new FontFamilySets("SYSTEM-UI").BuildCanvasFontFamilies();
         }
 
         private void TextThemePreviewControl_Loaded(object sender, RoutedEventArgs e)
@@ -74,7 +70,7 @@ namespace HotLyric.Win32.Controls
                         args.DrawingSession,
                         sender.Size,
                         new SampleLine("×Ö"),
-                        canvasFontFamilies,
+                        new FontFamilySets(),
                         FontWeight,
                         FontStyle,
                         LyricDrawingLineType.Classic,

@@ -105,7 +105,11 @@ namespace HotLyric.Win32.Utils
             ForegroundWindowHelper.ForegroundWindowChanged += ForegroundWindowHelper_ForegroundWindowChanged;
 
             var manager = WindowManager.Get(window);
-            manager.WindowMessageReceived += Manager_WindowMessageReceived;
+
+            if (manager != null)
+            {
+                manager.WindowMessageReceived += Manager_WindowMessageReceived;
+            }
         }
 
         unsafe private void Manager_WindowMessageReceived(object? sender, WindowMessageReceivedEventArgs e)
@@ -284,7 +288,10 @@ namespace HotLyric.Win32.Utils
                     // TODO: 释放托管状态(托管对象)
 
                     var manager = WindowManager.Get(window);
-                    manager.WindowMessageReceived -= Manager_WindowMessageReceived;
+                    if (manager != null)
+                    {
+                        manager.WindowMessageReceived -= Manager_WindowMessageReceived;
+                    }
 
                     timer?.Stop();
                     timer = null!;

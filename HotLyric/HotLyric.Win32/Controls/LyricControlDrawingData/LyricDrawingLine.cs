@@ -30,7 +30,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             ICanvasResourceCreator resourceCreator,
             Size size,
             ILyricLine line,
-            IReadOnlyList<CanvasFontFamily> fontFamilies,
+            FontFamilySets fontFamilies,
             Windows.UI.Text.FontWeight fontWeight,
             Windows.UI.Text.FontStyle fontStyle,
             LyricDrawingLineType type,
@@ -66,7 +66,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
         public ILyricLine LyricLine { get; }
 
-        public IReadOnlyList<CanvasFontFamily> FontFamilies { get; }
+        public FontFamilySets FontFamilies { get; }
 
         public Windows.UI.Text.FontWeight FontWeight { get; }
 
@@ -215,7 +215,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             var width = glyphRunGroup.TextLayoutSize.Width;
             var height = glyphRunGroup.TextLayoutSize.Height;
 
-            var prop = SystemFontHelper.GetFontProperties(glyphRunGroup.PrimaryFontFamily, CultureInfoUtils.DefaultUICulture.Name);
+            var prop = SystemFontHelper.GetFontProperties(FontFamilies.PrimaryFontFamily, CultureInfoUtils.DefaultUICulture.Name);
 
             if (prop != null)
             {

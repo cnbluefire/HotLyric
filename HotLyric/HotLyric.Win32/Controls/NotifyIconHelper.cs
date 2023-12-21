@@ -17,6 +17,7 @@ using Microsoft.UI.Xaml.Media.Imaging;
 using Vanara.PInvoke;
 using Windows.UI.ViewManagement;
 using System.Runtime;
+using BlueFire.Toolkit.WinUI3.Input;
 
 namespace HotLyric.Win32.Controls
 {
@@ -128,11 +129,11 @@ namespace HotLyric.Win32.Controls
                 "锁定歌词",
                 ViewModelLocator.Instance.SettingsWindowViewModel.HotKeyModels.LockUnlockKeyModel);
 
-            static string GetMenuItemText(string _text, Models.HotKey _hotKey)
+            static string GetMenuItemText(string _text, HotKeyModel? _hotKey)
             {
-                if (_hotKey != null && _hotKey.HotKeyModel.IsEnabled)
+                if (_hotKey != null && _hotKey.IsEnabled)
                 {
-                    var _hotKeyText = _hotKey.HotKeyModel.ToString(true);
+                    var _hotKeyText = _hotKey.ToString(true);
 
                     if (!string.IsNullOrEmpty(_hotKeyText)) return $"{_text} [{_hotKeyText}]";
                 }

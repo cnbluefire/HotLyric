@@ -187,6 +187,7 @@ namespace HotLyric.Win32.ViewModels
 
             hotKeyModels = new HotKeyModels(this);
             isHotKeyEnabled = LoadSetting(IsHotKeyEnabledSettingsKey, true);
+            HotKeyManager.IsEnabled = isHotKeyEnabled;
         }
 
         private bool windowTransparent;
@@ -214,6 +215,8 @@ namespace HotLyric.Win32.ViewModels
 
         private string? lyricKoreanHangulFontFamilySource;
         private FontFamilyDisplayModel? lyricKoreanHangulFontFamily;
+
+        private FontFamilySets? lyricFontFamilySet;
 
         private IReadOnlyList<FontFamilyDisplayModel> allFontFamilies;
         private IReadOnlyList<FontFamilyDisplayModel> allFontFamiliesWithEmpty;
@@ -362,6 +365,7 @@ namespace HotLyric.Win32.ViewModels
                 if (SetProperty(ref lyricFontFamily, value))
                 {
                     ChangeSettings(ref lyricFontFamilySource, value?.Source ?? "", LyricFontFamilySettingKey);
+                    lyricFontFamilySet = null;
                     OnPropertyChanged(nameof(LyricFontFamilySet));
                 }
             }
@@ -375,6 +379,7 @@ namespace HotLyric.Win32.ViewModels
                 if (SetProperty(ref lyricWesternTextFontFamily, value))
                 {
                     ChangeSettings(ref lyricWesternTextFontFamilySource, value?.Source ?? "", LyricWesternTextFontFamilySettingKey);
+                    lyricFontFamilySet = null;
                     OnPropertyChanged(nameof(LyricFontFamilySet));
                 }
             }
@@ -388,6 +393,7 @@ namespace HotLyric.Win32.ViewModels
                 if (SetProperty(ref lyricJapaneseKanaFontFamily, value))
                 {
                     ChangeSettings(ref lyricJapaneseKanaFontFamilySource, value?.Source ?? "", LyricJapaneseKanaFontFamilySettingKey);
+                    lyricFontFamilySet = null;
                     OnPropertyChanged(nameof(LyricFontFamilySet));
                 }
             }
@@ -401,16 +407,30 @@ namespace HotLyric.Win32.ViewModels
                 if (SetProperty(ref lyricKoreanHangulFontFamily, value))
                 {
                     ChangeSettings(ref lyricKoreanHangulFontFamilySource, value?.Source ?? "", LyricKoreanHangulFontFamilySettingKey);
+                    lyricFontFamilySet = null;
                     OnPropertyChanged(nameof(LyricFontFamilySet));
                 }
             }
         }
 
-        public FontFamilySets LyricFontFamilySet => new FontFamilySets(
-            LyricFontFamily?.Source ?? "SYSTEM-UI",
-            LyricWesternTextFontFamily?.Source,
-            LyricJapaneseKanaFontFamily?.Source,
-            LyricKoreanHangulFontFamily?.Source);
+        public FontFamilySets LyricFontFamilySet
+        {
+            get
+            {
+                if (lyricFontFamilySet == null)
+                {
+                    lyricFontFamilySet = new FontFamilySets(
+                        LyricFontFamily?.Source ?? "SYSTEM-UI",
+                        LyricWesternTextFontFamily?.Source,
+                        LyricJapaneseKanaFontFamily?.Source,
+                        LyricKoreanHangulFontFamily?.Source);
+
+                    FontFamilySets.UpdateCompositeFont(lyricFontFamilySet);
+                }
+
+                return lyricFontFamilySet;
+            }
+        }
 
 
         public bool IsLyricFontItalicStyleEnabled

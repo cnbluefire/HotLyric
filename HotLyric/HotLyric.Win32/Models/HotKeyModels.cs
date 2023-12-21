@@ -19,7 +19,7 @@ namespace HotLyric.Win32.Models
         private const string HotKeySettingKeyTemplate = "Settings_HotKey_";
 
         private readonly SettingsWindowViewModel settingViewModel;
-        private HotKey[] hotKeyModels;
+        private HotKeyModel?[] hotKeyModels;
         private Dictionary<string, int> defaultHotKeys = new Dictionary<string, int>()
         {
             ["PlayPause"] = HotKey.BuildSettingValue(HotKeyModifiers.MOD_CONTROL | HotKeyModifiers.MOD_ALT, VirtualKeys.VK_P),
@@ -57,100 +57,81 @@ namespace HotLyric.Win32.Models
 
             foreach (var model in hotKeyModels)
             {
-                var settingValue = settingViewModel.LoadSetting($"{HotKeySettingKeyTemplate}{model.HotKeyName}", defaultHotKeys[model.HotKeyName]);
+                if (model != null)
+                {
+                    var settingValue = settingViewModel.LoadSetting($"{HotKeySettingKeyTemplate}{model.Id}", defaultHotKeys[model.Id]);
 
-                (model.HotKeyModel.Modifiers, model.HotKeyModel.VirtualKey) = HotKey.GetKeyFromSettingValue(settingValue);
+                    (model.Modifiers, model.VirtualKey) = HotKey.GetKeyFromSettingValue(settingValue);
 
-                model.HotKeyModel.RegisterPropertyChangedCallback(HotKeyModel.VirtualKeyProperty, OnHotKeyPropertyChanged);
-                model.HotKeyModel.RegisterPropertyChangedCallback(HotKeyModel.ModifiersProperty, OnHotKeyPropertyChanged);
+                    model.RegisterPropertyChangedCallback(HotKeyModel.VirtualKeyProperty, OnHotKeyPropertyChanged);
+                    model.RegisterPropertyChangedCallback(HotKeyModel.ModifiersProperty, OnHotKeyPropertyChanged);
+                }
             }
 
             this.settingViewModel = settingViewModel;
-
-            HotKeyManager.HotKeyInvoked += HotKeyManager_HotKeyInvoked;
         }
 
-        public HotKey PlayPauseKeyModel { get; }
+        public HotKeyModel? PlayPauseKeyModel { get; }
 
-        public HotKey PrevMediaKeyModel { get; }
+        public HotKeyModel? PrevMediaKeyModel { get; }
 
-        public HotKey NextMediaKeyModel { get; }
+        public HotKeyModel? NextMediaKeyModel { get; }
 
-        public HotKey VolumeUpKeyModel { get; }
+        public HotKeyModel? VolumeUpKeyModel { get; }
 
-        public HotKey VolumeDownKeyModel { get; }
+        public HotKeyModel? VolumeDownKeyModel { get; }
 
-        public HotKey ShowHideLyricKeyModel { get; }
+        public HotKeyModel? ShowHideLyricKeyModel { get; }
 
-        public HotKey LockUnlockKeyModel { get; }
+        public HotKeyModel? LockUnlockKeyModel { get; }
 
-        public HotKey OpenPlayerKeyModel { get; }
+        public HotKeyModel? OpenPlayerKeyModel { get; }
 
 
-        private HotKey CreateHotKey(string name, string displayName)
+        private HotKeyModel? CreateHotKey(string name, string displayName)
         {
-            var model = new HotKeyModel();
-            HotKeyManager.RegisterKey(model);
+            var model = HotKeyManager.RegisterKey(name, 0, 0);
 
-            return new HotKey(name, displayName, model);
+            if (model != null)
+            {
+                model.Label = displayName;
+            }
+
+            return model;
         }
 
         private void OnHotKeyPropertyChanged(DependencyObject sender, DependencyProperty dp)
         {
             if (sender is HotKeyModel hotKeyModel)
             {
-                var model = hotKeyModels.FirstOrDefault(c => c.HotKeyModel == hotKeyModel);
+                var model = hotKeyModels.FirstOrDefault(c => c == hotKeyModel);
 
                 if (model != null)
                 {
-                    settingViewModel.SetSettings($"{HotKeySettingKeyTemplate}{model.HotKeyName}", model.ToSettingValue());
+                    settingViewModel.SetSettings($"{HotKeySettingKeyTemplate}{model.Id}", HotKey.ToSettingValue(model));
                 }
             }
         }
-
-        private void HotKeyManager_HotKeyInvoked(object? sender, HotKeyInvokedEventArgs args)
-        {
-            var model = hotKeyModels.FirstOrDefault(c => c.HotKeyModel.VirtualKey == args.Key && c.HotKeyModel.Modifiers == args.Modifier);
-            if (model != null)
-            {
-                HotKeyInvoked?.Invoke(this, new HotKeyManagerHotKeyInvokedEventArgs(model));
-            }
-        }
-
-        public event HotKeyManagerHotKeyInvokedEventHandler? HotKeyInvoked;
 
         public void ResetToDefaultSettings()
         {
             foreach (var model in hotKeyModels)
             {
-                (model.HotKeyModel.Modifiers, model.HotKeyModel.VirtualKey) =
-                    HotKey.GetKeyFromSettingValue(defaultHotKeys[model.HotKeyName]);
+                if (model != null)
+                {
+                    (model.Modifiers, model.VirtualKey) =
+                        HotKey.GetKeyFromSettingValue(defaultHotKeys[model.Id]);
+                }
             }
         }
     }
 
-    public delegate void HotKeyManagerHotKeyInvokedEventHandler(HotKeyModels sender, HotKeyManagerHotKeyInvokedEventArgs args);
-
-    public record HotKeyManagerHotKeyInvokedEventArgs(HotKey HotKeyModel);
-
-    public record HotKey(string HotKeyName, string DisplayName, HotKeyModel HotKeyModel)
+    public static class HotKey
     {
         [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public int ToSettingValue()
+        public static int ToSettingValue(HotKeyModel hotKeyModel)
         {
-            return BuildSettingValue(HotKeyModel.Modifiers, HotKeyModel.VirtualKey);
-        }
-
-        [MethodImpl(MethodImplOptions.AggressiveInlining)]
-        public static HotKey CreateFromSettingValue(string hotKeyName, string displayName, int settingValue)
-        {
-            var (modifiers, key) = GetKeyFromSettingValue(settingValue);
-
-            return new HotKey(hotKeyName, displayName, new HotKeyModel()
-            {
-                VirtualKey = key,
-                Modifiers = modifiers
-            });
+            return BuildSettingValue(hotKeyModel.Modifiers, hotKeyModel.VirtualKey);
         }
 
         [MethodImpl(MethodImplOptions.AggressiveInlining)]

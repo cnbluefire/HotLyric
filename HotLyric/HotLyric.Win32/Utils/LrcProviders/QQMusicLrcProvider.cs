@@ -95,6 +95,18 @@ namespace HotLyric.Win32.Utils.LrcProviders
 
             try
             {
+                // 引入 Lyricify 搜索
+                var search = await Lyricify.Lyrics.Helpers.SearchHelper.Search(new Lyricify.Lyrics.Models.TrackMultiArtistMetadata()
+                {
+                    Artists = (artists ?? string.Empty).Split(", ").ToList(),
+                    Title = name,
+                }, Lyricify.Lyrics.Searchers.Searchers.QQMusic, Lyricify.Lyrics.Searchers.Helpers.CompareHelper.MatchType.Low);
+                if (search is Lyricify.Lyrics.Searchers.QQMusicSearchResult match)
+                {
+                    return match.Mid;
+                }
+
+                // 原搜索保留
                 var searchKey = LrcProviderHelper.BuildSearchKey(name, artists);
                 var key = LrcProviderHelper.GetSearchKey(searchKey);
 

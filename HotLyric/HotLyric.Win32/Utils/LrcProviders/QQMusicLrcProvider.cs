@@ -1,5 +1,4 @@
 ﻿using HotLyric.Win32.Utils.LyricFiles;
-using Kfstorm.LrcParser;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;

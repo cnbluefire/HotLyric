@@ -11,7 +11,6 @@ using System.Threading;
 using System.Threading.Tasks;
 using HotLyric.Win32.Utils.LrcProviders;
 using HotLyric.Win32.Utils.LyricFiles;
-using Kfstorm.LrcParser;
 using Newtonsoft.Json.Linq;
 using Nito.AsyncEx;
 using Windows.Storage;
@@ -176,24 +175,5 @@ namespace HotLyric.Win32.Utils
             }
         }
 
-    }
-
-    public class LyricModel
-    {
-        public LyricModel(ILrcFile? lyric, ILrcFile? translated, string? lyricContent, string? translateContent)
-        {
-            Lyric = lyric;
-            Translated = translated;
-            LyricContent = lyricContent;
-            TranslateContent = translateContent;
-        }
-
-        public ILrcFile? Lyric { get; }
-
-        public ILrcFile? Translated { get; }
-
-        public string? LyricContent { get; }
-
-        public string? TranslateContent { get; }
     }
 }

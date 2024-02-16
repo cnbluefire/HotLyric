@@ -1,5 +1,4 @@
 ﻿using HotLyric.Win32.Utils.LyricFiles;
-using Kfstorm.LrcParser;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -91,43 +90,16 @@ namespace HotLyric.Win32.Utils.LrcProviders
 
         public async Task<object?> GetIdAsync(string name, string? artists, CancellationToken cancellationToken)
         {
-            const int pageSize = 20;
-
             try
             {
-                var searchKey = LrcProviderHelper.BuildSearchKey(name, artists);
-                var key = LrcProviderHelper.GetSearchKey(searchKey);
-
-                if (string.IsNullOrEmpty(key)) return null;
-
-                var json = await LrcProviderHelper.TryGetStringAsync($"http://c.y.qq.com/soso/fcgi-bin/client_search_cp?format=json&n={pageSize}&p=1&w={Uri.EscapeDataString(key)}&cr=1&g_tk=5381&t=0", "https://y.qq.com", cancellationToken);
-
-                if (string.IsNullOrEmpty(json)) return null;
-
-                var jObj = JObject.Parse(json);
-                if (jObj != null
-                    && jObj.ContainsKey("code")
-                    && jObj?["code"]?.Type == JTokenType.Integer
-                    && jObj.Value<int>("code") == 0)
+                var search = await Lyricify.Lyrics.Helpers.SearchHelper.Search(new Lyricify.Lyrics.Models.TrackMultiArtistMetadata()
                 {
-                    var arr = jObj["data"]?["song"]?["list"] as JArray;
-                    if (arr != null && arr.Count > 0)
-                    {
-                        var musicInfos = arr.Select(c => (
-                                id: c.Value<string?>("songmid"),
-                                name: c.Value<string?>("songname"),
-                                artists: c.Value<JArray?>("singer")
-                                    ?.Select(x => x.Value<string>("name") ?? string.Empty)
-                                    ?.Where(x => !string.IsNullOrEmpty(x))
-                                    ?.ToArray() ?? Array.Empty<string>()))
-                            .Where(c => !string.IsNullOrEmpty(c.id) && !string.IsNullOrEmpty(c.name))
-                            .Select(c => new LrcProviderHelper.MusicInfomation(c.id, c.name, c.artists))
-                            .ToArray();
-
-                        var info = LrcProviderHelper.GetMostSimilarMusicInfomation(key, musicInfos, (int)Math.Ceiling(key.Length / 6d));
-
-                        return info?.Id;
-                    }
+                    Artists = (artists ?? string.Empty).Split(", ").ToList(),
+                    Title = name,
+                }, Lyricify.Lyrics.Searchers.Searchers.QQMusic, Lyricify.Lyrics.Searchers.Helpers.CompareHelper.MatchType.Low);
+                if (search is Lyricify.Lyrics.Searchers.QQMusicSearchResult match)
+                {
+                    return match.Mid;
                 }
             }
             catch (Exception ex) when (!(ex is OperationCanceledException))

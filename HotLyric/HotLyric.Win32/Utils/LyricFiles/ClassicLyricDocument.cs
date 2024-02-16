@@ -1,5 +1,4 @@
-﻿using Kfstorm.LrcParser;
-using System;
+﻿using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -121,24 +120,24 @@ namespace HotLyric.Win32.Utils.LyricFiles
         {
             if (string.IsNullOrEmpty(lyricContent)) return null;
 
-            var lrcFile = LrcFile.FromText(lyricContent);
-            if (lrcFile != null)
+            var lrcFile = Lyricify.Lyrics.Helpers.ParseHelper.ParseLyrics(lyricContent, Lyricify.Lyrics.Models.LyricsRawTypes.Lrc);
+            if (lrcFile?.Lines != null)
             {
                 var list = new List<ClassicLyricLine>();
 
-                for (int i = 0; i < lrcFile.Lyrics.Count; i++)
+                for (int i = 0; i < lrcFile.Lines.Count; i++)
                 {
-                    var line = lrcFile.Lyrics[i];
-                    var nextLine = i + 1 < lrcFile.Lyrics.Count ? lrcFile.Lyrics[i + 1] : null;
+                    var line = lrcFile.Lines[i];
+                    var nextLine = i + 1 < lrcFile.Lines.Count ? lrcFile.Lines[i + 1] : null;
 
                     bool isEnd = nextLine == null;
 
                     var span = new ClassicLyricLineSpan(
-                        line.Timestamp,
-                        nextLine?.Timestamp ?? TimeSpan.FromDays(100),
-                        line.Content,
+                        TimeSpan.FromMilliseconds(line.StartTime ?? 0),
+                        nextLine?.StartTime is not null ? TimeSpan.FromMilliseconds((double)nextLine?.StartTime!) : TimeSpan.FromDays(100),
+                        line.Text,
                         0,
-                        line.Content.Length,
+                        line.Text.Length,
                         isEnd);
 
                     list.Add(new ClassicLyricLine(span));

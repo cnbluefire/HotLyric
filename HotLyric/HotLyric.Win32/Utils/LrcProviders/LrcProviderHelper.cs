@@ -1,5 +1,4 @@
 ﻿using HotLyric.Win32.Utils.LyricFiles;
-using Kfstorm.LrcParser;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -20,18 +19,6 @@ namespace HotLyric.Win32.Utils.LrcProviders
         private static Regex replaceRegex = new Regex("(-|\\(|\\)|/|\\\\|&)");
         private static Regex replaceSpaceRegex = new Regex("(\\s{2,})");
 
-        private static Dictionary<string, string> artistMap = new Dictionary<string, string>(StringComparer.OrdinalIgnoreCase)
-        {
-            ["Jay Chou"] = "周杰伦",
-            ["JJ Lin"] = "林俊杰",
-            ["Jason Zhang"] = "张杰",
-            ["Joker Xue"] = "薛之谦",
-            ["Ronghao Li"] = "李荣浩",
-            ["WeiBird"] = "韦礼安",
-            ["A-Mei Chang"] = "张惠妹",
-            ["Hins Cheung"] = "张敬轩",
-        };
-
         /// <summary>
         /// 英文名转为中文名，繁体转为简体
         /// </summary>
@@ -41,12 +28,14 @@ namespace HotLyric.Win32.Utils.LrcProviders
         /// <returns></returns>
         public static (string? name, string? artists) ConvertNameAndArtists(string? name, string? artists, bool convertToSimpleChinese)
         {
-            var _artists = ChineseHelper.ConvertToSimpleChinese(artists);
+            artists ??= string.Empty;
 
-            foreach (var (k, v) in artistMap)
+            foreach (var (id, k, v) in Lyricify.Lyrics.Searchers.Helpers.ArtistHelper.ArtistNamePairs)
             {
-                _artists = _artists.Replace(k, v);
+                artists = artists.Replace(k, v);
             }
+
+            artists = ChineseHelper.ConvertToSimpleChinese(artists);
 
             if (convertToSimpleChinese && !string.IsNullOrEmpty(name))
             {
@@ -60,7 +49,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
                 }
             }
 
-            return (name, _artists);
+            return (name, artists);
         }
 
         /// <summary>

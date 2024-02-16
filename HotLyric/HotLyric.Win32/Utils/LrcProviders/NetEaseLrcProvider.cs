@@ -1,5 +1,4 @@
 ﻿using HotLyric.Win32.Utils.LyricFiles;
-using Kfstorm.LrcParser;
 using Newtonsoft.Json.Linq;
 using System;
 using System.Collections.Generic;
@@ -52,32 +51,14 @@ namespace HotLyric.Win32.Utils.LrcProviders
         {
             try
             {
-                var searchKeyword = LrcProviderHelper.BuildSearchKey(name, artists);
-                var key = LrcProviderHelper.GetSearchKey(searchKeyword);
-                if (string.IsNullOrEmpty(key)) return null;
-
-                var json = await LrcProviderHelper.TryGetStringAsync($"http://music.163.com/api/search/get/web?csrf_token=hlpretag=&hlposttag=&s={Uri.EscapeDataString(searchKeyword)}&type=1&offset=0&total=true&limit=10", cancellationToken);
-                if (string.IsNullOrEmpty(json)) return null;
-
-                var jobj = JObject.Parse(json);
-                var arr = jobj?["result"]?["songs"] as JArray;
-                if (arr?.Count > 0)
+                var search = await Lyricify.Lyrics.Helpers.SearchHelper.Search(new Lyricify.Lyrics.Models.TrackMultiArtistMetadata()
                 {
-                    var musicInfos = arr
-                        .Select(c => (
-                            id: c.Value<string>("id"),
-                            name: c.Value<string>("name"),
-                            artists: c.Value<JArray>("artists")
-                                ?.Select(x => x.Value<string>("name") ?? string.Empty)
-                                ?.Where(x => !string.IsNullOrEmpty(x))
-                                ?.ToArray() ?? Array.Empty<string>()))
-                        .Where(c => !string.IsNullOrEmpty(c.id) && !string.IsNullOrEmpty(c.name))
-                        .Select(c => new LrcProviderHelper.MusicInfomation(c.id, c.name, c.artists))
-                        .ToArray();
-
-                    var info = LrcProviderHelper.GetMostSimilarMusicInfomation(key, musicInfos, (int)Math.Ceiling(key.Length / 6d));
-
-                    return info?.Id;
+                    Artists = (artists ?? string.Empty).Split(", ").ToList(),
+                    Title = name,
+                }, Lyricify.Lyrics.Searchers.Searchers.Netease, Lyricify.Lyrics.Searchers.Helpers.CompareHelper.MatchType.Low);
+                if (search is Lyricify.Lyrics.Searchers.NeteaseSearchResult match)
+                {
+                    return match.Id;
                 }
             }
             catch (Exception ex) when (!(ex is OperationCanceledException))

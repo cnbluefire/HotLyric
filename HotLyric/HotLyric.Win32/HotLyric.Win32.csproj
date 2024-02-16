@@ -25,6 +25,7 @@
 		<PackageReference Include="DirectNCore" Version="$(DirectNCore_Version)" />
 		<PackageReference Include="Fastenshtein" Version="1.0.0.8" />
 		<PackageReference Include="H.NotifyIcon.WinUI" Version="2.0.116" />
+		<PackageReference Include="Lyricify.Lyrics.Helper" Version="0.1.3" />
 		<PackageReference Include="Microsoft.Extensions.DependencyInjection" Version="7.0.0" />
 		<PackageReference Include="Microsoft.WindowsAppSDK" Version="$(Microsoft_WindowsAppSDK_Version)" />
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="$(Microsoft_Windows_SDK_BuildTools_Version)" />

@@ -24,7 +24,6 @@ using Windows.UI;
 using HotLyric.Win32.Models;
 using System.Globalization;
 using Windows.UI.Text;
-using BlueFire.Toolkit.WinUI3.Text;
 
 //https://go.microsoft.com/fwlink/?LinkId=234236 上介绍了“用户控件”项模板
 

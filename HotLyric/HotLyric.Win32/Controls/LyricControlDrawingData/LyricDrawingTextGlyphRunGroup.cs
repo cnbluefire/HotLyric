@@ -124,8 +124,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
                     CanvasTextFormatHelper.SetFontFamilySource(
                         textFormat,
                         fontFamily,
-                        CultureInfoUtils.DefaultUICulture.Name,
-                        uri => new CanvasFontSet(uri));
+                        CultureInfoUtils.DefaultUICulture.Name);
 
                     using (var textLayout = new CanvasTextLayout(resourceCreator, textString, textFormat, 0, 0))
                     {

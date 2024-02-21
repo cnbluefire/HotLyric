@@ -48,6 +48,19 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 defaultLrcProvider: "QQMusic",
                 createMediaPropertiesAction: DefaultCreateMediaProperties),
 
+            ["MusicBee"] = new SMTCApp(
+                appId: "MusicBee.exe",
+                packageFamilyNamePrefix: "MusicBee.exe",
+                hasStoreUri: false,
+                positionMode: SMTCAppPositionMode.FromApp,
+                customName: "MusicBee",
+                customAppIcon: new BitmapImage(new Uri("ms-appx:///Assets/MusicBeeIcon.png", UriKind.RelativeOrAbsolute)),
+                supportLaunch: false,
+                defaultLrcProvider: "NeteaseMusic",
+                convertToSimpleChinese: true,
+                createMediaPropertiesAction: DefaultCreateMediaProperties
+            ),
+
             ["NeteaseMusic"] = new SMTCApp(
                 appId: "9nblggh6g0jf",
                 packageFamilyNamePrefix: "1F8B0F94.122165AE053F_",

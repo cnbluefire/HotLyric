@@ -132,6 +132,10 @@ namespace HotLyric.Win32.Models
                             Target = fontFamilySets.KoreanHangulFontFamily,
                             UnicodeRanges = KoreanHangulUnicodeRange
                         },
+                        new CompositeFontFamilyMap()
+                        {
+                            Target = fontFamilySets.PrimaryFontFamily,
+                        }
                     }
                 };
 

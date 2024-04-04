@@ -1,4 +1,5 @@
-﻿using HotLyric.Win32.Controls.LyricControlDrawingData.DrawAnimations;
+﻿using BlueFire.Toolkit.WinUI3.Text;
+using HotLyric.Win32.Controls.LyricControlDrawingData.DrawAnimations;
 using HotLyric.Win32.Utils;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Brushes;
@@ -6,6 +7,7 @@ using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.Graphics.Canvas.Geometry;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using Windows.Foundation;
 using Windows.UI;
@@ -21,7 +23,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
         public LyricDrawingTextClassic(
             ICanvasResourceCreator resourceCreator,
-            IReadOnlyList<LyricDrawingTextGlyphRun> lyricTextGlyphRuns,
+            FormattedText formattedText,
             float strokeWidth,
             double scale,
             LyricDrawingLineTextSizeType sizeType)
@@ -33,32 +35,9 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
             CanvasGeometry? geometry = null;
 
-            foreach (var glyphRun in lyricTextGlyphRuns)
-            {
-                var geo = CanvasGeometry.CreateGlyphRun(
-                    resourceCreator,
-                    glyphRun.Point,
-                    glyphRun.FontFace,
-                    glyphRun.FontSize,
-                    glyphRun.Glyphs,
-                    glyphRun.IsSideways,
-                    glyphRun.BidiLevel,
-                    Microsoft.Graphics.Canvas.Text.CanvasTextMeasuringMode.Natural,
-                    glyphRun.GlyphOrientation);
+            using var textLayout = formattedText.CreateCanvasTextLayout(resourceCreator);
 
-                if (geometry == null)
-                {
-                    geometry = geo;
-                }
-                else
-                {
-                    var old = geometry;
-                    geometry = geometry.CombineWith(geo, Matrix3x2.Identity, CanvasGeometryCombine.Union);
-                    old.Dispose();
-                    geo.Dispose();
-                }
-            }
-
+            geometry = CanvasGeometry.CreateText(textLayout);
 
             if (geometry != null)
             {
@@ -89,7 +68,6 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
                         TransformBehavior = strokeWidth > 1 ? CanvasStrokeTransformBehavior.Normal : CanvasStrokeTransformBehavior.Hairline
                     }));
                 }
-
 
                 geometry.Dispose();
             }

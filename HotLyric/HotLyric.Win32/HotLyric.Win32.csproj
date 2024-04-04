@@ -32,7 +32,7 @@
 		<PackageReference Include="Microsoft.Windows.SDK.BuildTools" Version="$(Microsoft_Windows_SDK_BuildTools_Version)" />
 		<PackageReference Include="Nito.AsyncEx" Version="5.1.2" />
 		<PackageReference Include="Newtonsoft.Json" Version="13.0.3" />
-		<PackageReference Include="NLog" Version="5.2.4" />
+		<PackageReference Include="NLog" Version="5.2.8" />
 		<PackageReference Include="System.Drawing.Common" Version="7.0.0" />
 		<PackageReference Include="Vanara.PInvoke.DwmApi" Version="3.4.16" />
 		<PackageReference Include="Vanara.PInvoke.Security" Version="3.4.16" />

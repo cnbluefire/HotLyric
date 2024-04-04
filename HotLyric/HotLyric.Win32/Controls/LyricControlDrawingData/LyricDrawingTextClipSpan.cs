@@ -1,9 +1,11 @@
-﻿using HotLyric.Win32.Utils;
+﻿using BlueFire.Toolkit.WinUI3.Text;
+using HotLyric.Win32.Utils;
 using Microsoft.Graphics.Canvas;
 using Microsoft.Graphics.Canvas.Effects;
 using Microsoft.Graphics.Canvas.Geometry;
 using System;
 using System.Collections.Generic;
+using System.Linq;
 using System.Numerics;
 using System.Runtime.CompilerServices;
 using Windows.Foundation;
@@ -21,7 +23,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
         public LyricDrawingTextClipSpan(
             ICanvasResourceCreator resourceCreator,
-            IReadOnlyList<LyricDrawingTextGlyphRun> lyricTextGlyphRuns,
+            FormattedText formattedText,
             float strokeWidth,
             double scale,
             LyricDrawingLineTextSizeType sizeType)
@@ -32,6 +34,10 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             this.sizeType = sizeType;
 
             geometries = new List<(CanvasCachedGeometry fill, CanvasCachedGeometry? stroke, double startProgress, double endProgrsss)>();
+
+            var lyricTextGlyphRuns = formattedText.LineGlyphRuns
+                .SelectMany(c => c.GlyphRuns)
+                .ToList();
 
             var unit = lyricTextGlyphRuns.Count > 0 ? 1d / lyricTextGlyphRuns.Count : 1;
 

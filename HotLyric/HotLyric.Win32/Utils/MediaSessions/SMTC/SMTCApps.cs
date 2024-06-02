@@ -136,7 +136,15 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 hasStoreUri: true,
                 positionMode: SMTCAppPositionMode.FromApp,
                 defaultLrcProvider: "NetEase",
-                createMediaPropertiesAction: AppleMusicCreateMediaProperties)
+                createMediaPropertiesAction: AppleMusicCreateMediaProperties),
+            ["PlanetMusicPlayer"] = new SMTCApp(
+                appId: "t51rdba1cnx74",
+                packageFamilyNamePrefix: "00d00666-37d5-4c47-b6c6-e62aa3f8a652_",
+                hasStoreUri: false,
+                positionMode: SMTCAppPositionMode.FromAppAndUseTimer,
+                defaultLrcProvider: "QQMusic",
+                convertToSimpleChinese: true,
+                createMediaPropertiesAction: DefaultCreateMediaProperties),
         };
 
         public static IReadOnlyDictionary<string, SMTCApp> AllApps => allApps;

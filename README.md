@@ -1,11 +1,12 @@
-# 热词
+# 热词（修改版）
+
+### 原项目地址：https://github.com/cnbluefire/HotLyric
 
 为其他播放器提供桌面歌词。
 
-下载地址: [https://www.microsoft.com/store/productId/9MXFFHVQVBV9](https://www.microsoft.com/store/productId/9MXFFHVQVBV9)
+下载地址: (https://github.com/Pigeon-Ming/HotLyric/releases)
 
-交流与反馈: [QQ群 1145646224](https://jq.qq.com/?_wv=1027&k=K4Ixe2Gw)
-
+    
 v1.3.0 后从 wpf 移植到 winui3 框架。由于winui3框架还远远谈不上稳定，新版本的问题相比旧版本会更多，如果遇到问题麻烦及时反馈。
 
 ## 软件截图
@@ -16,6 +17,7 @@ v1.3.0 后从 wpf 移植到 winui3 框架。由于winui3框架还远远谈不上
 |---|---|
 |HyPlayer|完全支持
 |LyricEase|完全支持
+|[PlanetMusicPlayer](http://pigeonming.top/index.php/planetmusicplayer)|歌词匹配可能不准确<sup><a href="#ref1">1</a></sup>
 |[Spotify](https://www.spotify.com/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup>
 |[网易云音乐 UWP](https://github.com/JasonWei512/NetEase-Cloud-Music-UWP-Repack)<sup><a href="#ref2">2</a></sup>|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup>
 |[QQ音乐 UWP](https://www.microsoft.com/store/productId/9WZDNCRFJ1Q1)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup> 无法获取歌曲信息<sup><a href="#ref4">4</a></sup>

@@ -31,7 +31,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             ICanvasResourceCreator resourceCreator,
             Size size,
             ILyricLine line,
-            FontFamilySets fontFamilies,
+            string? fontFamily,
             Windows.UI.Text.FontWeight fontWeight,
             Windows.UI.Text.FontStyle fontStyle,
             LyricDrawingLineType type,
@@ -44,10 +44,10 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             TextSizeType = textSizeType;
             Size = size;
             LyricLine = line;
-            FontFamilies = fontFamilies;
+            FontFamily = fontFamily;
             Type = type;
             Alignment = alignment;
-            formattedText = CreateFormattedText(line.Text, fontFamilies, fontWeight, fontStyle);
+            formattedText = CreateFormattedText(line.Text, fontFamily, fontWeight, fontStyle);
             CreateLyricText();
             FontWeight = fontWeight;
             FontStyle = fontStyle;
@@ -67,7 +67,7 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
 
         public ILyricLine LyricLine { get; }
 
-        public FontFamilySets FontFamilies { get; }
+        public string? FontFamily { get; }
 
         public Windows.UI.Text.FontWeight FontWeight { get; }
 
@@ -216,7 +216,17 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             var width = formattedText.Width;
             var height = formattedText.Height;
 
-            var prop = SystemFontHelper.GetFontProperties(FontFamilies.PrimaryFontFamily, CultureInfoUtils.DefaultUICulture.Name);
+            string? primaryFontFamily = null;
+            if (!string.IsNullOrEmpty(FontFamily))
+            {
+                primaryFontFamily = FontFamily.Split(',').LastOrDefault()?.Trim();
+            }
+            if (string.IsNullOrEmpty(primaryFontFamily))
+            {
+                primaryFontFamily = "SYSTEM-UI";
+            }
+
+            var prop = SystemFontHelper.GetFontProperties(primaryFontFamily, CultureInfoUtils.DefaultUICulture.Name);
 
             if (prop != null)
             {
@@ -226,15 +236,8 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             return new Size(width, height);
         }
 
-        private static FormattedText CreateFormattedText(string textString, FontFamilySets fontFamilies, FontWeight fontWeight, FontStyle fontStyle)
+        private static FormattedText CreateFormattedText(string textString, string fontFamily, FontWeight fontWeight, FontStyle fontStyle)
         {
-            var fontFamily = fontFamilies.PrimaryFontFamily;
-
-            if (fontFamilies.IsCompositeFont)
-            {
-                fontFamily = FontFamilySets.LyricCompositeFontFamilyName;
-            }
-
             return new FormattedText(
                 textString,
                 "en",

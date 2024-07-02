@@ -46,8 +46,6 @@ namespace HotLyric.Win32.Controls
         {
             this.InitializeComponent();
 
-            LyricFontFamilySets = new FontFamilySets();
-
             lyricLines = new LyricLines();
             lyricLines.PauseStateChanged += LyricLines_PauseStateChanged;
 
@@ -86,7 +84,7 @@ namespace HotLyric.Win32.Controls
 
                 Refresh();
             });
-            propObserver[LyricFontFamilySetsProperty]?.AddHandler((s, a) =>
+            propObserver[LyricFontFamilyProperty]?.AddHandler((s, a) =>
             {
                 Refresh();
             });
@@ -309,15 +307,14 @@ namespace HotLyric.Win32.Controls
             DependencyProperty.Register("Theme", typeof(LyricThemeView), typeof(LyricControl), new PropertyMetadata(null));
 
 
-        public FontFamilySets LyricFontFamilySets
+        public string LyricFontFamily
         {
-            get { return (FontFamilySets)GetValue(LyricFontFamilySetsProperty); }
-            set { SetValue(LyricFontFamilySetsProperty, value); }
+            get { return (string)GetValue(LyricFontFamilyProperty); }
+            set { SetValue(LyricFontFamilyProperty, value); }
         }
 
-        public static readonly DependencyProperty LyricFontFamilySetsProperty =
-            DependencyProperty.Register("LyricFontFamilySets", typeof(FontFamilySets), typeof(LyricControl), new PropertyMetadata(null));
-
+        public static readonly DependencyProperty LyricFontFamilyProperty =
+            DependencyProperty.Register("LyricFontFamily", typeof(string), typeof(LyricControl), new PropertyMetadata(""));
 
 
         public bool IsLyricTranslateEnabled
@@ -446,12 +443,7 @@ namespace HotLyric.Win32.Controls
                 var fontWeight = propObserver[FontWeightProperty]!.GetValueOrDefault<FontWeight>();
                 var fontStyle = propObserver[FontStyleProperty]!.GetValueOrDefault<FontStyle>();
 
-                var fontFamilies = propObserver[LyricFontFamilySetsProperty]!.GetValueOrDefault<FontFamilySets>();
-
-                if (fontFamilies == null)
-                {
-                    fontFamilies = new FontFamilySets();
-                }
+                var fontFamily = propObserver[LyricFontFamilyProperty]!.GetValueOrDefault<string>();
 
                 var controlSize = sender.Size;
 
@@ -553,7 +545,7 @@ namespace HotLyric.Win32.Controls
                             sender,
                             mainLineSize,
                             lyricLines.MainLine,
-                            fontFamilies,
+                            fontFamily,
                             fontWeight,
                             fontStyle,
                             LyricDrawingLineType.Classic,
@@ -577,7 +569,7 @@ namespace HotLyric.Win32.Controls
                             sender,
                             secondaryLineSize,
                             lyricLines.SecondaryLine,
-                            fontFamilies,
+                            fontFamily,
                             fontWeight,
                             fontStyle,
                             LyricDrawingLineType.Classic,
@@ -599,7 +591,7 @@ namespace HotLyric.Win32.Controls
                             sender,
                             removingLineSize,
                             lyricLines.RemovingLine,
-                            fontFamilies,
+                            fontFamily,
                             fontWeight,
                             fontStyle,
                             LyricDrawingLineType.Classic,

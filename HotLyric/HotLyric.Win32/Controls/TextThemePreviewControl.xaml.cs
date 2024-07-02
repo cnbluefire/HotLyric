@@ -1,4 +1,4 @@
-using HotLyric.Win32.Controls.LyricControlDrawingData;
+Ôªøusing HotLyric.Win32.Controls.LyricControlDrawingData;
 using HotLyric.Win32.Models;
 using HotLyric.Win32.Utils.LyricFiles;
 using System;
@@ -22,7 +22,7 @@ using Microsoft.UI.Xaml.Navigation;
 using Windows.UI;
 using BlueFire.Toolkit.WinUI3.Text;
 
-//https://go.microsoft.com/fwlink/?LinkId=234236 …œΩÈ…‹¡À°∞”√ªßøÿº˛°±œÓƒ£∞Â
+//https://go.microsoft.com/fwlink/?LinkId=234236 ‰∏ä‰ªãÁªç‰∫Ü‚ÄúÁî®Êà∑Êéß‰ª∂‚ÄùÈ°πÊ®°Êùø
 
 namespace HotLyric.Win32.Controls
 {
@@ -69,8 +69,8 @@ namespace HotLyric.Win32.Controls
                     line = new LyricDrawingLine(
                         args.DrawingSession,
                         sender.Size,
-                        new SampleLine("◊÷"),
-                        new FontFamilySets(),
+                        new SampleLine("Â≠ó"),
+                        FontFamilySets.PrimaryFontFamily,
                         FontWeight,
                         FontStyle,
                         LyricDrawingLineType.Classic,

@@ -1,9 +1,9 @@
-<Project>
+﻿<Project>
 	<PropertyGroup>
-		<Microsoft_WindowsAppSDK_Version>1.4.240211001</Microsoft_WindowsAppSDK_Version>
+		<Microsoft_WindowsAppSDK_Version>1.5.240607001</Microsoft_WindowsAppSDK_Version>
 		<Microsoft_Windows_SDK_BuildTools_Version>10.0.22621.3233</Microsoft_Windows_SDK_BuildTools_Version>
 		<Win2D_WinUI3_EnableCanvasAnimatedControl_Version>1.1.1</Win2D_WinUI3_EnableCanvasAnimatedControl_Version>
-		<DirectNCore_Version>1.16.0</DirectNCore_Version>
-		<BlueFire_Toolkit_WinUI3_Version>0.0.5-alpha.5</BlueFire_Toolkit_WinUI3_Version>
+		<DirectNCore_Version>1.16.1</DirectNCore_Version>
+		<BlueFire_Toolkit_WinUI3_Version>0.0.5-alpha.8</BlueFire_Toolkit_WinUI3_Version>
 	</PropertyGroup>
 </Project>

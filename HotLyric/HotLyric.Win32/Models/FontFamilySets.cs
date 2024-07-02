@@ -8,61 +8,96 @@ using System.Threading.Tasks;
 
 namespace HotLyric.Win32.Models
 {
-    public class FontFamilySets : IEquatable<FontFamilySets>
+    public static class FontFamilySets
     {
-        public const string LyricCompositeFontFamilyName = "LyricCompositeFontFamily";
+        private const string LyricCompositeWesternTextFontFamilyName = "__LyricCompositeWesternTextFontFamilyName";
+        private const string LyricCompositeJapaneseKanaFontFamilyName = "__LyricCompositeJapaneseKanaFontFamilyName";
+        private const string LyricCompositeKoreanHangulFontFamilyName = "__LyricCompositeKoreanHangulFontFamilyName";
 
-        private int _hashCode;
+        private static string primaryFontFamily = "SYSTEM-UI";
+        private static string? westernTextFontFamily;
+        private static string? japaneseKanaFontFamily;
+        private static string? koreanHangulFontFamily;
 
-        public FontFamilySets(string primaryFontFamily = "SYSTEM-UI", string? westernTextFontFamily = null, string? japaneseKanaFontFamily = null, string? koreanHangulFontFamily = null)
+        public static string PrimaryFontFamily
         {
-            PrimaryFontFamily = primaryFontFamily;
-            WesternTextFontFamily = westernTextFontFamily;
-            JapaneseKanaFontFamily = japaneseKanaFontFamily;
-            KoreanHangulFontFamily = koreanHangulFontFamily;
-
-            _hashCode = HashCode.Combine(primaryFontFamily, westernTextFontFamily, japaneseKanaFontFamily, koreanHangulFontFamily);
+            get => primaryFontFamily;
+            set => primaryFontFamily = value;
         }
-
-        public string PrimaryFontFamily { get; } = "SYSTEM-UI";
 
         /// <summary>
         /// 西文字体
         /// </summary>
-        public string? WesternTextFontFamily { get; }
+        public static string? WesternTextFontFamily
+        {
+            get => westernTextFontFamily;
+            set
+            {
+                if (westernTextFontFamily != value)
+                {
+                    westernTextFontFamily = value;
+                    UpdateFontFamilyCore(LyricCompositeJapaneseKanaFontFamilyName, westernTextFontFamily, WesternTextUnicodeRange);
+                }
+            }
+        }
 
         /// <summary>
         /// 日语假名字体
         /// </summary>
-        public string? JapaneseKanaFontFamily { get; }
+        public static string? JapaneseKanaFontFamily
+        {
+            get => japaneseKanaFontFamily;
+            set
+            {
+                if (japaneseKanaFontFamily != value)
+                {
+                    japaneseKanaFontFamily = value;
+                    UpdateFontFamilyCore(LyricCompositeJapaneseKanaFontFamilyName, japaneseKanaFontFamily, JapaneseKanaUnicodeRange);
+                }
+            }
+        }
 
         /// <summary>
         /// 朝鲜语谚文字体
         /// </summary>
-        public string? KoreanHangulFontFamily { get; }
-
-        public bool IsCompositeFont =>
-            !string.IsNullOrEmpty(WesternTextFontFamily)
-            || !string.IsNullOrEmpty(JapaneseKanaFontFamily)
-            || !string.IsNullOrEmpty(KoreanHangulFontFamily);
-
-        public bool Equals(FontFamilySets? other)
+        public static string? KoreanHangulFontFamily
         {
-            return other is not null
-                && PrimaryFontFamily == other.PrimaryFontFamily
-                && WesternTextFontFamily == other.WesternTextFontFamily
-                && JapaneseKanaFontFamily == other.JapaneseKanaFontFamily
-                && KoreanHangulFontFamily == other.KoreanHangulFontFamily;
+            get => koreanHangulFontFamily;
+            set
+            {
+                if (koreanHangulFontFamily != value)
+                {
+                    koreanHangulFontFamily = value;
+                    UpdateFontFamilyCore(LyricCompositeKoreanHangulFontFamilyName, koreanHangulFontFamily, KoreanHangulUnicodeRange);
+                }
+            }
         }
 
-        public override bool Equals(object? obj)
+        public static string CompositedFontFamily
         {
-            return obj is FontFamilySets obj1 && Equals(obj1);
+            get
+            {
+                if (string.IsNullOrEmpty(westernTextFontFamily)
+                    && string.IsNullOrEmpty(japaneseKanaFontFamily)
+                    && string.IsNullOrEmpty(koreanHangulFontFamily))
+                {
+                    return !string.IsNullOrEmpty(primaryFontFamily) ? primaryFontFamily : "SYSTEM-UI";
+                }
+
+                var sb = new StringBuilder();
+                if(!string.IsNullOrEmpty(westernTextFontFamily)) sb.Append(LyricCompositeWesternTextFontFamilyName).Append(',');
+                if (!string.IsNullOrEmpty(japaneseKanaFontFamily)) sb.Append(LyricCompositeJapaneseKanaFontFamilyName).Append(',');
+                if (!string.IsNullOrEmpty(koreanHangulFontFamily)) sb.Append(LyricCompositeKoreanHangulFontFamilyName).Append(',');
+                sb.Append(!string.IsNullOrEmpty(primaryFontFamily) ? primaryFontFamily : "SYSTEM-UI").Append(',');
+
+                if (sb.Length > 0) sb.Length--;
+
+                return sb.ToString();
+            }
         }
 
-        public override int GetHashCode() => _hashCode;
 
-        internal static readonly UnicodeRange[] WesternTextUnicodeRange = new[]
+        private static readonly UnicodeRange[] WesternTextUnicodeRange = new[]
         {
             new UnicodeRange() { first = 0x0000, last = 0x007F }, // Basic Latin
             new UnicodeRange() { first = 0x0080, last = 0x00FF }, // Latin-1 Supplement
@@ -87,7 +122,7 @@ namespace HotLyric.Win32.Models
             new UnicodeRange() { first = 0xFE20, last = 0xFE2F }, // Combining Half Marks
         };
 
-        internal static readonly UnicodeRange[] JapaneseKanaUnicodeRange = new[]
+        private static readonly UnicodeRange[] JapaneseKanaUnicodeRange = new[]
         {
             new UnicodeRange() { first = '〄', last = '〄' }, // 〄 日本工业标准符号
             new UnicodeRange() { first = 0x3040, last = 0x309F }, // Hiragana
@@ -97,7 +132,7 @@ namespace HotLyric.Win32.Models
             new UnicodeRange() { first = 0x3300, last = 0x3357 }, // CJK Comp Square Katakana
         };
 
-        internal static readonly UnicodeRange[] KoreanHangulUnicodeRange = new[]
+        private static readonly UnicodeRange[] KoreanHangulUnicodeRange = new[]
         {
             new UnicodeRange() { first = 0x1100, last = 0x11FF }, // Hangul Jamo
             new UnicodeRange() { first = 0x3130, last = 0x318F }, // Hangul Compatibility Jamo
@@ -106,35 +141,21 @@ namespace HotLyric.Win32.Models
             new UnicodeRange() { first = 0xAC00, last = 0xD7AF }, // Hangul Syllables
         };
 
-        public static void UpdateCompositeFont(FontFamilySets? fontFamilySets)
+        private static void UpdateFontFamilyCore(string compositeFontFamilyName, string? fontFamilyName, UnicodeRange[]? unicodeRanges)
         {
-            CompositeFontManager.Unregister(LyricCompositeFontFamilyName);
+            CompositeFontManager.Unregister(compositeFontFamilyName);
 
-            if (fontFamilySets?.IsCompositeFont is true)
+            if (!string.IsNullOrEmpty(fontFamilyName))
             {
                 var compositeFont = new CompositeFontFamily()
                 {
-                    FontFamilyName = LyricCompositeFontFamilyName,
+                    FontFamilyName = compositeFontFamilyName,
                     FamilyMaps = new[]
                     {
                         new CompositeFontFamilyMap()
                         {
-                            Target = fontFamilySets.WesternTextFontFamily,
-                            UnicodeRanges = WesternTextUnicodeRange
-                        },
-                        new CompositeFontFamilyMap()
-                        {
-                            Target = fontFamilySets.JapaneseKanaFontFamily,
-                            UnicodeRanges = JapaneseKanaUnicodeRange
-                        },
-                        new CompositeFontFamilyMap()
-                        {
-                            Target = fontFamilySets.KoreanHangulFontFamily,
-                            UnicodeRanges = KoreanHangulUnicodeRange
-                        },
-                        new CompositeFontFamilyMap()
-                        {
-                            Target = fontFamilySets.PrimaryFontFamily,
+                            Target = fontFamilyName,
+                            UnicodeRanges = unicodeRanges
                         }
                     }
                 };

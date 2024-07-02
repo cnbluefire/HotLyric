@@ -145,6 +145,13 @@ namespace HotLyric.Win32.ViewModels
                 lyricKoreanHangulFontFamilySource = lyricKoreanHangulFontFamily.Source;
             }
 
+            FontFamilySets.PrimaryFontFamily = !string.IsNullOrEmpty(lyricFontFamilySource) ? lyricFontFamilySource : "SYSTEM-UI";
+            FontFamilySets.WesternTextFontFamily = lyricWesternTextFontFamilySource;
+            FontFamilySets.JapaneseKanaFontFamily = lyricJapaneseKanaFontFamilySource;
+            FontFamilySets.KoreanHangulFontFamily = lyricKoreanHangulFontFamilySource;
+
+            lyricCompositedFontFamily = FontFamilySets.CompositedFontFamily;
+
             isLyricFontItalicStyleEnabled = LoadSetting(LyricFontStyleSettingKey, Windows.UI.Text.FontStyle.Normal) != Windows.UI.Text.FontStyle.Normal;
             isLyricFontBoldWeightEnabled = LoadSetting(LyricFontWeightSettingKey, Microsoft.UI.Text.FontWeights.Normal) != Microsoft.UI.Text.FontWeights.Normal;
 
@@ -216,7 +223,7 @@ namespace HotLyric.Win32.ViewModels
         private string? lyricKoreanHangulFontFamilySource;
         private FontFamilyDisplayModel? lyricKoreanHangulFontFamily;
 
-        private FontFamilySets? lyricFontFamilySet;
+        private string lyricCompositedFontFamily = "";
 
         private IReadOnlyList<FontFamilyDisplayModel> allFontFamilies;
         private IReadOnlyList<FontFamilyDisplayModel> allFontFamiliesWithEmpty;
@@ -365,8 +372,9 @@ namespace HotLyric.Win32.ViewModels
                 if (SetProperty(ref lyricFontFamily, value))
                 {
                     ChangeSettings(ref lyricFontFamilySource, value?.Source ?? "", LyricFontFamilySettingKey);
-                    lyricFontFamilySet = null;
-                    OnPropertyChanged(nameof(LyricFontFamilySet));
+                    FontFamilySets.PrimaryFontFamily = !string.IsNullOrEmpty(lyricFontFamilySource) ? lyricFontFamilySource : "SYSTEM-UI";
+                    LyricCompositedFontFamily = "";
+                    LyricCompositedFontFamily = FontFamilySets.CompositedFontFamily;
                 }
             }
         }
@@ -379,8 +387,9 @@ namespace HotLyric.Win32.ViewModels
                 if (SetProperty(ref lyricWesternTextFontFamily, value))
                 {
                     ChangeSettings(ref lyricWesternTextFontFamilySource, value?.Source ?? "", LyricWesternTextFontFamilySettingKey);
-                    lyricFontFamilySet = null;
-                    OnPropertyChanged(nameof(LyricFontFamilySet));
+                    FontFamilySets.WesternTextFontFamily = lyricWesternTextFontFamilySource;
+                    LyricCompositedFontFamily = "";
+                    LyricCompositedFontFamily = FontFamilySets.CompositedFontFamily;
                 }
             }
         }
@@ -393,8 +402,9 @@ namespace HotLyric.Win32.ViewModels
                 if (SetProperty(ref lyricJapaneseKanaFontFamily, value))
                 {
                     ChangeSettings(ref lyricJapaneseKanaFontFamilySource, value?.Source ?? "", LyricJapaneseKanaFontFamilySettingKey);
-                    lyricFontFamilySet = null;
-                    OnPropertyChanged(nameof(LyricFontFamilySet));
+                    FontFamilySets.JapaneseKanaFontFamily = lyricJapaneseKanaFontFamilySource;
+                    LyricCompositedFontFamily = "";
+                    LyricCompositedFontFamily = FontFamilySets.CompositedFontFamily;
                 }
             }
         }
@@ -407,31 +417,17 @@ namespace HotLyric.Win32.ViewModels
                 if (SetProperty(ref lyricKoreanHangulFontFamily, value))
                 {
                     ChangeSettings(ref lyricKoreanHangulFontFamilySource, value?.Source ?? "", LyricKoreanHangulFontFamilySettingKey);
-                    lyricFontFamilySet = null;
-                    OnPropertyChanged(nameof(LyricFontFamilySet));
+                    FontFamilySets.KoreanHangulFontFamily = lyricKoreanHangulFontFamilySource;
+                    OnPropertyChanged(nameof(LyricCompositedFontFamily));
                 }
             }
         }
 
-        public FontFamilySets LyricFontFamilySet
+        public string LyricCompositedFontFamily
         {
-            get
-            {
-                if (lyricFontFamilySet == null)
-                {
-                    lyricFontFamilySet = new FontFamilySets(
-                        LyricFontFamily?.Source ?? "SYSTEM-UI",
-                        LyricWesternTextFontFamily?.Source,
-                        LyricJapaneseKanaFontFamily?.Source,
-                        LyricKoreanHangulFontFamily?.Source);
-
-                    FontFamilySets.UpdateCompositeFont(lyricFontFamilySet);
-                }
-
-                return lyricFontFamilySet;
-            }
+            get => lyricCompositedFontFamily;
+            private set => SetProperty(ref lyricCompositedFontFamily, value);
         }
-
 
         public bool IsLyricFontItalicStyleEnabled
         {

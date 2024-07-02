@@ -199,7 +199,7 @@
                                   
                                   TextStrokeType="{x:Bind VM.TextStrokeType,Mode=OneWay}"
                                   TextShadowEnabled="{x:Bind VM.TextShadowEnabled,Mode=OneWay}"
-                                  LyricFontFamilySets="{x:Bind VM.SettingViewModel.LyricFontFamilySet,Mode=OneWay}"
+                                  LyricFontFamily="{x:Bind VM.SettingViewModel.LyricCompositedFontFamily,Mode=OneWay}"
                                   FontStyle="{x:Bind VM.FontStyle,Mode=OneWay}"
                                   FontWeight="{x:Bind VM.FontWeight,Mode=OneWay}"
                                   Theme="{x:Bind VM.LyricTheme,Mode=OneWay}"

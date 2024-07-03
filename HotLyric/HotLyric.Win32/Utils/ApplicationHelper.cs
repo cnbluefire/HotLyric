@@ -258,7 +258,14 @@ namespace HotLyric.Win32.Utils
                 }
                 else if (string.Equals(logo.Scheme, "file", StringComparison.OrdinalIgnoreCase))
                 {
-                    if (client == null) client = new HttpClient();
+                    if (client == null)
+                    {
+                        var handler = new HttpClientHandler()
+                        {
+                            UseProxy = false
+                        };
+                        client = new HttpClient(handler);
+                    }
 
                     var response = await client.GetAsync(logo, cancellationToken).ConfigureAwait(false);
                     using (var internetStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))

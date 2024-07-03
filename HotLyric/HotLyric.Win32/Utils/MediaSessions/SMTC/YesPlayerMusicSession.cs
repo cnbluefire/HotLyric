@@ -44,7 +44,11 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
             if (httpClient == null)
             {
-                httpClient = new HttpClient();
+                var handler = new HttpClientHandler()
+                {
+                    UseProxy = false
+                };
+                httpClient = new HttpClient(handler);
             }
 
             App = app;

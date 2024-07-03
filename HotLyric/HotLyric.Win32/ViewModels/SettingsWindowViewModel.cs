@@ -31,6 +31,7 @@ using Microsoft.UI.Xaml.Input;
 using Microsoft.UI;
 using Vanara.PInvoke;
 using BlueFire.Toolkit.WinUI3.Input;
+using System.Threading.Tasks;
 
 namespace HotLyric.Win32.ViewModels
 {
@@ -64,6 +65,7 @@ namespace HotLyric.Win32.ViewModels
         private const string AutoResetWindowPosSettingsKey = "Settings_AutoResetWindowPos";
         private const string ReadMeAlreadyShowedOnStartUpSettingsKey = "Settings_ReadMeAlreadyShowedOnStartUp";
         private const string IsHotKeyEnabledSettingsKey = "Settings_IsHotKeyEnabled";
+        private const string HttpClientProxySettingKey = "Settings_HttpClientProxy";
 
         public SettingsWindowViewModel()
         {
@@ -195,6 +197,9 @@ namespace HotLyric.Win32.ViewModels
             hotKeyModels = new HotKeyModels(this);
             isHotKeyEnabled = LoadSetting(IsHotKeyEnabledSettingsKey, true);
             HotKeyManager.IsEnabled = isHotKeyEnabled;
+
+            httpClientProxy = LoadSetting<HttpClientProxyModel>(HttpClientProxySettingKey, null);
+            HttpClientManager.Proxy = httpClientProxy?.CreateConfigure();
         }
 
         private bool windowTransparent;
@@ -246,9 +251,10 @@ namespace HotLyric.Win32.ViewModels
         private bool showLauncherWindowOnStartup;
         private bool hideOnPaused;
         private bool autoResetWindowPos;
-        private AsyncRelayCommand? spotifySetLanguage;
         private HotKeyModels hotKeyModels;
         private bool isHotKeyEnabled;
+        private HttpClientProxyModel? httpClientProxy;
+        private AsyncRelayCommand? changeProxyCmd;
 
         public StartupTaskHelper StartupTaskHelper { get; }
 
@@ -622,7 +628,7 @@ namespace HotLyric.Win32.ViewModels
                         PrimaryButtonText = "是",
                         CloseButtonText = "否",
                         CornerRadius = new CornerRadius(8),
-                        XamlRoot = ownerWindow.Content.XamlRoot
+                        XamlRoot = ownerWindow.Content?.XamlRoot
                     };
 
                     var result = await contentDialog.ShowAsync();
@@ -643,7 +649,7 @@ namespace HotLyric.Win32.ViewModels
                         IsSecondaryButtonEnabled = false,
                         PrimaryButtonText = "确定",
                         CornerRadius = new CornerRadius(8),
-                        XamlRoot = ownerWindow.Content.XamlRoot
+                        XamlRoot = ownerWindow.Content?.XamlRoot
                     };
 
                     await contentDialog.ShowAsync();
@@ -705,7 +711,7 @@ namespace HotLyric.Win32.ViewModels
                             IsSecondaryButtonEnabled = false,
                             PrimaryButtonText = "确定",
                             CornerRadius = new CornerRadius(8),
-                            XamlRoot = ownerWindow.Content.XamlRoot
+                            XamlRoot = ownerWindow.Content?.XamlRoot
                         };
 
                         await contentDialog.ShowAsync();
@@ -747,7 +753,7 @@ namespace HotLyric.Win32.ViewModels
                 CornerRadius = new CornerRadius(8),
             };
 
-            contentDialog.XamlRoot = ownerWindow.Content.XamlRoot;
+            contentDialog.XamlRoot = ownerWindow.Content?.XamlRoot;
             var res = await contentDialog.ShowAsync();
 
             if (res == ContentDialogResult.Primary)
@@ -755,141 +761,6 @@ namespace HotLyric.Win32.ViewModels
                 ShowReadMe();
             }
         }));
-
-        public AsyncRelayCommand SpotifySetLanguage => spotifySetLanguage ?? (spotifySetLanguage = new AsyncRelayCommand(async () =>
-        {
-            SpotifySetLanguage.NotifyCanExecuteChanged();
-
-            List<string> prefFileList = new List<string>();
-
-            try
-            {
-                var storePackageFolder = await ApplicationHelper.TryGetPackageFromAppUserModelIdAsync("SpotifyAB.SpotifyMusic_zpdnekdrzrea0");
-                if (storePackageFolder != null)
-                {
-                    var folder = ApplicationHelper.GetAppDataFolderLocation(storePackageFolder);
-
-                    if (!string.IsNullOrEmpty(folder))
-                    {
-                        var filePath = System.IO.Path.Combine(folder, "LocalState", "Spotify", "prefs");
-                        if (System.IO.File.Exists(filePath))
-                        {
-                            prefFileList.Add(filePath);
-                        }
-                    }
-                }
-            }
-            catch (Exception ex)
-            {
-                HotLyric.Win32.Utils.LogHelper.LogError(ex);
-            }
-
-            try
-            {
-                var filePath = System.IO.Path.Combine(
-                    Environment.GetFolderPath(Environment.SpecialFolder.ApplicationData),
-                    "Spotify", "prefs");
-
-                if (System.IO.File.Exists(filePath))
-                {
-                    prefFileList.Add(filePath);
-                }
-            }
-            catch (Exception ex)
-            {
-                HotLyric.Win32.Utils.LogHelper.LogError(ex);
-            }
-
-            var regex = new Regex("language=\".+?\"");
-
-            int failedCount = 0;
-
-            foreach (var file in prefFileList)
-            {
-                try
-                {
-                    using (var fileStream = new FileStream(file, FileMode.Open, FileAccess.ReadWrite, FileShare.None))
-                    {
-                        string content = "";
-                        using (var reader = new StreamReader(fileStream, Encoding.UTF8, true, 1024, leaveOpen: true))
-                        {
-                            content = await reader.ReadToEndAsync();
-                        }
-
-                        bool flag = false;
-                        if (regex.IsMatch(content))
-                        {
-                            var content2 = regex.Replace(content, m => "language=\"zh-CN\"");
-                            flag = content != content2;
-                            content = content2;
-                        }
-                        else
-                        {
-                            flag = true;
-
-                            var sb = new StringBuilder(content);
-                            if (!content.EndsWith("\n"))
-                            {
-                                sb.Append('\n');
-                            }
-                            sb.Append("language=\"zh-CN\"\n");
-                            content = sb.ToString();
-                        }
-
-                        if (flag)
-                        {
-                            fileStream.Seek(0, SeekOrigin.Begin);
-                            using (var writer = new StreamWriter(fileStream, Encoding.UTF8, 1024, leaveOpen: true))
-                            {
-                                await writer.WriteAsync(content);
-                                await writer.FlushAsync();
-                            }
-
-                            fileStream.SetLength(fileStream.Position);
-                        }
-                    }
-                }
-                catch
-                {
-                    failedCount++;
-                }
-            }
-
-            var ownerWindow = App.Current.SettingsView;
-            if (ownerWindow?.XamlWindow?.Visible == true)
-            {
-                var contentDialog = new ContentDialog()
-                {
-                    Title = "热词",
-                    Margin = new Thickness(0, 32, 0, 12),
-                    IsPrimaryButtonEnabled = false,
-                    IsSecondaryButtonEnabled = false,
-                    CloseButtonText = "确定",
-                    CornerRadius = new CornerRadius(8),
-                    XamlRoot = ownerWindow.Content.XamlRoot
-                };
-
-
-                if (failedCount == prefFileList.Count)
-                {
-                    if (prefFileList.Count == 0)
-                    {
-                        contentDialog.Content = "设置失败。未找到Spotify配置文件。";
-                    }
-                    else
-                    {
-                        contentDialog.Content = "设置失败。";
-                    }
-                }
-                else
-                {
-                    contentDialog.Content = "设置成功，请手动重启Spotify。";
-                }
-
-                await contentDialog.ShowAsync();
-            }
-
-        }, () => !SpotifySetLanguage.IsRunning));
 
 
         public HotKeyModels HotKeyModels => hotKeyModels;
@@ -905,6 +776,13 @@ namespace HotLyric.Win32.ViewModels
                 }
             }
         }
+
+        public HttpClientProxyModel? HttpClientProxy
+        {
+            get => httpClientProxy;
+            set => ChangeSettings(ref httpClientProxy, value, HttpClientProxySettingKey);
+        }
+
 
         [return: MaybeNull]
         internal T LoadSetting<T>(string? settingsKey, [AllowNull] T defaultValue = default)
@@ -1001,6 +879,17 @@ namespace HotLyric.Win32.ViewModels
                 HotLyric.Win32.Utils.LogHelper.LogError(ex);
             }
         }
+
+        public AsyncRelayCommand ChangeProxyCmd => (changeProxyCmd ??= new AsyncRelayCommand(async () =>
+        {
+            var dialog = new SetProxyDialog(httpClientProxy);
+            var result = await dialog.ShowModalWindowAsync(new ShowDialogOptions(default, DialogWindowStartupLocation.CenterScreen));
+            if (result == ContentDialogResult.Primary)
+            {
+                HttpClientProxy = dialog.Proxy;
+                HttpClientManager.Proxy = dialog.Proxy?.CreateConfigure();
+            }
+        }));
 
         //public void ShowLauncherWindow()
         //{

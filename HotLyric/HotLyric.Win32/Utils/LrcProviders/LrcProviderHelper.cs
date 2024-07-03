@@ -14,8 +14,6 @@ namespace HotLyric.Win32.Utils.LrcProviders
 {
     internal static class LrcProviderHelper
     {
-        private static HttpClient? client;
-
         private static Regex replaceRegex = new Regex("(-|\\(|\\)|/|\\\\|&)");
         private static Regex replaceSpaceRegex = new Regex("(\\s{2,})");
 
@@ -147,14 +145,7 @@ namespace HotLyric.Win32.Utils.LrcProviders
 
         public static async Task<string> TryGetStringAsync(string uri, string referer, CancellationToken cancellationToken)
         {
-            if (client == null)
-            {
-                var handler = new HttpClientHandler()
-                {
-                    UseProxy = false
-                };
-                client = new HttpClient(handler);
-            }
+            var client = HttpClientManager.CreateClient();
 
             try
             {

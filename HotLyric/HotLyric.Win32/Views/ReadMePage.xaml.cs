@@ -5,6 +5,7 @@ using System.Net.Http;
 using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
+using HotLyric.Win32.Utils;
 using HotLyric.Win32.ViewModels;
 using Microsoft.UI.Xaml.Controls;
 using Microsoft.UI.Xaml.Media.Imaging;
@@ -15,7 +16,6 @@ namespace HotLyric.Win32.Views
 {
     public partial class ReadMePage : Page
     {
-        private static HttpClient? client;
         private static string? readMeContent;
         private CancellationTokenSource? cts;
 
@@ -32,10 +32,7 @@ namespace HotLyric.Win32.Views
 
         private async void ReadMePage_Loaded(object sender, Microsoft.UI.Xaml.RoutedEventArgs e)
         {
-            if (client == null)
-            {
-                client = new HttpClient();
-            }
+            var client = HttpClientManager.CreateClient();
 
             if (cts == null)
             {
@@ -84,10 +81,7 @@ namespace HotLyric.Win32.Views
         {
             if (string.IsNullOrEmpty(readMeContent))
             {
-                if (client == null)
-                {
-                    client = new HttpClient();
-                }
+                var client = HttpClientManager.CreateClient();
 
                 try
                 {

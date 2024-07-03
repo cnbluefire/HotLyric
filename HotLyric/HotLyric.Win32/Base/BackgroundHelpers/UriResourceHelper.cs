@@ -1,4 +1,5 @@
-﻿using System;
+﻿using HotLyric.Win32.Utils;
+using System;
 using System.Collections.Generic;
 using System.IO;
 using System.Linq;
@@ -12,8 +13,6 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
 {
     internal static class UriResourceHelper
     {
-        private static HttpClient? httpClient;
-
         public static async Task<IRandomAccessStream> GetStreamAsync(Uri uri, CancellationToken cancellationToken)
         {
             switch (uri.Scheme.ToLowerInvariant())
@@ -35,11 +34,7 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
                 case "https":
                 case "ftp":
                     {
-                        if (httpClient == null)
-                        {
-                            httpClient = new HttpClient();
-                        }
-
+                        var httpClient = HttpClientManager.CreateClient();
                         using var webStream = await httpClient.GetStreamAsync(uri, cancellationToken);
                         var memoryStream = new MemoryStream();
 

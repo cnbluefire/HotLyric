@@ -1,5 +1,6 @@
 ﻿using BlueFire.Toolkit.WinUI3.Extensions;
 using HotLyric.Win32.Controls;
+using HotLyric.Win32.Models;
 using HotLyric.Win32.Utils;
 using HotLyric.Win32.ViewModels;
 using Microsoft.UI;
@@ -34,6 +35,13 @@ namespace HotLyric.Win32.Views
         private void ResetHotKeyButton_Click(object sender, RoutedEventArgs e)
         {
             VM.HotKeyModels.ResetToDefaultSettings();
+        }
+
+        public string MapProxyModelToString(HttpClientProxyModel? proxyModel)
+        {
+            if (proxyModel == null || proxyModel.IsNoProxy) return "不使用代理";
+            else if (proxyModel.IsDefaultProxy) return "使用系统代理";
+            return "自定义代理";
         }
     }
 }

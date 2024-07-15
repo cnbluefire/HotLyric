@@ -21,6 +21,7 @@ v1.3.0 后从 wpf 移植到 winui3 框架。由于winui3框架还远远谈不上
 |[QQ音乐 UWP](https://www.microsoft.com/store/productId/9WZDNCRFJ1Q1)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup> 无法获取歌曲信息<sup><a href="#ref4">4</a></sup>
 |[媒体播放器（Groove 音乐）](https://www.microsoft.com/store/productId/9WZDNCRFJ3PT)|歌词可能匹配不准确<sup><a href="#ref1">1</a>
 |[Foobar2000 (v1.5.1+)](https://www.foobar2000.org/)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup>
+|[MusicBee (需要第三方插件)](https://getmusicbee.com/)|需要第三方插件<sup><a href="#ref5">5</a></sup> 歌词可能匹配不准确<sup><a href="#ref1">1</a></sup> 无法获取进度<sup><a href="#ref3">3</a></sup>
 |[YesPlayerMusic](https://github.com/qier222/YesPlayMusic)|完全支持（请使用最新版）
 |[Apple Music Preview](https://www.microsoft.com/store/productId/9PFHDD62MXS1)|歌词可能匹配不准确<sup><a href="#ref1">1</a></sup>
 ---
@@ -29,6 +30,7 @@ v1.3.0 后从 wpf 移植到 winui3 框架。由于winui3框架还远远谈不上
 2. <span id="ref2">请使用 [UWP 不更新版](https://github.com/JasonWei512/NetEase-Cloud-Music-UWP-Repack)，微软商店最新版为 Win32 版，非 UWP 版。</span>
 3. <span id="ref3">由于播放器未提供进度信息，热词使用内置定时器更新歌词进度，所以当手动修改播放进度后热词将无法匹配到正确的歌词。</span>
 4. <span id="ref4">可能无法获取到QQ音乐UWP的播放信息，先开启QQ音乐UWP再启动热词可以缓解。</span>
+5. <span id="ref5">MusicBee 需要安装 [mb_MediaControl](https://github.com/LasmGratel/mb_MediaControl/releases) 来与系统 SMTC 交互。</span>
 
 ## 已知问题
 * 移除了倍速播放的支持。

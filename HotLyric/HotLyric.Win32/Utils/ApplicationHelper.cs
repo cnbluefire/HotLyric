@@ -42,11 +42,11 @@ namespace HotLyric.Win32.Utils
 
                             if (appUserModelId.EndsWith("!app", StringComparison.OrdinalIgnoreCase))
                             {
-                                packageId = appUserModelId.Substring(0, appUserModelId.Length - 4);
+                                packageId = appUserModelId[..^4];
                             }
-                            else if (appUserModelId.IndexOf("!") is int index && index >= 0)
+                            else if (appUserModelId.IndexOf('!') is int index && index >= 0)
                             {
-                                packageId = appUserModelId.Substring(0, index);
+                                packageId = appUserModelId[..index];
                             }
                             else
                             {
@@ -250,13 +250,14 @@ namespace HotLyric.Win32.Utils
                     {
                         using (var fileStream = File.OpenRead(path))
                         {
-                            await fileStream.CopyToAsync(stream).WaitAsync(cancellationToken).ConfigureAwait(false);
-                            await stream.FlushAsync().ConfigureAwait(false);
+                            await fileStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+                            await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
                         }
                         return stream;
                     }
                 }
-                else if (string.Equals(logo.Scheme, "file", StringComparison.OrdinalIgnoreCase))
+                else if (string.Equals(logo.Scheme, "http", StringComparison.OrdinalIgnoreCase)
+                    || string.Equals(logo.Scheme, "https", StringComparison.OrdinalIgnoreCase))
                 {
                     if (client == null)
                     {
@@ -268,10 +269,10 @@ namespace HotLyric.Win32.Utils
                     }
 
                     var response = await client.GetAsync(logo, cancellationToken).ConfigureAwait(false);
-                    using (var internetStream = await response.Content.ReadAsStreamAsync().ConfigureAwait(false))
+                    using (var internetStream = await response.Content.ReadAsStreamAsync(cancellationToken).ConfigureAwait(false))
                     {
-                        await internetStream.CopyToAsync(stream).WaitAsync(cancellationToken).ConfigureAwait(false);
-                        await stream.FlushAsync().ConfigureAwait(false);
+                        await internetStream.CopyToAsync(stream, cancellationToken).ConfigureAwait(false);
+                        await stream.FlushAsync(cancellationToken).ConfigureAwait(false);
                     }
 
                     return stream;

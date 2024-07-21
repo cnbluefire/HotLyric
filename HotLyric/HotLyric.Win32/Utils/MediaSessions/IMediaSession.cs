@@ -5,12 +5,13 @@ using System.Windows.Input;
 using Windows.ApplicationModel;
 using Windows.Media.Control;
 using Microsoft.UI.Xaml.Media;
+using HotLyric.Win32.Models.AppConfigurationModels;
 
 namespace HotLyric.Win32.Utils.MediaSessions
 {
     public interface IMediaSession : IDisposable
     {
-        MediaSessionApp App { get; }
+        AppConfigurationModel.MediaSessionAppModel App { get; }
 
         TimeSpan EndTime { get; }
 

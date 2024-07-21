@@ -14,6 +14,8 @@ using System.Windows.Input;
 using Windows.ApplicationModel;
 using Windows.Media.Control;
 using Microsoft.UI.Xaml.Media;
+using HotLyric.Win32.Models.AppConfigurationModels;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 {
@@ -38,7 +40,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         private TimeSpan position;
         private Task? firstUpdateMediaPropertiesTask;
 
-        public YesPlayerMusicSession(GlobalSystemMediaTransportControlsSession session, SMTCApp app)
+        public YesPlayerMusicSession(GlobalSystemMediaTransportControlsSession session, AppConfigurationModel.MediaSessionAppModel app)
         {
             this.session = session ?? throw new ArgumentNullException(nameof(session));
 
@@ -264,20 +266,24 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         public ICommand SkipPreviousCommand => skipPreviousCommand;
         public ICommand SkipNextCommand => skipNextCommand;
 
-        public MediaSessionApp App { get; }
+        public AppConfigurationModel.MediaSessionAppModel App { get; }
 
         public bool IsDisposed => disposedValue;
 
         public Task<string?> GetSessionNameAsync()
         {
-            if (!string.IsNullOrEmpty(App.CustomName)) return Task.FromResult<string?>(App.CustomName);
+            if (!string.IsNullOrEmpty(App.AppInfo?.DisplayName)) return Task.FromResult<string?>(App.AppInfo.DisplayName);
 
-            return Task.FromResult<string?>("YesPlayerMusic");
+            return Task.FromResult<string?>("YesPlayMusic");
         }
 
         public Task<ImageSource?> GetSessionIconAsync()
         {
-            return Task.FromResult(App.CustomAppIcon);
+            if (App.AppInfo?.Icon != null)
+            {
+                return Task.FromResult<ImageSource?>(new BitmapImage(App.AppInfo.Icon));
+            }
+            return Task.FromResult<ImageSource?>(null);
         }
 
         public event EventHandler? PlaybackInfoChanged;

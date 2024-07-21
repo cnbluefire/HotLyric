@@ -1,4 +1,5 @@
-﻿using HotLyric.Win32.Utils.MediaSessions;
+﻿using HotLyric.Win32.Utils.AppConfigurations;
+using HotLyric.Win32.Utils.MediaSessions;
 using Microsoft.Extensions.DependencyInjection;
 using System;
 using System.Collections.Generic;
@@ -21,7 +22,8 @@ namespace HotLyric.Win32.ViewModels
 
         private void ConfigureServices(IServiceCollection services)
         {
-            services.AddSingleton<MediaSessionManagerFactory>();
+            services.AddSingleton<AppConfigurationManager>();
+            services.AddSingleton<MediaSessionAppFactory>();
             services.AddSingleton<LyricWindowViewModel>();
             services.AddSingleton<SettingsWindowViewModel>();
         }

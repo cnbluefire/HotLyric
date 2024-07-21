@@ -88,7 +88,7 @@ namespace HotLyric.Win32.Models
                 return MediaModel.CreateEmptyMedia();
             }
 
-            return new MediaModel(MediaTitle, MediaArtist, NeteaseMusicId, LocalLrcPath, Session.EndTime, Session.App.DefaultLrcProvider, Session.App.ConvertToSimpleChinese);
+            return new MediaModel(MediaTitle, MediaArtist, NeteaseMusicId, LocalLrcPath, Session.EndTime, Session.App.Options.DefaultLrcProvider, Session.App.Options.ConvertToSimpleChinese);
         }
 
         private async void Session_MediaPropertiesChanged(object? sender, EventArgs e)

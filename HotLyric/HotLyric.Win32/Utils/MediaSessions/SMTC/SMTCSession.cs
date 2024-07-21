@@ -10,6 +10,8 @@ using System.Windows.Input;
 using Windows.ApplicationModel;
 using Windows.Media.Control;
 using Microsoft.UI.Xaml.Media;
+using HotLyric.Win32.Models.AppConfigurationModels;
+using Microsoft.UI.Xaml.Media.Imaging;
 
 namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 {
@@ -22,7 +24,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         private GlobalSystemMediaTransportControlsSessionPlaybackInfo? playbackInfo;
         private GlobalSystemMediaTransportControlsSessionTimelineProperties? timelineProperties;
         private TaskCompletionSource<Package?>? packageSource;
-        private SMTCApp app;
+        private AppConfigurationModel.MediaSessionAppModel app;
 
         private SMTCCommand playCommand;
         private SMTCCommand pauseCommand;
@@ -35,19 +37,19 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         public SMTCSession(
             GlobalSystemMediaTransportControlsSession session,
-            SMTCApp app) :
+            AppConfigurationModel.MediaSessionAppModel app) :
             this(new[] { session }, app)
         { }
 
         public SMTCSession(
             IReadOnlyList<GlobalSystemMediaTransportControlsSession> sessions,
-            SMTCApp app)
+            AppConfigurationModel.MediaSessionAppModel app)
         {
             if (sessions == null || sessions.Count == 0 || sessions.Any(c => c == null))
                 throw new ArgumentNullException(nameof(sessions));
 
             this.sessions = sessions.ToArray();
-            PositionMode = app.PositionMode;
+            PositionMode = app.Options.PositionMode;
             this.app = app;
             appUserModelId = sessions[0].SourceAppUserModelId;
 
@@ -81,13 +83,13 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             UpdateTimelineProperties();
             UpdatePlaybackInfo();
 
-            if (PositionMode == SMTCAppPositionMode.FromAppAndUseTimer || PositionMode == SMTCAppPositionMode.OnlyUseTimer)
+            if (PositionMode == MediaSessionPositionMode.FromAppAndUseTimer || PositionMode == MediaSessionPositionMode.OnlyUseTimer)
             {
                 internalPositionTimer = new Timer(300);
 
                 internalPositionTimer.Elapsed += InternalPositionTimer_Elapsed;
 
-                if (PositionMode == SMTCAppPositionMode.OnlyUseTimer)
+                if (PositionMode == MediaSessionPositionMode.OnlyUseTimer)
                 {
                     lastUpdatePositionTime = DateTime.Now;
                     UpdateInternalTimerState();
@@ -98,7 +100,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         private void InternalPositionTimer_Elapsed(object? sender, ElapsedEventArgs? e)
         {
             var pos = TimeSpan.FromSeconds((DateTime.Now - lastUpdatePositionTime).TotalSeconds * PlaybackRate + lastPosition.TotalSeconds);
-            if (PositionMode == SMTCAppPositionMode.OnlyUseTimer
+            if (PositionMode == MediaSessionPositionMode.OnlyUseTimer
                 || pos >= StartTime && pos <= EndTime)
             {
                 Position = pos;
@@ -131,7 +133,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             timelineProperties = sender.GetTimelineProperties();
             UpdateInternalTimerState();
 
-            if (PositionMode != SMTCAppPositionMode.OnlyUseTimer)
+            if (PositionMode != MediaSessionPositionMode.OnlyUseTimer)
             {
                 UpdateTimelineProperties();
                 PlaybackInfoChanged?.Invoke(this, EventArgs.Empty);
@@ -147,7 +149,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         private void Session_MediaPropertiesChanged(GlobalSystemMediaTransportControlsSession sender, MediaPropertiesChangedEventArgs args)
         {
-            if (PositionMode == SMTCAppPositionMode.OnlyUseTimer)
+            if (PositionMode == MediaSessionPositionMode.OnlyUseTimer)
             {
                 lastPosition = TimeSpan.Zero;
                 lastUpdatePositionTime = DateTime.Now;
@@ -167,7 +169,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 EndTime = timelineProperties.EndTime;
                 Position = timelineProperties.Position;
 
-                if (PositionMode != SMTCAppPositionMode.OnlyUseTimer)
+                if (PositionMode != MediaSessionPositionMode.OnlyUseTimer)
                 {
                     lastUpdatePositionTime = DateTime.Now;
                     lastPosition = Position;
@@ -179,7 +181,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 EndTime = TimeSpan.Zero;
                 Position = TimeSpan.Zero;
 
-                if (PositionMode != SMTCAppPositionMode.OnlyUseTimer)
+                if (PositionMode != MediaSessionPositionMode.OnlyUseTimer)
                 {
                     lastUpdatePositionTime = default;
                     lastPosition = TimeSpan.Zero;
@@ -251,7 +253,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                         mediaProperties = await session?.TryGetMediaPropertiesAsync();
 
                         if (disposedValue) break;
-                        
+
                         if (mediaProperties != null && !string.IsNullOrEmpty(mediaProperties.Title))
                         {
                             break;
@@ -297,17 +299,27 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         public ICommand SkipPreviousCommand => skipPreviousCommand;
         public ICommand SkipNextCommand => skipNextCommand;
 
-        public SMTCAppPositionMode PositionMode { get; }
+        public MediaSessionPositionMode PositionMode { get; }
 
-        MediaSessionApp IMediaSession.App => app;
-
-        public SMTCApp App => app;
+        public AppConfigurationModel.MediaSessionAppModel App => app;
 
         public bool IsDisposed => disposedValue;
 
         private MediaSessionMediaProperties? CreateMediaProperties(GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties)
         {
-            return App.CreateMediaPropertiesAction?.Invoke(mediaProperties);
+            switch (app.Options.MediaPropertiesMode)
+            {
+                case MediaPropertiesMode.NCMClient:
+                    return NCMClientCreateMediaProperties(mediaProperties);
+
+                case MediaPropertiesMode.AppleMusic:
+                    return AppleMusicCreateMediaProperties(mediaProperties);
+
+                default:
+                case MediaPropertiesMode.Default:
+                    return DefaultCreateMediaProperties(mediaProperties);
+
+            }
         }
 
         private async Task<Package?> GetAppPackageAsync()
@@ -325,7 +337,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         public async Task<string?> GetSessionNameAsync()
         {
-            if (!string.IsNullOrEmpty(App.CustomName)) return App.CustomName;
+            if (!string.IsNullOrEmpty(App.AppInfo?.DisplayName)) return App.AppInfo.DisplayName;
 
             var package = await GetAppPackageAsync();
             return package?.DisplayName;
@@ -333,7 +345,10 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         public async Task<ImageSource?> GetSessionIconAsync()
         {
-            if (App.CustomAppIcon != null) return App.CustomAppIcon;
+            if (App.AppInfo?.Icon != null)
+            {
+                return new BitmapImage(App.AppInfo.Icon);
+            }
 
             var package = await GetAppPackageAsync();
             if (package != null)
@@ -403,6 +418,107 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             // 不要更改此代码。请将清理代码放入“Dispose(bool disposing)”方法中
             Dispose(disposing: true);
             GC.SuppressFinalize(this);
+        }
+
+
+        private static MediaSessionMediaProperties? DefaultCreateMediaProperties(GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties)
+        {
+            if (mediaProperties == null) return null;
+
+            var genres = mediaProperties.Genres?.ToArray();
+
+            return new MediaSessionMediaProperties(
+                mediaProperties.AlbumArtist,
+                mediaProperties.AlbumTitle,
+                mediaProperties.AlbumTrackCount,
+                mediaProperties.Artist,
+                "",
+                "",
+                genres ?? Array.Empty<string>(),
+                mediaProperties.Subtitle,
+                mediaProperties.Title,
+                mediaProperties.TrackNumber);
+        }
+
+        private static MediaSessionMediaProperties? AppleMusicCreateMediaProperties(GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties)
+        {
+            if (mediaProperties == null) return null;
+
+            var albumArtist = mediaProperties.AlbumArtist;
+            var arr = albumArtist.Split(" — ");
+
+            var artist = mediaProperties.Artist;
+            var album = mediaProperties.Title;
+
+            if (arr.Length >= 2)
+            {
+                if (string.IsNullOrEmpty(artist)) artist = arr[0];
+                if (string.IsNullOrEmpty(album)) album = arr[1];
+            }
+            else if (string.IsNullOrEmpty(artist))
+            {
+                artist = albumArtist;
+            }
+
+            var genres = mediaProperties.Genres?.ToArray();
+
+            return new MediaSessionMediaProperties(
+                albumArtist,
+                album,
+                mediaProperties.AlbumTrackCount,
+                artist,
+                "",
+                "",
+                genres ?? Array.Empty<string>(),
+                mediaProperties.Subtitle,
+                mediaProperties.Title,
+                mediaProperties.TrackNumber);
+        }
+        private static MediaSessionMediaProperties? NCMClientCreateMediaProperties(GlobalSystemMediaTransportControlsSessionMediaProperties? mediaProperties)
+        {
+            if (mediaProperties == null) return null;
+
+            int skip = 0;
+
+            var neteaseMusicId = string.Empty;
+            var localLrcPath = string.Empty;
+
+            var genres = mediaProperties.Genres?.ToArray();
+
+            if (genres != null)
+            {
+                if (genres.Length > 0 && genres[0]?.StartsWith("ncm-", StringComparison.OrdinalIgnoreCase) == true)
+                {
+                    neteaseMusicId = genres[0].Substring(4);
+                    skip++;
+                }
+
+                if (genres.Length > 1
+                    && !string.IsNullOrEmpty(genres[1])
+                    && genres[1].Trim() is string path
+                    && !System.IO.Path.IsPathRooted(path))
+                {
+                    localLrcPath = path;
+                    skip++;
+                }
+            }
+
+            if (skip > 0)
+            {
+                genres = genres?.Skip(skip).ToArray();
+            }
+
+            return new MediaSessionMediaProperties(
+                mediaProperties.AlbumArtist,
+                mediaProperties.AlbumTitle,
+                mediaProperties.AlbumTrackCount,
+                mediaProperties.Artist,
+                neteaseMusicId,
+                localLrcPath,
+                genres ?? Array.Empty<string>(),
+                mediaProperties.Subtitle,
+                mediaProperties.Title,
+                mediaProperties.TrackNumber);
         }
     }
 }

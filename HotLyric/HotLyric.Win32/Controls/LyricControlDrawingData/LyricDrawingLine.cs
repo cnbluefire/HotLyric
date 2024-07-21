@@ -39,6 +39,11 @@ namespace HotLyric.Win32.Controls.LyricControlDrawingData
             float strokeWidth,
             LyricDrawingLineTextSizeType textSizeType)
         {
+            if (string.IsNullOrEmpty(fontFamily))
+            {
+                fontFamily = "SYSTEM-UI";
+            }
+
             this.resourceCreator = resourceCreator;
             StrokeWidth = strokeWidth;
             TextSizeType = textSizeType;

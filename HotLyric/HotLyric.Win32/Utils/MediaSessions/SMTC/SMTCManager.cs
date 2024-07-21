@@ -1,4 +1,6 @@
-﻿using System;
+﻿using HotLyric.Win32.Models.AppConfigurationModels;
+using HotLyric.Win32.Utils.AppConfigurations;
+using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Text;
@@ -11,20 +13,17 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
     public class SMTCManager : IDisposable
     {
         private bool disposedValue;
-
+        private readonly MediaSessionAppFactory mediaSessionAppFactory;
         private GlobalSystemMediaTransportControlsSessionManager manager;
-        private readonly IReadOnlyList<SMTCApp> supportedApps;
         private ISMTCSession[]? sessions;
         private ISMTCSession? curSession;
-        private Task initSessionTask;
 
-        private SMTCManager(GlobalSystemMediaTransportControlsSessionManager manager, IReadOnlyList<SMTCApp> supportedApps)
+        private SMTCManager(MediaSessionAppFactory mediaSessionAppFactory, GlobalSystemMediaTransportControlsSessionManager manager)
         {
+            this.mediaSessionAppFactory = mediaSessionAppFactory;
             this.manager = manager ?? throw new ArgumentNullException(nameof(manager));
-            this.supportedApps = supportedApps;
 
             manager.SessionsChanged += Manager_SessionsChanged;
-            initSessionTask = UpdateSessionsAsync();
         }
 
         private async void Manager_SessionsChanged(GlobalSystemMediaTransportControlsSessionManager sender, SessionsChangedEventArgs args)
@@ -33,47 +32,21 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             SessionsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private async Task UpdateSessionsAsync()
+        private async Task UpdateSessionsAsync(CancellationToken cancellationToken = default)
         {
             var list = new List<ISMTCSession>();
             var appIdHash = new HashSet<string>();
 
             var tmp = manager.GetSessions().ToArray();
-            var tmp2 = new List<(SMTCApp, List<GlobalSystemMediaTransportControlsSession>)>();
 
-            foreach (var session in tmp)
-            {
-                var sessionApp = await GetAppAsync(session);
-                if (sessionApp != null)
-                {
-                    if (sessionApp.PackageFamilyNamePrefix == "903DB504.12708F202F598_"
-                        || sessionApp.PackageFamilyNamePrefix == "903DB504.QQWP_")
-                    {
-                        // QQ音乐创造性的使用两个GSMTC来控制音乐
-                        // 一个用来提供媒体信息，一个用来提供时间轴信息
-                        var list2 = tmp2.FirstOrDefault(c => c.Item1.PackageFamilyNamePrefix == sessionApp.PackageFamilyNamePrefix).Item2;
-                        if (list2 != null)
-                        {
-                            list2.Add(session);
-                        }
-                        else
-                        {
-                            tmp2.Add((sessionApp, new List<GlobalSystemMediaTransportControlsSession>() { session }));
-                        }
-                    }
-                    else
-                    {
-                        tmp2.Add((sessionApp, new List<GlobalSystemMediaTransportControlsSession>() { session }));
-                    }
-                }
-            }
+            var pairs = await mediaSessionAppFactory.GetAppSessionPairs(tmp, cancellationToken);
 
             var curSession = manager.GetCurrentSession();
-            var curApp = tmp2.FirstOrDefault(c => c.Item2?.Contains(curSession) == true);
+            var curApp = pairs.FirstOrDefault(c => c.sessions.Contains(curSession));
 
-            if (curApp.Item1 != null)
+            if (curApp.appModel != null)
             {
-                var s = CreateMediaSession(curApp.Item2, curApp.Item1, sessions);
+                var s = CreateMediaSession(curApp.sessions, curApp.appModel, sessions);
 
                 list.Add(s);
                 appIdHash.Add(curSession.SourceAppUserModelId);
@@ -84,7 +57,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 this.curSession = null;
             }
 
-            foreach (var (app2, sessionGroup) in tmp2)
+            foreach (var (app2, sessionGroup) in pairs)
             {
                 if (app2 != null && appIdHash.Add(sessionGroup[0].SourceAppUserModelId))
                 {
@@ -102,62 +75,16 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             }
         }
 
-        private ISMTCSession CreateMediaSession(IReadOnlyList<GlobalSystemMediaTransportControlsSession> sessionGroup, SMTCApp app, IReadOnlyList<ISMTCSession>? oldSessions)
+        private ISMTCSession CreateMediaSession(IReadOnlyList<GlobalSystemMediaTransportControlsSession> sessionGroup, AppConfigurationModel.MediaSessionAppModel app, IReadOnlyList<ISMTCSession>? oldSessions)
         {
             var result = oldSessions?.FirstOrDefault(c => sessionGroup.Contains(c.Session));
             if (result != null) return result;
 
-            if (app.AppId == "com.electron.yesplaymusic" || app.AppId == "YesPlayMusic.exe")
+            if (app.SessionType == MediaSessionType.YesPlayMusic)
             {
                 return new YesPlayerMusicSession(sessionGroup[0], app);
             }
             return new SMTCSession(sessionGroup, app);
-        }
-
-        private async Task<SMTCApp?> GetAppAsync(GlobalSystemMediaTransportControlsSession session)
-        {
-            if (session == null) return null;
-
-            string appid = "";
-            try
-            {
-                appid = session.SourceAppUserModelId;
-            }
-            catch (Exception ex)
-            {
-                HotLyric.Win32.Utils.LogHelper.LogError(ex);
-                return null;
-            }
-
-            foreach (var item in supportedApps)
-            {
-                if (appid.StartsWith(item.PackageFamilyNamePrefix, StringComparison.OrdinalIgnoreCase))
-                {
-                    if (item.MinSupportedVersion != null)
-                    {
-                        var package = await ApplicationHelper.TryGetPackageFromAppUserModelIdAsync(appid);
-                        if (package != null)
-                        {
-                            try
-                            {
-                                var v = package.Id.Version;
-                                var packageVersion = new Version(v.Major, v.Minor, v.Build, v.Revision);
-                                if (packageVersion >= item.MinSupportedVersion) return item;
-                            }
-                            catch (Exception ex)
-                            {
-                                HotLyric.Win32.Utils.LogHelper.LogError(ex);
-                            }
-                        }
-                    }
-                    else
-                    {
-                        return item;
-                    }
-                }
-            }
-
-            return null;
         }
 
         public ISMTCSession? CurrentSession => curSession;
@@ -203,17 +130,12 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             GC.SuppressFinalize(this);
         }
 
-        public static async Task<SMTCManager> CreateAsync(IReadOnlyList<SMTCApp> supportedApps, CancellationToken cancellationToken = default)
+        public static async Task<SMTCManager> CreateAsync(MediaSessionAppFactory mediaSessionAppFactory, CancellationToken cancellationToken = default)
         {
-            if (supportedApps is null || supportedApps.Count == 0)
-            {
-                throw new ArgumentNullException(nameof(supportedApps));
-            }
-
             var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync().AsTask(cancellationToken);
 
-            var smtcManager = new SMTCManager(manager, supportedApps);
-            await smtcManager.initSessionTask.ConfigureAwait(false);
+            var smtcManager = new SMTCManager(mediaSessionAppFactory, manager);
+            await smtcManager.UpdateSessionsAsync(cancellationToken);
 
             return smtcManager;
         }

@@ -1,0 +1,161 @@
+{
+    "$schema": "https://raw.githubusercontent.com/cnbluefire/HotLyric.Configuration/main/schema/hotlyric-configuration-schema.json",
+    "mediaSessionApps": [
+        {
+            "appId": "hyplayer",
+            "sessionType": "SMTC_PackagedApp",
+            "appInfo": {
+                "msStoreProductId": "9n5td916686k",
+                "icon": "assets/HyPlayerIcon.png"
+            },
+            "match": {
+                "regex": "^48848aaaaaaccd\\.HyPlayer_"
+            },
+            "options": {
+                "positionMode": "fromApp",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "NCMClient"
+            }
+        },
+        {
+            "appId": "lyricease",
+            "sessionType": "SMTC_PackagedApp",
+            "appInfo": {
+                "msStoreProductId": "9n1mkdf0f4gt",
+                "icon": "assets/LyricEaseIcon.png"
+            },
+            "match": {
+                "regex": "^17588BrandonWong\\.LyricEase_"
+            },
+            "options": {
+                "positionMode": "fromApp",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "NCMClient"
+            }
+        },
+        {
+            "appId": "neteasemusic_uwp",
+            "sessionType": "SMTC_PackagedApp",
+            "appInfo": {
+                "msStoreProductId": "9nblggh6g0jf"
+            },
+            "match": {
+                "regex": "^1F8B0F94\\.122165AE053F_"
+            },
+            "options": {
+                "positionMode": "onlyUseTimer",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "Default"
+            }
+        },
+        {
+            "appId": "qqmusic_uwp",
+            "sessionType": "SMTC_PackagedApp",
+            "appInfo": {
+                "msStoreProductId": "9wzdncrfj1q1"
+            },
+            "match": {
+                "regex": "^903DB504\\.QQWP_"
+            },
+            "options": {
+                "positionMode": "fromApp",
+                "defaultLrcProvider": "QQMusic",
+                "mediaPropertiesMode": "Default"
+            }
+        },
+        {
+            "appId": "qqmusic_preview_uwp",
+            "sessionType": "SMTC_PackagedApp",
+            "match": {
+                "regex": "^903DB504\\.12708F202F598_"
+            },
+            "options": {
+                "positionMode": "fromApp",
+                "defaultLrcProvider": "QQMusic",
+                "mediaPropertiesMode": "Default"
+            }
+        },
+        {
+            "appId": "groove",
+            "sessionType": "SMTC_PackagedApp",
+            "appInfo": {
+                "msStoreProductId": "9wzdncrfj3pt"
+            },
+            "match": {
+                "regex": "^Microsoft\\.ZuneMusic_",
+                "minSupportedVersion": "11.2111.0.0"
+            },
+            "options": {
+                "positionMode": "fromAppAndUseTimer",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "Default"
+            }
+        },
+        {
+            "appId": "groove_old",
+            "sessionType": "SMTC_PackagedApp",
+            "appInfo": {
+                "msStoreProductId": "9wzdncrfj3pt"
+            },
+            "match": {
+                "regex": "^Microsoft\\.ZuneMusic_",
+                "minSupportedVersion": "11.2111.0.0"
+            },
+            "options": {
+                "positionMode": "onlyUseTimer",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "Default"
+            }
+        },
+        {
+            "appId": "foobar2000",
+            "sessionType": "SMTC_UnPackagedApp",
+            "appInfo": {
+                "displayName": "Foobar2000",
+                "icon": "assets/Foobar2kIcon.png"
+            },
+            "match": {
+                "regex": "^foobar2000\\.exe$"
+            },
+            "options": {
+                "positionMode": "onlyUseTimer",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "Default"
+            }
+        },
+        {
+            "appId": "yesplaymusic",
+            "sessionType": "YesPlayMusic",
+            "appInfo": {
+                "displayName": "YesPlayMusic",
+                "icon": "assets/YesPlayMusicIcon.png"
+            },
+            "match": {
+                "regex": "^com\\.electron\\.yesplaymusic$"
+            },
+            "options": {
+                "mediaInfoServer": "http://127.0.0.1:27232",
+                "positionMode": "fromApp",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "Default"
+            }
+        },
+        {
+            "appId": "yesplaymusic_portable",
+            "sessionType": "YesPlayMusic",
+            "appInfo": {
+                "displayName": "YesPlayMusic",
+                "icon": "assets/YesPlayMusicIcon.png"
+            },
+            "match": {
+                "regex": "^YesPlayMusic\\.exe$"
+            },
+            "options": {
+                "mediaInfoServer": "http://127.0.0.1:27232",
+                "positionMode": "fromApp",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "Default"
+            }
+        }
+    ]
+}

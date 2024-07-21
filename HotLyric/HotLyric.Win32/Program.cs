@@ -15,7 +15,7 @@ namespace HotLyric.Win32
         {
             var instance = Microsoft.Windows.AppLifecycle.AppInstance.FindOrRegisterForKey("HotLyric_BEC7FAA5-5F6F-4A8D-AC14-79048C8F214B");
             var activatedArgs = Microsoft.Windows.AppLifecycle.AppInstance.GetCurrent().GetActivatedEventArgs();
-            
+
             if (instance.IsCurrent)
             {
                 instance.Activated += App.Instance_Activated;

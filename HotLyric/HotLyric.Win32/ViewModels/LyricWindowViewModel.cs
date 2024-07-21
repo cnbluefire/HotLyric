@@ -20,20 +20,21 @@ using Windows.UI.Xaml;
 using Microsoft.UI.Xaml;
 using HotLyric.Win32.Controls.LyricControlDrawingData;
 using HotLyric.Win32.Base;
+using HotLyric.Win32.Utils.AppConfigurations;
 
 namespace HotLyric.Win32.ViewModels
 {
     public partial class LyricWindowViewModel : ObservableObject
     {
-        private readonly MediaSessionManagerFactory smtcFactory;
+        private readonly MediaSessionAppFactory mediaSessionAppFactory;
         private readonly SettingsWindowViewModel settingVm;
         private SMTCManager? smtcManager;
         private ISMTCSession[]? sessions;
         private PowerModeHelper powerModeHelper;
 
-        public LyricWindowViewModel(MediaSessionManagerFactory smtcFactory, SettingsWindowViewModel settingVm)
+        public LyricWindowViewModel(MediaSessionAppFactory mediaSessionAppFactory, SettingsWindowViewModel settingVm)
         {
-            this.smtcFactory = smtcFactory;
+            this.mediaSessionAppFactory = mediaSessionAppFactory;
             this.settingVm = settingVm;
 
             isBackgroundTransientVisible = new DelayValueHolder<bool>(TimeSpan.FromSeconds(3));
@@ -380,7 +381,7 @@ namespace HotLyric.Win32.ViewModels
 
         public ICommand OpenCurrentSessionAppCmd => openCurrentSessionAppCmd ?? (openCurrentSessionAppCmd = new AsyncRelayCommand(async () =>
         {
-            if (SelectedSession?.Session?.App is SMTCApp app && app.SupportLaunch)
+            if (SelectedSession?.Session?.App?.SessionType == Models.AppConfigurationModels.MediaSessionType.SMTC_PackagedApp)
             {
                 var curSessionAUMID = (SelectedSession?.Session as ISMTCSession)?.Session?.SourceAppUserModelId;
                 if (string.IsNullOrEmpty(curSessionAUMID)) return;
@@ -414,7 +415,7 @@ namespace HotLyric.Win32.ViewModels
 
         private async void InitSessions()
         {
-            smtcManager = await smtcFactory.GetManagerAsync();
+            smtcManager = await mediaSessionAppFactory.CreateSMTCManagerAsync();
             if (smtcManager != null)
             {
                 sessions = smtcManager.Sessions.ToArray();
@@ -629,7 +630,7 @@ namespace HotLyric.Win32.ViewModels
         {
             var uri = new Uri("https://github.com/cnbluefire/HotLyric#%E5%AF%B9%E9%83%A8%E5%88%86%E8%BD%AF%E4%BB%B6%E6%8F%90%E4%BE%9B%E6%9C%89%E9%99%90%E6%94%AF%E6%8C%81");
             await Windows.System.Launcher.LaunchUriAsync(uri);
-        }, () => SelectedSession?.Session is SMTCSession session && session.PositionMode == SMTCAppPositionMode.OnlyUseTimer && !OnlyUseTimerHelpCmd.IsRunning));
+        }, () => SelectedSession?.Session is SMTCSession session && session.PositionMode == Models.AppConfigurationModels.MediaSessionPositionMode.OnlyUseTimer && !OnlyUseTimerHelpCmd.IsRunning));
 
         public bool OnlyUseTimerHelpButtonVisible => OnlyUseTimerHelpCmd.CanExecute(null);
 

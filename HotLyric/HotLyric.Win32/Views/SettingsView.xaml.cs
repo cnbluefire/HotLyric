@@ -92,6 +92,10 @@ namespace HotLyric.Win32.Views
                     ContentFrame.Navigate(typeof(ThemeSettingsPage), null, new DrillInNavigationTransitionInfo());
                     break;
 
+                case "AppConfigurationSettings":
+                    ContentFrame.Navigate(typeof(AppConfigurationSettingsPage), null, new DrillInNavigationTransitionInfo());
+                    break;
+
                 case "MiscSettings":
                     ContentFrame.Navigate(typeof(MiscSettingsPage), null, new DrillInNavigationTransitionInfo());
                     break;

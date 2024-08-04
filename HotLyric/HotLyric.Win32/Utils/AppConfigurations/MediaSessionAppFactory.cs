@@ -23,7 +23,7 @@ namespace HotLyric.Win32.Utils.AppConfigurations
         public async Task<IReadOnlyList<AppConfigurationModel.MediaSessionAppModel>> GetAllAppsAsync(CancellationToken cancellationToken = default)
         {
             var config = await appConfigurationManager.GetLocalConfigurationAsync(cancellationToken);
-            return config.MediaSessionApps;
+            return config.AppConfiguration.MediaSessionApps;
         }
 
         public async Task<IReadOnlyList<(AppConfigurationModel.MediaSessionAppModel appModel, IReadOnlyList<GlobalSystemMediaTransportControlsSession> sessions)>> GetAppSessionPairs(

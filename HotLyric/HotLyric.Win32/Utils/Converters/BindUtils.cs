@@ -21,6 +21,10 @@ namespace HotLyric.Win32.Utils.Converters
 
         public static Visibility NotVisible(bool value) => Visible(!value);
 
+        public static Visibility VisibleIfEmpty(string text) => string.IsNullOrEmpty(text) ? Visibility.Visible : Visibility.Collapsed;
+
+        public static Visibility VisibleIfNotEmpty(string text) => string.IsNullOrEmpty(text) ? Visibility.Collapsed : Visibility.Visible;
+
         public static string HotKeyTip(HotKeyModel? hotKeyModel)
         {
             if (hotKeyModel == null) return "";

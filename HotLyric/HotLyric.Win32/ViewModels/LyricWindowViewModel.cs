@@ -28,14 +28,30 @@ namespace HotLyric.Win32.ViewModels
     {
         private readonly MediaSessionAppFactory mediaSessionAppFactory;
         private readonly SettingsWindowViewModel settingVm;
+        private readonly AppConfigurationManager appConfigManager;
         private SMTCManager? smtcManager;
         private ISMTCSession[]? sessions;
         private PowerModeHelper powerModeHelper;
 
-        public LyricWindowViewModel(MediaSessionAppFactory mediaSessionAppFactory, SettingsWindowViewModel settingVm)
+        public LyricWindowViewModel(
+            MediaSessionAppFactory mediaSessionAppFactory,
+            SettingsWindowViewModel settingVm,
+            AppConfigurationManager appConfigManager)
         {
             this.mediaSessionAppFactory = mediaSessionAppFactory;
             this.settingVm = settingVm;
+            this.appConfigManager = appConfigManager;
+
+            appConfigManager.ConfigurationChanged += (s, a) =>
+            {
+                App.DispatcherQueue.TryEnqueue(async () =>
+                {
+                    if (smtcManager != null)
+                    {
+                        await smtcManager.UpdateSessionAsync();
+                    }
+                });
+            };
 
             isBackgroundTransientVisible = new DelayValueHolder<bool>(TimeSpan.FromSeconds(3));
             isBackgroundTransientVisible.ValueChanged += (s, a) =>

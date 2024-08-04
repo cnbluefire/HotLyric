@@ -1,4 +1,6 @@
-﻿using HotLyric.Win32.Models.AppConfigurationModels;
+﻿using CommunityToolkit.Mvvm.ComponentModel;
+using DirectN;
+using HotLyric.Win32.Models.AppConfigurationModels;
 using Newtonsoft.Json;
 using System;
 using System.Collections.Generic;
@@ -7,56 +9,202 @@ using System.Text;
 using System.Threading;
 using System.Threading.Tasks;
 using Windows.Storage;
+using static ICSharpCode.SharpZipLib.Zip.ExtendedUnixData;
 
 namespace HotLyric.Win32.Utils.AppConfigurations
 {
     public class AppConfigurationManager
     {
-        private SemaphoreSlim locker = new SemaphoreSlim(1, 1);
+        private static readonly IReadOnlyList<string> DefaultUris = [
+            "https://raw.githubusercontent.com/cnbluefire/HotLyric.Configuration/main/configuration.json",
+            "https://gitee.com/blue-fire/HotLyric.Configuration/raw/main/configuration.json"
+        ];
+
+        private SemaphoreSlim sourceLocker = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim configLocker = new SemaphoreSlim(1, 1);
+        private SemaphoreSlim updateConfigLocker = new SemaphoreSlim(1, 1);
 
         private CancellationTokenSource? cancellationTokenSource;
-        private AppConfigurationModel? currentConfiguration;
+        private AppConfigurationModelResult? currentConfiguration;
+
+        #region Sources Manager
+
+        /// <summary>
+        /// 获取所有更新源
+        /// </summary>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<AppConfigurationSourceModel[]> GetSourcesAsync(CancellationToken cancellationToken = default)
+        {
+            await sourceLocker.WaitAsync(cancellationToken);
+
+            try
+            {
+                return await GetSourcesAsyncCore(cancellationToken);
+            }
+            finally
+            {
+                sourceLocker.Release();
+            }
+        }
+
+        private async Task<AppConfigurationSourceModel[]> GetSourcesAsyncCore(CancellationToken cancellationToken = default)
+        {
+            var sources = await AppConfigurationLocalCache.GetValueAsync<AppConfigurationSourceModel[]>("sources", [], cancellationToken);
+            if (sources != null && sources.Length > 0)
+            {
+                return sources;
+            }
+            return [new() { Uri = DefaultUris[0], Enabled = true },
+                new() { Uri = DefaultUris[1], Enabled = true },];
+        }
+
+        /// <summary>
+        /// 更新源列表
+        /// </summary>
+        /// <param name="sources"></param>
+        /// <param name="cancellationToken"></param>
+        /// <returns></returns>
+        public async Task<AppConfigurationSourceModel[]?> SetSourcesAsync(AppConfigurationSourceModel[]? sources, CancellationToken cancellationToken = default)
+        {
+            var list = new List<AppConfigurationSourceModel>();
+            if (sources != null && sources.Length > 0)
+            {
+                var hash = new HashSet<string>(StringComparer.OrdinalIgnoreCase);
+                for (int i = sources.Length - 1; i >= 0; i--)
+                {
+                    var uri = sources[i].Uri;
+                    if (!string.IsNullOrEmpty(uri) && hash.Add(uri))
+                    {
+                        list.Add(sources[i]);
+                    }
+                }
+            }
+
+            await sourceLocker.WaitAsync(cancellationToken);
+
+            try
+            {
+                sources = [.. list.Reverse<AppConfigurationSourceModel>()];
+                var flag = await AppConfigurationLocalCache.SetValueAsync("sources", sources, cancellationToken);
+
+                if (flag)
+                {
+                    return sources;
+                }
+
+                return null;
+            }
+            finally
+            {
+                sourceLocker.Release();
+            }
+        }
+
+        public async Task<AppConfigurationSourceModel[]?> ResetSourcesAsync(CancellationToken cancellationToken = default)
+        {
+            return await SetSourcesAsync(null, cancellationToken).ConfigureAwait(false);
+        }
+
+        #endregion Sources Manager
+
 
         /// <summary>
         /// 请求最新配置
         /// </summary>
         /// <returns></returns>
-        public async Task<bool> UpdateConfigurationAsync(string updateSource)
+        public async Task<bool> UpdateConfigurationAsync()
         {
             bool invokeEventFlag = false;
+            bool success = false;
 
-            var source = Interlocked.CompareExchange(ref cancellationTokenSource, null, null);
+            var cancellationSource = Interlocked.CompareExchange(ref cancellationTokenSource, null, null);
 
-            await locker.WaitAsync(source?.Token ?? default);
+            await updateConfigLocker.WaitAsync(cancellationSource?.Token ?? default);
 
-            source = new CancellationTokenSource();
-            Interlocked.Exchange(ref cancellationTokenSource, source);
+            cancellationSource = new CancellationTokenSource(TimeSpan.FromSeconds(20));
+            Interlocked.Exchange(ref cancellationTokenSource, cancellationSource);
 
             try
             {
                 var client = HttpClientManager.CreateClient();
-                var json = await client.GetStringAsync(updateSource, source.Token);
 
-                if (json != null)
-                {
-                    var model = AppConfigurationModel.CreateFromJson(updateSource, json);
-                    if (model != null)
+                var sources = await GetSourcesAsync(cancellationSource.Token);
+
+                var enabledSources = sources
+                    .Where(c => c.Enabled)
+                    .Select(c =>
                     {
-                        var updateModel = new AppConfigurationUpdateJsonModel()
+                        if (Uri.TryCreate(c.Uri, UriKind.Absolute, out var uri)
+                            && uri.Scheme.ToLowerInvariant() switch
+                            {
+                                "http" => true,
+                                "https" => true,
+                                _ => false
+                            })
                         {
-                            UpdateTime = DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                            Source = updateSource
-                        };
-
-                        var oldResult = await AppConfigurationLocalCache.GetCacheAsync(source.Token);
-
-                        var flag = await AppConfigurationLocalCache.SetCacheAsync(updateModel, json);
-                        if (flag)
-                        {
-                            currentConfiguration = model;
+                            return c.Uri;
                         }
+                        return null;
+                    })
+                    .Where(c => !string.IsNullOrEmpty(c))
+                    .OfType<string>()
+                    .ToArray();
 
-                        invokeEventFlag = flag && json != oldResult?.AppConfigurationJson;
+                if (enabledSources.Length > 0)
+                {
+                    var oldResult = await AppConfigurationLocalCache.GetValueAsync<string>("config", null, cancellationSource.Token);
+
+                    var tasks = enabledSources.Select(c => Task.Run(async () =>
+                    {
+                        try
+                        {
+                            var _json = await client.GetStringAsync(c, cancellationSource.Token);
+                            if (!string.IsNullOrEmpty(_json))
+                            {
+                                var _model = AppConfigurationModel.CreateFromJson(c, _json);
+                                if (_model != null)
+                                {
+                                    return new AppConfigurationModelResult(
+                                        _model,
+                                        DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
+                                        c,
+                                        _json);
+                                }
+                            }
+                        }
+                        catch { }
+
+                        return null;
+                    }, cancellationSource.Token));
+
+
+                    var result = await TaskExtensions.WhenAny(tasks, c => c != null);
+
+                    if (result != null)
+                    {
+                        await configLocker.WaitAsync(cancellationSource.Token);
+                        try
+                        {
+
+                            var flag = (await AppConfigurationLocalCache.SetValueAsync("update", new AppConfigurationUpdateJsonModel()
+                            {
+                                Source = result.Source,
+                                UpdateTime = result.UpdateTime
+                            })) | (await AppConfigurationLocalCache.SetValueAsync("config", result.Json));
+
+                            if (flag)
+                            {
+                                success = true;
+                                invokeEventFlag = result.Json != oldResult;
+
+                                currentConfiguration = result;
+                            }
+                        }
+                        finally
+                        {
+                            configLocker.Release();
+                        }
                     }
                 }
             }
@@ -64,7 +212,7 @@ namespace HotLyric.Win32.Utils.AppConfigurations
             finally
             {
                 cancellationTokenSource = null;
-                locker.Release();
+                updateConfigLocker.Release();
             }
 
             if (invokeEventFlag)
@@ -72,7 +220,7 @@ namespace HotLyric.Win32.Utils.AppConfigurations
                 ConfigurationChanged?.Invoke(this, EventArgs.Empty);
             }
 
-            return false;
+            return success;
         }
 
         public bool CancelUpdate()
@@ -88,11 +236,13 @@ namespace HotLyric.Win32.Utils.AppConfigurations
         /// <returns></returns>
         public async Task<bool> RemoveLocalCacheAsync()
         {
-            await locker.WaitAsync();
+            await configLocker.WaitAsync();
 
             try
             {
-                var flag = await AppConfigurationLocalCache.ClearCacheAsync();
+                var flag = (await AppConfigurationLocalCache.SetValueAsync<string>("update", null))
+                    | (await AppConfigurationLocalCache.SetValueAsync<string>("config", null));
+
                 if (flag)
                 {
                     currentConfiguration = null;
@@ -101,7 +251,7 @@ namespace HotLyric.Win32.Utils.AppConfigurations
             }
             finally
             {
-                locker.Release();
+                configLocker.Release();
             }
         }
 
@@ -109,26 +259,27 @@ namespace HotLyric.Win32.Utils.AppConfigurations
         /// 获取当前配置，如果有缓存则读取缓存的，没有缓存则读取安装目录的
         /// </summary>
         /// <returns></returns>
-        public async Task<AppConfigurationModel> GetLocalConfigurationAsync(CancellationToken cancellationToken = default)
+        public async Task<AppConfigurationModelResult> GetLocalConfigurationAsync(CancellationToken cancellationToken = default)
         {
             if (currentConfiguration != null)
                 return currentConfiguration;
 
-            AppConfigurationResult? result;
-
-            await locker.WaitAsync(cancellationToken);
+            await configLocker.WaitAsync(cancellationToken);
 
             try
             {
-                result = await AppConfigurationLocalCache.GetCacheAsync(cancellationToken);
-
-                if (result != null)
+                var updateModel = await AppConfigurationLocalCache.GetValueAsync<AppConfigurationUpdateJsonModel>("update", null, cancellationToken);
+                if (updateModel != null)
                 {
-                    var model = AppConfigurationModel.CreateFromJson(result.UpdateInfo.Source, result.AppConfigurationJson);
-                    if (model != null)
+                    var json = await AppConfigurationLocalCache.GetValueAsync<string>("config", null, cancellationToken);
+
+                    if (!string.IsNullOrEmpty(json))
                     {
-                        currentConfiguration = model;
-                        return model;
+                        var model = AppConfigurationModel.CreateFromJson(updateModel.Source, json);
+                        if (model != null)
+                        {
+                            return (currentConfiguration = new AppConfigurationModelResult(model, updateModel.UpdateTime, updateModel.Source, json));
+                        }
                     }
                 }
 
@@ -137,100 +288,126 @@ namespace HotLyric.Win32.Utils.AppConfigurations
                     var json = await System.IO.File.ReadAllTextAsync(presetJsonFilePath, cancellationToken);
                     var model = AppConfigurationModel.CreateFromJson(presetJsonFilePath, json);
 
-                    currentConfiguration = model;
-                    return model!;
+                    ArgumentNullException.ThrowIfNull(model);
+
+                    return (currentConfiguration = new AppConfigurationModelResult(model, 0, "", ""));
                 }
             }
             finally
             {
-                locker.Release();
+                configLocker.Release();
             }
         }
 
         public event EventHandler? ConfigurationChanged;
 
+
         private static class AppConfigurationLocalCache
         {
-            public static async Task<bool> ClearCacheAsync()
+            public static async Task<T?> GetValueAsync<T>(string key, T? defaultValue, CancellationToken cancellationToken = default)
             {
-                var cacheConfigFolder = System.IO.Path.Combine(ApplicationData.Current.LocalCacheFolder.Path, "config");
-                return await Task.Run(() =>
+                var folder = System.IO.Path.Combine(ApplicationData.Current.LocalCacheFolder.Path, "config");
+
+                if (!key.AsSpan().EndsWith(".json")) key = $"{key}.json";
+
+                var filePath = System.IO.Path.Combine(folder, key);
+
+                return await Task.Run(async () =>
                 {
-                    try
+                    if (System.IO.Path.Exists(filePath))
                     {
-                        if (System.IO.Directory.Exists(cacheConfigFolder))
+                        var json = await System.IO.File.ReadAllTextAsync(filePath, cancellationToken);
+                        if (typeof(T) == typeof(string))
                         {
-                            System.IO.Directory.Delete(cacheConfigFolder, true);
+                            return (T?)(object?)(json) ?? defaultValue;
                         }
-                        return true;
+                        try
+                        {
+                            return JsonConvert.DeserializeObject<T>(json) ?? defaultValue;
+                        }
+                        catch { }
                     }
-                    catch { }
-                    return false;
-                });
+                    return defaultValue;
+                }, cancellationToken);
             }
 
-            public static async Task<bool> SetCacheAsync(AppConfigurationUpdateJsonModel updateInfo, string config)
+            public static async Task<bool> SetValueAsync<T>(string key, T? value, CancellationToken cancellationToken = default)
             {
-                try
+                var folder = System.IO.Path.Combine(ApplicationData.Current.LocalCacheFolder.Path, "config");
+
+                if (!key.AsSpan().EndsWith(".json")) key = $"{key}.json";
+
+                var filePath = System.IO.Path.Combine(folder, key);
+
+                return await Task.Run(async () =>
                 {
-                    var cacheConfigFolder = await ApplicationData.Current.LocalCacheFolder.CreateFolderAsync("config", CreationCollisionOption.OpenIfExists);
-
-                    await Task.WhenAll(
-                        Task.Run(async () =>
-                        {
-                            var updateInfoFile = await cacheConfigFolder.CreateFileAsync("update.json", CreationCollisionOption.ReplaceExisting);
-                            await FileIO.WriteTextAsync(updateInfoFile, JsonConvert.SerializeObject(updateInfo));
-                        }),
-                        Task.Run(async () =>
-                        {
-                            var configFile = await cacheConfigFolder.CreateFileAsync("config.json", CreationCollisionOption.ReplaceExisting);
-                            await FileIO.WriteTextAsync(configFile, config);
-                        }));
-
-                    return true;
-                }
-                catch { }
-
-                return false;
-            }
-
-            public static async Task<AppConfigurationResult?> GetCacheAsync(CancellationToken cancellationToken = default)
-            {
-                var cacheConfigFolder = System.IO.Path.Combine(ApplicationData.Current.LocalCacheFolder.Path, "config");
-                if (System.IO.Directory.Exists(cacheConfigFolder))
-                {
-                    var updateInfoFile = System.IO.Path.Combine(cacheConfigFolder, "update.json");
-                    var configFile = System.IO.Path.Combine(cacheConfigFolder, "config.json");
-
-                    try
+                    if (value is null || value is "")
                     {
-                        string updateInfo = "";
-                        string config = "";
-
-                        await Task.WhenAll(
-                            Task.Run(async () =>
-                            {
-                                if (System.IO.Path.Exists(updateInfoFile)) { updateInfo = await System.IO.File.ReadAllTextAsync(updateInfoFile, cancellationToken); }
-                            }),
-                            Task.Run(async () =>
-                            {
-                                if (System.IO.Path.Exists(configFile)) { config = await System.IO.File.ReadAllTextAsync(configFile, cancellationToken); }
-                            }));
-
-                        if (!string.IsNullOrEmpty(updateInfo) && !string.IsNullOrEmpty(config))
+                        if (System.IO.Path.Exists(filePath))
                         {
-                            try
-                            {
-                                var updateModel = JsonConvert.DeserializeObject<AppConfigurationUpdateJsonModel>(updateInfo);
-                                if (updateModel != null)
-                                {
-                                    return new AppConfigurationResult(updateModel, config);
-                                }
-                            }
+                            try { System.IO.File.Delete(filePath); return true; }
                             catch { }
+                            return false;
+                        }
+                    }
+                    else
+                    {
+                        var json = "";
+                        if (typeof(T) == typeof(string))
+                        {
+                            json = (string)(object)value;
+                        }
+                        else
+                        {
+                            json = JsonConvert.SerializeObject(value);
+                        }
+
+                        try
+                        {
+                            if (!System.IO.Directory.Exists(folder))
+                            {
+                                System.IO.Directory.CreateDirectory(folder);
+                            }
+                            await System.IO.File.WriteAllTextAsync(filePath, json, Encoding.UTF8, cancellationToken);
+                            return true;
+                        }
+                        catch { }
+                    }
+
+                    return false;
+                }, cancellationToken);
+            }
+        }
+
+        private static class TaskExtensions
+        {
+            public static async Task<T?> WhenAny<T>(IEnumerable<Task<T?>> tasks, Func<T?, bool> predicate)
+            {
+                TaskCompletionSource<T?>? tcs = null;
+                var wrappers = tasks.Select(async task =>
+                {
+                    try
+                    {
+                        var c = await task;
+                        if (predicate(c))
+                        {
+                            tcs?.TrySetResult(c);
                         }
                     }
                     catch { }
+                }).ToArray();
+
+                if (wrappers.Length > 0)
+                {
+                    tcs = new TaskCompletionSource<T?>();
+
+                    _ = new Func<Task>(async () =>
+                    {
+                        await Task.WhenAll(wrappers);
+                        tcs.TrySetResult(default);
+                    }).Invoke();
+
+                    return await tcs.Task;
                 }
 
                 return default;
@@ -244,8 +421,13 @@ namespace HotLyric.Win32.Utils.AppConfigurations
             public string Source { get; set; } = "";
         }
 
-        private record class AppConfigurationResult(
-            AppConfigurationUpdateJsonModel UpdateInfo,
-            string AppConfigurationJson);
+        public class AppConfigurationSourceModel : ObservableObject
+        {
+            public string? Uri { get; set; }
+
+            public bool Enabled { get; set; }
+        }
+
+        public record class AppConfigurationModelResult(AppConfigurationModel AppConfiguration, long UpdateTime, string Source, string Json);
     }
 }

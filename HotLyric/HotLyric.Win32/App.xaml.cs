@@ -42,6 +42,8 @@ namespace HotLyric.Win32
 
             _ = CheckUpdateAsync();
 
+            _ = ViewModelLocator.Instance.AppConfigurationSettingsViewModel.UpdateConfigurationAsync();
+
             ViewModelLocator.Instance.SettingsWindowViewModel.TryShowReadMeOnStartup();
 
             HotKeyManager.HotKeyInvoked += HotKeyManager_HotKeyInvoked;

@@ -622,7 +622,6 @@ namespace HotLyric.Win32.ViewModels
                     {
                         Title = "热词",
                         Content = "发现新版本，是否跳转到商店下载？",
-                        Margin = new Thickness(0, 32, 0, 12),
                         IsPrimaryButtonEnabled = true,
                         IsSecondaryButtonEnabled = false,
                         PrimaryButtonText = "是",
@@ -631,7 +630,7 @@ namespace HotLyric.Win32.ViewModels
                         XamlRoot = ownerWindow.Content?.XamlRoot
                     };
 
-                    var result = await contentDialog.ShowAsync();
+                    var result = await contentDialog.ShowModalWindowAsync();
                     if (result == ContentDialogResult.Primary)
                     {
                         _ = updateResult.TryStartUpdateAsync();
@@ -644,7 +643,6 @@ namespace HotLyric.Win32.ViewModels
                     {
                         Title = "热词",
                         Content = "未发现新版本",
-                        Margin = new Thickness(0, 32, 0, 12),
                         IsPrimaryButtonEnabled = true,
                         IsSecondaryButtonEnabled = false,
                         PrimaryButtonText = "确定",
@@ -652,7 +650,7 @@ namespace HotLyric.Win32.ViewModels
                         XamlRoot = ownerWindow.Content?.XamlRoot
                     };
 
-                    await contentDialog.ShowAsync();
+                    await contentDialog.ShowModalWindowAsync();
                 }
             }
             catch (Exception ex)
@@ -704,9 +702,10 @@ namespace HotLyric.Win32.ViewModels
                                     Text = allText,
                                     TextWrapping = TextWrapping.Wrap,
                                     FontSize = 12
-                                }
+                                },
+                                MaxWidth = 600,
+                                MaxHeight = 600,
                             },
-                            Margin = new Thickness(0, 32, 0, 12),
                             IsPrimaryButtonEnabled = true,
                             IsSecondaryButtonEnabled = false,
                             PrimaryButtonText = "确定",
@@ -714,7 +713,7 @@ namespace HotLyric.Win32.ViewModels
                             XamlRoot = ownerWindow.Content?.XamlRoot
                         };
 
-                        await contentDialog.ShowAsync();
+                        await contentDialog.ShowModalWindowAsync();
                     }
                 }
             }
@@ -743,9 +742,8 @@ namespace HotLyric.Win32.ViewModels
                 {
                     Text = "拖拽歌词窗口尺寸即可改变文字大小",
                     TextWrapping = TextWrapping.Wrap,
-                    FontSize = 14
+                    FontSize = 14,
                 },
-                Margin = new Thickness(0, 32, 0, 12),
                 IsPrimaryButtonEnabled = true,
                 IsSecondaryButtonEnabled = true,
                 PrimaryButtonText = "查看更多帮助",
@@ -754,7 +752,7 @@ namespace HotLyric.Win32.ViewModels
             };
 
             contentDialog.XamlRoot = ownerWindow.Content?.XamlRoot;
-            var res = await contentDialog.ShowAsync();
+            var res = await contentDialog.ShowModalWindowAsync();
 
             if (res == ContentDialogResult.Primary)
             {

@@ -26,6 +26,7 @@ namespace HotLyric.Win32.ViewModels
             services.AddSingleton<MediaSessionAppFactory>();
             services.AddSingleton<LyricWindowViewModel>();
             services.AddSingleton<SettingsWindowViewModel>();
+            services.AddSingleton<AppConfigurationSettingsViewModel>();
         }
 
         public LyricWindowViewModel LyricWindowViewModel => this.GetRequiredService<LyricWindowViewModel>();
@@ -33,6 +34,8 @@ namespace HotLyric.Win32.ViewModels
 
         public SettingsWindowViewModel SettingsWindowViewModel => this.GetRequiredService<SettingsWindowViewModel>();
 
+
+        public AppConfigurationSettingsViewModel AppConfigurationSettingsViewModel => this.GetRequiredService<AppConfigurationSettingsViewModel>();
 
         public static ViewModelLocator Instance => (ViewModelLocator)App.Current.Resources["Locator"];
 

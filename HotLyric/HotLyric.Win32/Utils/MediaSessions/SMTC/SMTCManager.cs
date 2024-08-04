@@ -17,6 +17,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         private GlobalSystemMediaTransportControlsSessionManager manager;
         private ISMTCSession[]? sessions;
         private ISMTCSession? curSession;
+        private Task? lastUpdateSessionTask;
 
         private SMTCManager(MediaSessionAppFactory mediaSessionAppFactory, GlobalSystemMediaTransportControlsSessionManager manager)
         {
@@ -28,11 +29,28 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         private async void Manager_SessionsChanged(GlobalSystemMediaTransportControlsSessionManager sender, SessionsChangedEventArgs args)
         {
-            await UpdateSessionsAsync();
+            await UpdateSessionAsync();
             SessionsChanged?.Invoke(this, EventArgs.Empty);
         }
 
-        private async Task UpdateSessionsAsync(CancellationToken cancellationToken = default)
+        public async Task UpdateSessionAsync()
+        {
+            var oldTask = lastUpdateSessionTask;
+            if (oldTask != null)
+            {
+                try
+                {
+                    await oldTask;
+                }
+                catch { }
+            }
+
+            var task = lastUpdateSessionTask = UpdateSessionsAsyncCore();
+            await task;
+            lastUpdateSessionTask = null;
+        }
+
+        private async Task UpdateSessionsAsyncCore(CancellationToken cancellationToken = default)
         {
             var list = new List<ISMTCSession>();
             var appIdHash = new HashSet<string>();
@@ -135,7 +153,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             var manager = await GlobalSystemMediaTransportControlsSessionManager.RequestAsync().AsTask(cancellationToken);
 
             var smtcManager = new SMTCManager(mediaSessionAppFactory, manager);
-            await smtcManager.UpdateSessionsAsync(cancellationToken);
+            await smtcManager.UpdateSessionsAsyncCore(cancellationToken);
 
             return smtcManager;
         }

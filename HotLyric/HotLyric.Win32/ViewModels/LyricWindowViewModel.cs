@@ -674,8 +674,6 @@ namespace HotLyric.Win32.ViewModels
 
         public void UpdatePowerMode()
         {
-            NLog.LogManager.GetCurrentClassLogger().Info($"{powerModeHelper.EffectivePowerMode} {powerModeHelper.BatteryStatus}");
-
             var lowFrameRateMode = settingVm.LowFrameRateMode.SelectedValue ?? ViewModels.LowFrameRateMode.Auto;
             bool enableEfficiencyMode = false;
             bool enableLowFrameRateMode = false;

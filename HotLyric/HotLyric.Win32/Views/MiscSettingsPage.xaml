@@ -161,14 +161,25 @@
 
                 <ContentControl Style="{StaticResource CardStyle}" Margin="0,4,0,0">
                     <Grid HorizontalAlignment="Stretch" Margin="0,12">
-                        <StackPanel Orientation="Vertical" Spacing="8">
-                            <TextBlock Text="修改代理设置" />
-                            <TextBlock Grid.Row="2" Opacity="0.8" FontSize="12"><Run 
-                                Text="当前代理设置为: " /><Run 
-                                Text="{x:Bind MapProxyModelToString(VM.HttpClientProxy),Mode=OneWay,TargetNullValue={x:Null}}" /></TextBlock>
-                        </StackPanel>
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE968;">
+                            <StackPanel Orientation="Vertical" Spacing="8">
+                                <TextBlock Text="修改代理设置" />
+                                <TextBlock Grid.Row="2" Opacity="0.8" FontSize="12"><Run 
+                                           Text="当前代理设置为: " /><Run 
+                                           Text="{x:Bind MapProxyModelToString(VM.HttpClientProxy),Mode=OneWay,TargetNullValue={x:Null}}" /></TextBlock>
+                            </StackPanel>
+                        </ContentControl>
 
                         <Button x:Name="SpotifySetLanguageButton" Content="设置" HorizontalAlignment="Right" Command="{x:Bind VM.ChangeProxyCmd}" />
+                    </Grid>
+                </ContentControl>
+
+                <ContentControl Style="{StaticResource CardStyle}" Margin="0,4,0,0">
+                    <Grid HorizontalAlignment="Stretch" Margin="0,12">
+                        <ContentControl Style="{StaticResource IconTitleStyle}" Tag="&#xE9D9;" Content="启用日志" />
+                        <Border MaxWidth="40" Margin="8,0,0,0" HorizontalAlignment="Right">
+                            <ToggleSwitch IsOn="{x:Bind VM.IsLogEnabled,Mode=TwoWay}" Toggled="IsLogEnabledToggleSwitch_Toggled" />
+                        </Border>
                     </Grid>
                 </ContentControl>
             </StackPanel>

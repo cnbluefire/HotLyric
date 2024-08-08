@@ -66,6 +66,7 @@ namespace HotLyric.Win32.ViewModels
         private const string ReadMeAlreadyShowedOnStartUpSettingsKey = "Settings_ReadMeAlreadyShowedOnStartUp";
         private const string IsHotKeyEnabledSettingsKey = "Settings_IsHotKeyEnabled";
         private const string HttpClientProxySettingKey = "Settings_HttpClientProxy";
+        private const string IsLogEnableSettingKey = "Settings_IsLogEnable";
 
         public SettingsWindowViewModel()
         {
@@ -200,6 +201,8 @@ namespace HotLyric.Win32.ViewModels
 
             httpClientProxy = LoadSetting<HttpClientProxyModel>(HttpClientProxySettingKey, null);
             HttpClientManager.Proxy = httpClientProxy?.CreateConfigure();
+
+            LogHelper.IsLogEnabled = LoadSetting<bool>(IsLogEnableSettingKey, true);
         }
 
         private bool windowTransparent;
@@ -255,6 +258,7 @@ namespace HotLyric.Win32.ViewModels
         private bool isHotKeyEnabled;
         private HttpClientProxyModel? httpClientProxy;
         private AsyncRelayCommand? changeProxyCmd;
+        private AsyncRelayCommand? deleteLogFilesWhenLogDisabledCmd;
 
         public StartupTaskHelper StartupTaskHelper { get; }
 
@@ -775,6 +779,20 @@ namespace HotLyric.Win32.ViewModels
             }
         }
 
+        public bool IsLogEnabled
+        {
+            get => LogHelper.IsLogEnabled;
+            set
+            {
+                if (LogHelper.IsLogEnabled != value)
+                {
+                    LogHelper.IsLogEnabled = value;
+                    OnPropertyChanged(nameof(IsLogEnabled));
+                    SetSettingsAndNotify(IsLogEnableSettingKey, value);
+                }
+            }
+        }
+
         public HttpClientProxyModel? HttpClientProxy
         {
             get => httpClientProxy;
@@ -886,6 +904,34 @@ namespace HotLyric.Win32.ViewModels
             {
                 HttpClientProxy = dialog.Proxy;
                 HttpClientManager.Proxy = dialog.Proxy?.CreateConfigure();
+            }
+        }));
+
+        public AsyncRelayCommand DeleteLogFilesWhenLogDisabledCmd => (deleteLogFilesWhenLogDisabledCmd ??= new AsyncRelayCommand(async () =>
+        {
+            await Task.Yield();
+
+            if (!LogHelper.IsLogEnabled)
+            {
+                for (int i = 0; i < 3; i++)
+                {
+                    try
+                    {
+                        var folder = System.IO.Path.Combine(
+                            ApplicationData.Current.LocalCacheFolder.Path,
+                            "Local",
+                            "Logs");
+
+                        if (System.IO.Directory.Exists(folder))
+                        {
+                            System.IO.Directory.Delete(folder, true);
+                        }
+                    }
+                    catch
+                    {
+                        await Task.Delay(100);
+                    }
+                }
             }
         }));
 

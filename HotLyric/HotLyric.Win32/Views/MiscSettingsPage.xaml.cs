@@ -43,5 +43,18 @@ namespace HotLyric.Win32.Views
             else if (proxyModel.IsDefaultProxy) return "使用系统代理";
             return "自定义代理";
         }
+
+        private async void IsLogEnabledToggleSwitch_Toggled(object sender, RoutedEventArgs e)
+        {
+            ((Control)sender).IsEnabled = false;
+            try
+            {
+                await VM.DeleteLogFilesWhenLogDisabledCmd.ExecuteAsync(null);
+            }
+            finally
+            {
+                ((Control)sender).IsEnabled = true;
+            }
+        }
     }
 }

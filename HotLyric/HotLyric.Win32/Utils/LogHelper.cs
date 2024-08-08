@@ -9,21 +9,32 @@ namespace HotLyric.Win32.Utils
 {
     public static class LogHelper
     {
+        private static bool isLogEnabled = true;
+
+        public static bool IsLogEnabled
+        {
+            get => isLogEnabled;
+            set => isLogEnabled = value;
+        }
+
         public static NLog.Logger Logger =>
             NLog.LogManager.GetLogger("global");
 
         public static void LogInfo(string message)
         {
+            if (isLogEnabled) return;
             Logger.Info(message);
         }
 
         public static void LogError(Exception ex, [CallerMemberName] string? callerName = null, [CallerFilePath] string? callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
         {
+            if (isLogEnabled) return;
             Logger.Error(ex, BuildMessage(null, callerName, callerFilePath, callerLineNumber));
         }
 
         public static void LogError(string message, Exception ex, [CallerMemberName] string? callerName = null, [CallerFilePath] string? callerFilePath = null, [CallerLineNumber] int callerLineNumber = 0)
         {
+            if (isLogEnabled) return;
             Logger.Error(ex, BuildMessage(message, callerName, callerFilePath, callerLineNumber));
         }
 

@@ -81,7 +81,12 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             const string requestUrl = "http://127.0.0.1:27232/player";
             try
             {
-                var json = await httpClient!.GetStringAsync(requestUrl);
+                string json = "";
+                try
+                {
+                    json = await httpClient!.GetStringAsync(requestUrl);
+                }
+                catch { }
                 if (!string.IsNullOrEmpty(json))
                 {
                     var model = JsonConvert.DeserializeObject<PlayerInfo>(json);

@@ -345,9 +345,26 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         public async Task<ImageSource?> GetSessionIconAsync()
         {
-            if (App.AppInfo?.Icon != null)
+            var iconUri = App.AppInfo?.Icon;
+            if (iconUri != null)
             {
-                return new BitmapImage(App.AppInfo.Icon);
+                if (iconUri.Scheme.Equals("file", StringComparison.OrdinalIgnoreCase))
+                {
+                    try
+                    {
+                        if (File.Exists(iconUri.AbsolutePath))
+                        {
+                            var bitmap = new BitmapImage();
+                            await bitmap.SetSourceAsync(File.OpenRead(iconUri.AbsolutePath).AsRandomAccessStream());
+                            return bitmap;
+                        }
+                    }
+                    catch { }
+                }
+                else
+                {
+                    return new BitmapImage(iconUri);
+                }
             }
 
             var package = await GetAppPackageAsync();

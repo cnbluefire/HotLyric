@@ -48,7 +48,7 @@ namespace HotLyric.Win32.ViewModels
                 {
                     if (smtcManager != null)
                     {
-                        await smtcManager.UpdateSessionAsync();
+                        await smtcManager.UpdateSessionAsync(true);
                     }
                 });
             };

@@ -29,11 +29,10 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
 
         private async void Manager_SessionsChanged(GlobalSystemMediaTransportControlsSessionManager sender, SessionsChangedEventArgs args)
         {
-            await UpdateSessionAsync();
-            SessionsChanged?.Invoke(this, EventArgs.Empty);
+            await UpdateSessionAsync(true);
         }
 
-        public async Task UpdateSessionAsync()
+        public async Task UpdateSessionAsync(bool raiseSessionsChanged)
         {
             var oldTask = lastUpdateSessionTask;
             if (oldTask != null)
@@ -48,6 +47,11 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
             var task = lastUpdateSessionTask = UpdateSessionsAsyncCore();
             await task;
             lastUpdateSessionTask = null;
+
+            if (raiseSessionsChanged)
+            {
+                SessionsChanged?.Invoke(this, EventArgs.Empty);
+            }
         }
 
         private async Task UpdateSessionsAsyncCore(CancellationToken cancellationToken = default)

@@ -156,6 +156,85 @@
                 "defaultLrcProvider": "NetEase",
                 "mediaPropertiesMode": "Default"
             }
+        },
+        {
+            "appId": "edge",
+            "sessionType": "SMTC_UnPackagedApp",
+            "appInfo": {
+                "displayName": "Microsoft Edge",
+                "icon": "assets/MSEdgeIcon.png"
+            },
+            "match": {
+                "regex": "^MSEdge$"
+            },
+            "options": {
+                "positionMode": "fromAppAndUseTimer",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "Default"
+            }
+        },
+        {
+            "appId": "edge_dev",
+            "sessionType": "SMTC_UnPackagedApp",
+            "appInfo": {
+                "displayName": "Microsoft Edge Dev",
+                "icon": "assets/MSEdgeDevIcon.png"
+            },
+            "match": {
+                "regex": "^MSEdgeDev$"
+            },
+            "options": {
+                "positionMode": "fromAppAndUseTimer",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "Default"
+            }
+        },
+        {
+            "appId": "edge_canary",
+            "sessionType": "SMTC_UnPackagedApp",
+            "appInfo": {
+                "displayName": "Microsoft Edge Canary",
+                "icon": "assets/MSEdgeCanaryIcon.png"
+            },
+            "match": {
+                "regex": "^MSEdgeCanary\\.[0-9|A-Z]{26}"
+            },
+            "options": {
+                "positionMode": "fromAppAndUseTimer",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "Default"
+            }
+        },
+        {
+            "appId": "chromium",
+            "sessionType": "SMTC_UnPackagedApp",
+            "appInfo": {
+                "displayName": "Chromium",
+                "icon": "assets/HotLyricIcon.png"
+            },
+            "match": {
+                "regex": "^Chromium\\.[0-9|A-Z]{26}"
+            },
+            "options": {
+                "positionMode": "fromAppAndUseTimer",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "Default"
+            }
+        },
+        {
+            "appId": "apple_music",
+            "sessionType": "SMTC_PackagedApp",
+            "appInfo": {
+                "msStoreProductId": "9pfhdd62mxs1"
+            },
+            "match": {
+                "regex": "^AppleInc\\.AppleMusicWin_"
+            },
+            "options": {
+                "positionMode": "fromApp",
+                "defaultLrcProvider": "NetEase",
+                "mediaPropertiesMode": "AppleMusic"
+            }
         }
     ]
 }

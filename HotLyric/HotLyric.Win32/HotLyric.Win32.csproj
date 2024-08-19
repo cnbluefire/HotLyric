@@ -49,19 +49,17 @@
 	</ItemGroup>
 
 	<ItemGroup>
-	  <Content Include="configuration.json">
-	    <CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
-	  </Content>
-	</ItemGroup>
-
-	<ItemGroup>
-		<None Update="Assets\defaultTheme.json">
+		<None Update="configuration.json">
+			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
+		</None>
+		<None Update="Assets\**\*">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
 		<None Update="NLog.config">
 			<CopyToOutputDirectory>PreserveNewest</CopyToOutputDirectory>
 		</None>
-	</ItemGroup>
+	
+</ItemGroup>
 
 	<ItemGroup Condition="'$(HotLyricExtensionLibraryEnabled)' != 'false'">
 		<ContentWithTargetPath Include="Extensions\$(Platform)\$(Configuration)\HotLyric.Extensions.dll">

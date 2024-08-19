@@ -44,7 +44,14 @@ namespace HotLyric.Win32
 
             _ = ViewModelLocator.Instance.AppConfigurationSettingsViewModel.UpdateConfigurationAsync();
 
-            ViewModelLocator.Instance.SettingsWindowViewModel.TryShowReadMeOnStartup();
+            DispatcherQueue.TryEnqueue(async () =>
+            {
+                await Task.Delay(TimeSpan.FromSeconds(10));
+                if (!Exiting)
+                {
+                    ViewModelLocator.Instance.SettingsWindowViewModel.TryShowReadMeOnStartup();
+                }
+            });
 
             HotKeyManager.HotKeyInvoked += HotKeyManager_HotKeyInvoked;
         }

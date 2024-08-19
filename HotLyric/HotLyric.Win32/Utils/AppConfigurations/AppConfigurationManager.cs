@@ -140,15 +140,16 @@ namespace HotLyric.Win32.Utils.AppConfigurations
                             {
                                 "http" => true,
                                 "https" => true,
+                                "file" => true,
                                 _ => false
                             })
                         {
-                            return c.Uri;
+                            return uri;
                         }
                         return null;
                     })
-                    .Where(c => !string.IsNullOrEmpty(c))
-                    .OfType<string>()
+                    .Where(c => c != null)
+                    .OfType<Uri>()
                     .ToArray();
 
                 if (enabledSources.Length > 0)
@@ -159,16 +160,28 @@ namespace HotLyric.Win32.Utils.AppConfigurations
                     {
                         try
                         {
-                            var _json = await client.GetStringAsync(c, cancellationSource.Token);
+                            string? _json = null;
+                            if (c.Scheme.Equals("file", StringComparison.OrdinalIgnoreCase))
+                            {
+                                if (System.IO.File.Exists(c.AbsolutePath))
+                                {
+                                    _json = await System.IO.File.ReadAllTextAsync(c.AbsolutePath, cancellationSource.Token);
+                                }
+                            }
+                            else
+                            {
+                                _json = await client.GetStringAsync(c, cancellationSource.Token);
+                            }
+
                             if (!string.IsNullOrEmpty(_json))
                             {
-                                var _model = AppConfigurationModel.CreateFromJson(c, _json);
+                                var _model = AppConfigurationModel.CreateFromJson(c.OriginalString, _json);
                                 if (_model != null)
                                 {
                                     return new AppConfigurationModelResult(
                                         _model,
                                         DateTimeOffset.UtcNow.ToUnixTimeSeconds(),
-                                        c,
+                                        c.OriginalString,
                                         _json);
                                 }
                             }

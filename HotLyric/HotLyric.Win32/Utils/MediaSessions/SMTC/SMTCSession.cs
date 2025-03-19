@@ -363,7 +363,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
                 }
                 else
                 {
-                    return new BitmapImage(iconUri);
+                    return ImageCacheHelper.GetImage(iconUri.OriginalString);
                 }
             }
 

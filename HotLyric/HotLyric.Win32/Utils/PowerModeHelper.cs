@@ -28,12 +28,12 @@ namespace HotLyric.Win32.Utils
 
         public PowerModeHelper()
         {
+            updateTimer = new Timer(TimeSpan.FromSeconds(0.5));
             battery = Battery.AggregateBattery;
 
             battery.ReportUpdated += Battery_ReportUpdated;
             PowerManager.EffectivePowerModeChanged += PowerManager_EffectivePowerModeChanged;
 
-            updateTimer = new Timer(TimeSpan.FromSeconds(0.5));
             updateTimer.Elapsed += UpdateTimer_Elapsed;
 
             UpdateProperties();

@@ -35,10 +35,13 @@ namespace HotLyric.Win32.Base.BackgroundHelpers
                 case "ftp":
                     {
                         var httpClient = HttpClientManager.CreateClient();
-                        using var webStream = await httpClient.GetStreamAsync(uri, cancellationToken);
+                        using var response = await httpClient.GetAsync(uri, cancellationToken);
+                        response.EnsureSuccessStatusCode();
+
+                        using var bodyStream = await response.Content.ReadAsStreamAsync(cancellationToken);
                         var memoryStream = new MemoryStream();
 
-                        await webStream.CopyToAsync(memoryStream, cancellationToken);
+                        await bodyStream.CopyToAsync(memoryStream, cancellationToken);
 
                         return memoryStream.AsRandomAccessStream();
                     }

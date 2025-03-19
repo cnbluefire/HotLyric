@@ -668,11 +668,17 @@ namespace HotLyric.Win32.ViewModels
         {
             try
             {
-                var folder = await StorageFolder.GetFolderFromPathAsync(
-                    System.IO.Path.Combine(
+                var logsFolderPath = System.IO.Path.Combine(
                         ApplicationData.Current.LocalCacheFolder.Path,
                         "Local",
-                        "Logs"));
+                        "Logs");
+
+                if (!Directory.Exists(logsFolderPath))
+                {
+                    Directory.CreateDirectory(logsFolderPath);
+                }
+
+                var folder = await StorageFolder.GetFolderFromPathAsync(logsFolderPath);
 
                 await Launcher.LaunchFolderAsync(folder);
             }

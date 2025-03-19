@@ -54,6 +54,8 @@ namespace HotLyric.Win32
             });
 
             HotKeyManager.HotKeyInvoked += HotKeyManager_HotKeyInvoked;
+
+            _ = CacheManager.RotationAsync(DateTime.UtcNow.AddDays(-7));
         }
 
         public static new App Current => (App)Application.Current;

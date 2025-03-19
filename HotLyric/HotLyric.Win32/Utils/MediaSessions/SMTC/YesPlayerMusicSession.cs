@@ -286,7 +286,7 @@ namespace HotLyric.Win32.Utils.MediaSessions.SMTC
         {
             if (App.AppInfo?.Icon != null)
             {
-                return Task.FromResult<ImageSource?>(new BitmapImage(App.AppInfo.Icon));
+                return Task.FromResult<ImageSource?>(ImageCacheHelper.GetImage(App.AppInfo.Icon.OriginalString));
             }
             return Task.FromResult<ImageSource?>(null);
         }

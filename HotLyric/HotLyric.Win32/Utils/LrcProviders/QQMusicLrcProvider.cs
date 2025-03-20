@@ -19,66 +19,10 @@ namespace HotLyric.Win32.Utils.LrcProviders
             {
                 try
                 {
-                    var query = new Dictionary<string, string>()
-                    {
-                        ["songmid"] = _id,
-                        ["pcachetime"] = $"{DateTimeOffset.Now.ToUnixTimeMilliseconds()}",
-                        ["g_tk"] = "5381",
-                        ["loginUin"] = "0",
-                        ["hostUin"] = "0",
-                        ["inCharset"] = "utf8",
-                        ["outCharset"] = "utf-8",
-                        ["notice"] = "0",
-                        ["platform"] = "yqq",
-                        ["needNewCode"] = "0",
-                        ["format"] = "json",
-                    };
+                    var lyric = await Lyricify.Lyrics.Helpers.ProviderHelper.QQMusicApi.GetLyric(_id).WaitAsync(cancellationToken);
+                    if (string.IsNullOrEmpty(lyric?.Lyric)) return null;
 
-                    var queryStr = string.Join("&", query.Select(c => $"{Uri.EscapeDataString(c.Key)}={Uri.EscapeDataString(c.Value)}"));
-
-                    var json = await LrcProviderHelper.TryGetStringAsync($"http://c.y.qq.com/lyric/fcgi-bin/fcg_query_lyric_new.fcg?{queryStr}", "https://y.qq.com/portal/player.html", cancellationToken);
-                    if (string.IsNullOrEmpty(json)) return null;
-
-                    var jobj = JObject.Parse(json);
-                    var lrcBase64 = (string?)jobj?["lyric"];
-                    if (string.IsNullOrEmpty(lrcBase64)) return null;
-
-                    var lrcContent = "";
-                    try
-                    {
-                        lrcContent = Encoding.UTF8.GetString(Convert.FromBase64String(lrcBase64));
-                    }
-                    catch (Exception ex)
-                    {
-                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
-                    }
-
-                    if (string.IsNullOrEmpty(lrcContent)) return null;
-
-                    try
-                    {
-                        lrcContent = System.Net.WebUtility.HtmlDecode(lrcContent);
-                    }
-                    catch (Exception ex)
-                    {
-                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
-                    }
-
-                    string? translatedContent = "";
-                    try
-                    {
-                        var translatedBase64 = (string?)jobj?["trans"];
-                        if (!string.IsNullOrEmpty(translatedBase64))
-                        {
-                            translatedContent = Encoding.UTF8.GetString(Convert.FromBase64String(translatedBase64));
-                        }
-                    }
-                    catch (Exception ex)
-                    {
-                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
-                    }
-
-                    return Lyric.CreateClassicLyric(lrcContent, translatedContent, songName, artists);
+                    return Lyric.CreateClassicLyric(lyric.Lyric, lyric.Trans, songName, artists);
                 }
                 catch (Exception ex) when (!(ex is OperationCanceledException))
                 {

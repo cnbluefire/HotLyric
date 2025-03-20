@@ -1,4 +1,5 @@
 ﻿using HotLyric.Win32.Utils.LyricFiles;
+using Lyricify.Lyrics.Helpers.General;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -12,10 +13,13 @@ using Windows.Storage;
 
 namespace HotLyric.Win32.Utils.LrcProviders
 {
-    internal static class LrcProviderHelper
+    internal static partial class LrcProviderHelper
     {
-        private static Regex replaceRegex = new Regex("(-|\\(|\\)|/|\\\\|&)");
-        private static Regex replaceSpaceRegex = new Regex("(\\s{2,})");
+        [GeneratedRegex("(-|\\(|\\)|/|\\\\|&)")]
+        private static partial Regex GetReplaceRegex();
+
+        [GeneratedRegex("(\\s{2,})")]
+        private static partial Regex GetReplaceSpaceRegex();
 
         /// <summary>
         /// 英文名转为中文名，繁体转为简体
@@ -33,13 +37,13 @@ namespace HotLyric.Win32.Utils.LrcProviders
                 artists = artists.Replace(k, v);
             }
 
-            artists = ChineseHelper.ConvertToSimpleChinese(artists);
+            artists = ChineseConverter.ConvertToSimplifiedChinese(artists);
 
             if (convertToSimpleChinese && !string.IsNullOrEmpty(name))
             {
                 try
                 {
-                    name = ChineseHelper.ConvertToSimpleChinese(name);
+                    name = ChineseConverter.ConvertToSimplifiedChinese(name);
                 }
                 catch (Exception ex)
                 {
@@ -208,8 +212,8 @@ namespace HotLyric.Win32.Utils.LrcProviders
         {
             if (string.IsNullOrEmpty(str)) return string.Empty;
 
-            str = replaceRegex.Replace(str, "");
-            str = replaceSpaceRegex.Replace(str, " ");
+            str = GetReplaceRegex().Replace(str, "");
+            str = GetReplaceSpaceRegex().Replace(str, " ");
 
             return str;
         }

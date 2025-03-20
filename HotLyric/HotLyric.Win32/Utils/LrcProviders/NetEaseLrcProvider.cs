@@ -19,25 +19,10 @@ namespace HotLyric.Win32.Utils.LrcProviders
             {
                 try
                 {
-                    var json = await LrcProviderHelper.TryGetStringAsync($"https://music.163.com/api/song/lyric?id={_id}&lv=-1&kv=1&tv=-1", cancellationToken);
-                    if (string.IsNullOrEmpty(json)) return null;
+                    var lyric = await Lyricify.Lyrics.Helpers.ProviderHelper.NeteaseApi.GetLyric(_id).WaitAsync(cancellationToken);
+                    if (string.IsNullOrEmpty(lyric?.Lrc?.Lyric)) return null;
 
-                    var jobj = JObject.Parse(json);
-                    var lrcContent = (string?)jobj?["lrc"]?["lyric"];
-
-                    if (string.IsNullOrEmpty(lrcContent)) return null;
-
-                    string? translatedContent = "";
-                    try
-                    {
-                        translatedContent = (string?)jobj?["tlyric"]?["lyric"];
-                    }
-                    catch (Exception ex)
-                    {
-                        HotLyric.Win32.Utils.LogHelper.LogError(ex);
-                    }
-
-                    return Lyric.CreateClassicLyric(lrcContent!, translatedContent, songName, artists);
+                    return Lyric.CreateClassicLyric(lyric.Lrc.Lyric, lyric.Tlyric?.Lyric, songName, artists);
                 }
                 catch (Exception ex) when (!(ex is OperationCanceledException))
                 {
